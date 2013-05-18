@@ -63,7 +63,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 		{"open-repository", on_open_repository},
 		{"clone-repository", on_clone_repository},
 		{"close", on_close_activated},
-		{"refresh", on_refresh_activated},
+		{"reload", on_reload_activated},
 		{"user-information-global", on_global_user_info_activated},
 		{"user-information-repo", on_repo_user_info_activated},
 	};
@@ -79,10 +79,6 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 	private void on_close_activated()
 	{
 		destroy();
-	}
-
-	private void on_refresh_activated() {
-		repository_changed ();
 	}
 
 	private void on_search_activated(SimpleAction action) {
@@ -208,6 +204,11 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 		});
 
 		chooser.show();
+	}
+	
+	private void on_reload_activated()
+	{
+		repository_changed();
 	}
 
 	private void on_clone_repository()

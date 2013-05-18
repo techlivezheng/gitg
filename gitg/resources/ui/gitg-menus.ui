@@ -48,7 +48,7 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">User Information</attribute>
+        <attribute name="label" translatable="yes">_User Information</attribute>
         <attribute name="action">win.user-information-global</attribute>
       </item>
     </section>
@@ -63,7 +63,14 @@
   <menu id="win-menu-views">
     <section>
       <item>
-        <attribute name="label" translatable="yes">User Information</attribute>
+        <attribute name="label" translatable="yes">_Reload</attribute>
+        <attribute name="action">win.reload</attribute>
+        <attribute name="accel">&lt;Primary&gt;r</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_User Information</attribute>
         <attribute name="action">win.user-information-repo</attribute>
       </item>
     </section>
@@ -96,7 +103,7 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">User Information</attribute>
+        <attribute name="label" translatable="yes">_User Information</attribute>
         <attribute name="action">win.user-information-global</attribute>
       </item>
     </section>
@@ -140,7 +147,14 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">User Information</attribute>
+        <attribute name="label" translatable="yes">_Reload</attribute>
+        <attribute name="action">win.reload</attribute>
+        <attribute name="accel">&lt;Primary&gt;r</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_User Information</attribute>
         <attribute name="action">win.user-information-repo</attribute>
       </item>
     </section>
@@ -148,13 +162,6 @@
       <item>
         <attribute name="label" translatable="yes">_Preferences</attribute>
         <attribute name="action">app.preferences</attribute>
-      </item>
-    </section>
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">_Refresh</attribute>
-        <attribute name="action">win.refresh</attribute>
-        <attribute name="accel">&lt;Primary&gt;r</attribute>
       </item>
     </section>
     <section>
