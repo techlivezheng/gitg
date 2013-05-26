@@ -49,13 +49,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 	private Gtk.ScrolledWindow d_dash_scrolled_window;
 	private GitgGtk.DashView d_dash_view;
 
-	private Gtk.Paned d_paned_views;
-	private Gtk.Paned d_paned_panels;
-
 	private Gd.Stack d_stack_view;
-	private Gd.Stack d_stack_panel;
-
-	private GitgExt.NavigationTreeView d_navigation;
 
 	private static const ActionEntry[] win_entries = {
 		{"search", on_search_activated, null, "false", null},
@@ -146,7 +140,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 			d_header_bar.set_subtitle(Markup.escape_text(head_name));
 
 			d_main_stack.transition_type = Gd.StackTransitionType.SLIDE_LEFT;
-			d_main_stack.set_visible_child(d_paned_views);
+			d_main_stack.set_visible_child(d_stack_view);
 			d_commit_view_switcher.show();
 			d_button_dash.show();
 			d_dash_view.add_repository(d_repository);
@@ -197,7 +191,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 		chooser.response.connect((c, id) => {
 			if (id == Gtk.ResponseType.OK)
 			{
-				open(chooser.get_current_folder_file());
+				open_repository(chooser.get_current_folder_file());
 			}
 
 			c.destroy();
@@ -208,8 +202,10 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 
 	private void on_reload_activated()
 	{
-		this.repository = new Gitg.Repository(this.repository.get_location(),
-		                                      null);
+		d_repository = new Gitg.Repository(this.repository.get_location(),
+		                                   null);
+		notify_property("repository");
+		d_views.current.reload();
 	}
 
 	private void on_clone_repository()
@@ -436,15 +432,10 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 			repository = r;
 		});
 
-		d_paned_views = builder.get_object("paned_views") as Gtk.Paned;
-		d_paned_panels = builder.get_object("paned_panels") as Gtk.Paned;
-
 		d_stack_view = builder.get_object("stack_view") as Gd.Stack;
-		d_stack_panel = builder.get_object("stack_panel") as Gd.Stack;
-		d_commit_view_switcher = builder.get_object("commit-view-switcher") as Gd.StackSwitcher;
-		d_commit_view_switcher.stack = d_stack_panel;
 
-		d_navigation = builder.get_object("tree_view_navigation") as GitgExt.NavigationTreeView;
+		d_commit_view_switcher = builder.get_object("commit-view-switcher") as Gd.StackSwitcher;
+
 		d_gear_menu = builder.get_object("gear-menubutton") as Gtk.MenuButton;
 
 		string menuname;
@@ -485,11 +476,6 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 			}
 		});
 
-		d_interface_settings.bind("orientation",
-		              d_paned_panels,
-		              "orientation",
-		              SettingsBindFlags.GET);
-
 		base.parser_finished(builder);
 	}
 
@@ -498,37 +484,42 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 	{
 		GitgExt.View? view = (GitgExt.View?)element;
 
-		// 1) Clear the navigation tree
-		d_navigation.model.clear();
-
-		if (view != null && view.navigation != null)
+		if (view != null)
 		{
-			d_navigation.set_show_expanders(view.navigation.show_expanders);
-
-			if (view.navigation.show_expanders)
+			if (view.stack_panel != null)
 			{
-				d_navigation.set_level_indentation(0);
-			}
-			else
-			{
-				d_navigation.set_level_indentation(12);
+				d_commit_view_switcher.stack = view.stack_panel; //todo
+
+				// Initialize peas extensions set for this view
+				var engine = PluginsEngine.get_default();
+
+				d_panels = new UIElements<GitgExt.Panel>(new Peas.ExtensionSet(engine,
+				                                                               typeof(GitgExt.Panel),
+				                                                               "application",
+				                                                               this),
+				                                         view.stack_panel);
+
+				d_panels.activated.connect(on_panel_activated);
+
 			}
 
-			// 2) Populate the navigation tree for this view
-			d_navigation.model.populate(view.navigation);
+			view.on_view_activated();
+
+			d_panels.update();
 		}
 
-		d_navigation.expand_all();
-		d_navigation.select_first();
-
-		// Update panels
-		d_panels.update();
 		notify_property("current_view");
 	}
 
 	private void on_panel_activated(UIElements elements,
 	                                GitgExt.UIElement element)
 	{
+		GitgExt.Panel? panel = (GitgExt.Panel?)element;
+
+		if (panel != null)
+		{
+			panel.on_panel_activated();
+		}
 	}
 
 	private void activate_default_view()
@@ -582,14 +573,6 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 
 		d_views.activated.connect(on_view_activated);
 
-		d_panels = new UIElements<GitgExt.Panel>(new Peas.ExtensionSet(engine,
-		                                                               typeof(GitgExt.Panel),
-		                                                               "application",
-		                                                               this),
-		                                         d_stack_panel);
-
-		d_panels.activated.connect(on_panel_activated);
-
 		// Setup window geometry saving
 		Gdk.WindowState window_state = (Gdk.WindowState)d_state_settings.get_int("state");
 		if (Gdk.WindowState.MAXIMIZED in window_state) {
@@ -599,16 +582,6 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 		int width, height;
 		d_state_settings.get ("size", "(ii)", out width, out height);
 		resize (width, height);
-
-		d_state_settings.bind("paned-views-position",
-		                      d_paned_views,
-		                      "position",
-		                      SettingsBindFlags.GET | SettingsBindFlags.SET);
-
-		d_state_settings.bind("paned-panels-position",
-		                      d_paned_panels,
-		                      "position",
-		                      SettingsBindFlags.GET | SettingsBindFlags.SET);
 
 		return true;
 	}
@@ -655,7 +628,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable, Gtk.
 		}
 	}
 
-	private void open(File path)
+	private void open_repository(File path)
 	{
 		File repo;
 		Gitg.Repository? repository = null;

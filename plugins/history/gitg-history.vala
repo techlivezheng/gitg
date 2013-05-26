@@ -29,24 +29,32 @@ namespace GitgHistory
 
 		public GitgExt.Application? application { owned get; construct set; }
 
-		private Gtk.TreeView d_view;
 		private GitgGtk.CommitModel? d_model;
 		private Gee.HashSet<Ggit.OId> d_selected;
 		private ulong d_insertsig;
 		private Settings d_settings;
 
-		private Gtk.Widget d_main;
+		private Gtk.Paned d_main;
+		private GitgHistory.NavigationView d_navigation;
+		private Gtk.Paned d_paned_panels;
+		private Gd.Stack d_stack_panel;
+		private Gtk.TreeView d_commit_list;
 
 		public string id
 		{
 			owned get { return "/org/gnome/gitg/Views/History"; }
 		}
 
+		public Gd.Stack stack_panel
+		{
+			get { return d_stack_panel; }
+		}
+
 		public void foreach_selected(GitgExt.ForeachObjectSelectionFunc func)
 		{
 			bool breakit = false;
 
-			d_view.get_selection().selected_foreach((model, path, iter) => {
+			d_commit_list.get_selection().selected_foreach((model, path, iter) => {
 				if (!breakit)
 				{
 					breakit = !func(d_model.commit_from_iter(iter));
@@ -57,7 +65,7 @@ namespace GitgHistory
 		construct
 		{
 			d_model = new GitgGtk.CommitModel(application.repository);
-			d_selected = new Gee.HashSet<Ggit.OId>(Ggit.OId.hash, (EqualFunc<Ggit.OId>)Ggit.OId.equal);
+			d_selected = new Gee.HashSet<Ggit.OId>((Gee.HashDataFunc<Ggit.OId>)Ggit.OId.hash, (Gee.EqualDataFunc<Ggit.OId>)Ggit.OId.equal);
 
 			d_model.started.connect(on_commit_model_started);
 			d_model.finished.connect(on_commit_model_finished);
@@ -102,7 +110,7 @@ namespace GitgHistory
 
 			if (d_selected.size == 0 || d_selected.remove(commit.get_id()))
 			{
-				d_view.get_selection().select_path(path);
+				d_commit_list.get_selection().select_path(path);
 			}
 
 			if (d_selected.size == 0)
@@ -153,21 +161,6 @@ namespace GitgHistory
 			}
 		}
 
-		public GitgExt.Navigation? navigation
-		{
-			owned get
-			{
-				// Create the sidebar navigation for the history. This navigation
-				// will show branches, remotes and tags which can be used to
-				// filter the history
-				var ret = new Navigation(application);
-
-				ret.ref_activated.connect((r) => on_ref_activated(ret, r));
-
-				return ret;
-			}
-		}
-
 		public bool is_default_for(string action)
 		{
 			return application.repository != null && (action == "" || action == "history");
@@ -178,25 +171,77 @@ namespace GitgHistory
 			update_walker(n, r);
 		}
 
+		public void on_view_activated()
+		{
+			d_navigation.expand_all();
+			d_navigation.select_first();
+		}
+
+		public void reload()
+		{
+			d_navigation.model.reload();
+			d_navigation.expand_all();
+			d_navigation.select_first();
+		}
+
 		private void build_ui()
 		{
 			var ret = GitgExt.UI.from_builder("history/view-history.ui",
-			                                  "scrolled_window_commit_list",
+			                                  "paned_views",
+			                                  "paned_panels",
+			                                  "stack_panel",
+			                                  "navigation_view",
 			                                  "commit_list_view",
 			                                  "renderer_commit_list_author",
 			                                  "renderer_commit_list_author_date");
 
-			d_main = ret["scrolled_window_commit_list"] as Gtk.Widget;
+			d_main = ret["paned_views"] as Gtk.Paned;
 
-			d_view = ret["commit_list_view"] as Gtk.TreeView;
-			d_view.model = d_model;
-			d_view.get_selection().changed.connect((sel) => {
+			d_navigation = ret["navigation_view"] as GitgHistory.NavigationView;
+			d_navigation.model = new Navigation(application.repository);
+			d_navigation.model.ref_activated.connect((r) => {
+				on_ref_activated(d_navigation.model, r);
+			});
+
+			application.bind_property("repository", d_navigation.model, "repository", BindingFlags.DEFAULT);
+
+			d_navigation.set_show_expanders(d_navigation.model.show_expanders);
+			if (d_navigation.model.show_expanders)
+			{
+				d_navigation.set_level_indentation(0);
+			}
+			else
+			{
+				d_navigation.set_level_indentation(12);
+			}
+
+			d_paned_panels = ret["paned_panels"] as Gtk.Paned;
+			d_stack_panel = ret["stack_panel"] as Gd.Stack;
+
+			d_commit_list = ret["commit_list_view"] as Gtk.TreeView;
+			d_commit_list.model = d_model;
+			d_commit_list.get_selection().changed.connect((sel) => {
 				selection_changed();
 			});
 
 			(ret["renderer_commit_list_author"] as Gd.StyledTextRenderer).add_class("dim-label");
 			(ret["renderer_commit_list_author_date"] as Gd.StyledTextRenderer).add_class("dim-label");
 
+			var state_settings = new Settings("org.gnome.gitg.history.state");
+			state_settings.bind("paned-views-position",
+			                    d_main,
+			                    "position",
+			                    SettingsBindFlags.GET | SettingsBindFlags.SET);
+			state_settings.bind("paned-panels-position",
+			                    d_paned_panels,
+			                    "position",
+			                    SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			var interface_settings = new Settings("org.gnome.gitg.preferences.interface");
+			interface_settings.bind("orientation",
+			                          d_paned_panels,
+			                          "orientation",
+			                          SettingsBindFlags.GET);
 		}
 
 		private void update_walker(Navigation n, Gitg.Ref? head)
