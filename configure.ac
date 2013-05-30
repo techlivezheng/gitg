@@ -87,7 +87,7 @@ AC_DEFINE_UNQUOTED(GITG_LIBDIR,"$GITG_LIBDIR", [lib dir])
 AC_CHECK_LIB([m], [sinf])
 
 GLIB_REQUIRED_VERSION=2.32
-GTK_REQUIRED_VERSION=3.6.0
+GTK_REQUIRED_VERSION=3.9.0
 GTKSOURCEVIEW_REQUIRED_VERSION=3.1.3
 INTROSPECTION_REQUIRED=0.10.1
 
@@ -284,10 +284,7 @@ AM_CONDITIONAL(ENABLE_PYTHON, test x"$enable_python" = "xyes")
 
 dnl libgd
 LIBGD_INIT([
-	header-bar
 	tagged-entry
-	stack
-	revealer
 	_view-common
 	static
 	vapi
