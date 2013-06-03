@@ -51,6 +51,18 @@ namespace GitgHistory
 			get { return d_stack_panel; }
 		}
 
+		[Notify]
+		public Gitg.Repository repository
+		{
+			set
+			{
+				if (value != null)
+				{
+					reload();
+				}
+			}
+		}
+
 		public void foreach_selected(GitgExt.ForeachObjectSelectionFunc func)
 		{
 			bool breakit = false;
@@ -85,6 +97,7 @@ namespace GitgHistory
 
 			application.bind_property("repository", d_navigation_model, "repository", BindingFlags.DEFAULT);
 			application.bind_property("repository", d_commit_list_model, "repository", BindingFlags.DEFAULT);
+			application.bind_property("repository", this, "repository", BindingFlags.DEFAULT);
 
 			application.notify["repository"].connect((a, r) => {
 				notify_property("available");
@@ -187,9 +200,7 @@ namespace GitgHistory
 		public void reload()
 		{
 			double vadj = d_navigation.get_vadjustment().get_value();
-			d_navigation.set_model(null);
 			d_navigation_model.reload();
-			d_navigation.set_model(d_navigation_model);
 			d_navigation.expand_all();
 			d_navigation.select();
 			d_navigation.size_allocate.connect((a) => {

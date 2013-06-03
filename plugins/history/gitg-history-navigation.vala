@@ -68,6 +68,7 @@ namespace GitgHistory
 		private SList<Gtk.TreeIter?> d_parents;
 		private uint d_sections;
 		private Activated[] d_callbacks;
+		private bool d_reloading;
 		private Gitg.Repository? d_repository;
 		private string? d_selected_head;
 		private Gtk.TreeIter? d_selected_iter;
@@ -336,14 +337,6 @@ namespace GitgHistory
 			return this;
 		}
 
-		private Navigation append_separator()
-		{
-			Gtk.TreeIter iter;
-			append("", null, null, Hint.SEPARATOR, null, out iter);
-
-			return this;
-		}
-
 		private Navigation begin_header(string text,
 		                                string? icon_name)
 		{
@@ -376,38 +369,6 @@ namespace GitgHistory
 			++d_sections;
 		}
 
-		private void remove_section(uint section)
-		{
-			Gtk.TreeIter iter;
-
-			if (!get_iter_first(out iter))
-			{
-				return;
-			}
-
-			while (true)
-			{
-				uint s;
-
-				@get(iter, Column.SECTION, out s);
-
-				if (s == section)
-				{
-					if (!base.remove(ref iter))
-					{
-						break;
-					}
-				}
-				else
-				{
-					if (!iter_next(ref iter))
-					{
-						break;
-					}
-				}
-			}
-		}
-
 		public new void clear()
 		{
 			base.clear();
@@ -421,8 +382,10 @@ namespace GitgHistory
 		{
 			if (d_repository != null)
 			{
+				d_reloading = true;
 				clear();
 				populate(d_repository);
+				d_reloading = false;
 			}
 		}
 
@@ -438,7 +401,13 @@ namespace GitgHistory
 			}
 		}
 
-		private void activate_ref(Gitg.Ref? r) {
+		private void activate_ref(Gitg.Ref? r)
+		{
+			if (d_reloading)
+			{
+				return;
+			}
+
 			if (r != null)
 			{
 				d_selected_head = r.parsed_name.name;
@@ -580,7 +549,8 @@ namespace GitgHistory
 
 		public void select()
 		{
-			if (model.selected_iter != null) {
+			if (model.selected_iter != null)
+			{
 				get_selection().select_iter(model.selected_iter);
 				model.selected_iter = null;
 			}
