@@ -19,18 +19,17 @@
 
 namespace GitgFiles
 {
-	public class Panel : Object, GitgExt.UIElement, GitgExt.Panel
+	public class Panel : Object, GitgExt.UIElement, GitgExt.HistoryPanel
 	{
 		// Do this to pull in config.h before glib.h (for gettext...)
 		private const string version = Gitg.Config.VERSION;
 
 		public GitgExt.Application? application { owned get; construct set; }
-		private GitgExt.ObjectSelection? d_view;
+		public GitgExt.History? history { owned get; construct set; }
 
 		private TreeStore d_model;
 		private Gtk.Paned d_paned;
 		private GtkSource.View d_source;
-		private Settings d_interfacesettings;
 		private Settings d_fontsettings;
 		private Settings d_stylesettings;
 
@@ -40,16 +39,13 @@ namespace GitgFiles
 		private Gtk.Viewport d_imagevp;
 		private Gtk.Image d_image;
 
-		private GitgGtk.WhenMapped d_whenMapped;
+		private Gitg.WhenMapped d_whenMapped;
 
 		construct
 		{
 			d_model = new TreeStore();
-			d_interfacesettings = new Settings("org.gnome.gitg.preferences.interface");
 
-			application.notify["current_view"].connect((a, v) => {
-				notify_property("available");
-			});
+			history.selection_changed.connect(on_selection_changed);
 		}
 
 		public string id
@@ -59,17 +55,7 @@ namespace GitgFiles
 
 		public bool available
 		{
-			get
-			{
-				var view = application.current_view;
-
-				if (view == null)
-				{
-					return false;
-				}
-
-				return (view is GitgExt.ObjectSelection);
-			}
+			get { return true; }
 		}
 
 		public string display_name
@@ -82,25 +68,14 @@ namespace GitgFiles
 			owned get { return "system-file-manager-symbolic"; }
 		}
 
-		public void on_panel_activated()
+		private void on_selection_changed(GitgExt.History history)
 		{
-		}
+			history.foreach_selected((commit) => {
+				d_whenMapped.update(() => {
+					d_model.tree = commit.get_tree();
+				}, this);
 
-		private void on_selection_changed(GitgExt.ObjectSelection selection)
-		{
-			selection.foreach_selected((commit) => {
-				var c = commit as Ggit.Commit;
-
-				if (c != null)
-				{
-					d_whenMapped.update(() => {
-						d_model.tree = c.get_tree();
-					}, this);
-
-					return false;
-				}
-
-				return true;
+				return false;
 			});
 		}
 
@@ -120,24 +95,6 @@ namespace GitgFiles
 			{
 				var buf = d_source.get_buffer() as GtkSource.Buffer;
 				buf.set_style_scheme(s);
-			}
-		}
-
-		private void update_packing()
-		{
-			var layout = d_interfacesettings.get_enum("orientation");
-			d_paned.remove(d_scrolled);
-			d_paned.remove(d_scrolled_files);
-
-			if (layout == Gtk.Orientation.HORIZONTAL)
-			{
-				d_paned.pack1(d_scrolled, true, true);
-				d_paned.pack2(d_scrolled_files, false, true);
-			}
-			else
-			{
-				d_paned.pack2(d_scrolled, true, true);
-				d_paned.pack1(d_scrolled_files, false, true);
 			}
 		}
 
@@ -187,37 +144,14 @@ namespace GitgFiles
 				update_style();
 			}
 
-			if (d_interfacesettings != null)
-			{
-				d_interfacesettings.changed["orientation"].connect((s, k) => {
-					update_packing();
-				});
-
-				update_packing();
-			}
-
-			d_whenMapped = new GitgGtk.WhenMapped(d_paned);
+			d_whenMapped = new Gitg.WhenMapped(d_paned);
+			on_selection_changed(history);
 		}
 
 		public Gtk.Widget? widget
 		{
 			owned get
 			{
-				var objsel = (GitgExt.ObjectSelection)application.current_view;
-
-				if (objsel != d_view)
-				{
-					if (d_view != null)
-					{
-						d_view.selection_changed.disconnect(on_selection_changed);
-					}
-
-					d_view = objsel;
-					d_view.selection_changed.connect(on_selection_changed);
-
-					on_selection_changed(objsel);
-				}
-
 				if (d_paned == null)
 				{
 					build_ui();
@@ -264,7 +198,7 @@ namespace GitgFiles
 
 			try
 			{
-				blob = application.repository.lookup(id, typeof(Ggit.Blob)) as Ggit.Blob;
+				blob = application.repository.lookup<Ggit.Blob>(id);
 			}
 			catch
 			{
@@ -337,7 +271,7 @@ public void peas_register_types(TypeModule module)
 {
 	Peas.ObjectModule mod = module as Peas.ObjectModule;
 
-	mod.register_extension_type(typeof(GitgExt.Panel),
+	mod.register_extension_type(typeof(GitgExt.HistoryPanel),
 	                            typeof(GitgFiles.Panel));
 }
 

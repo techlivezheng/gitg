@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libgitg-ext-1.0.la
 
-INCLUDES =								\
+AM_CPPFLAGS =								\
 	-I$(top_srcdir)							\
 	-I$(srcdir)							\
 	$(LIBGITG_EXT_CFLAGS)						\
@@ -13,8 +13,11 @@ COMMON_VALA_FLAGS =				\
 	--pkg libgitg-1.0			\
 	--pkg gio-2.0				\
 	--pkg gtk+-3.0				\
+	--pkg libsoup-2.4			\
+	--pkg webkit2gtk-3.0			\
 	--pkg gee-0.8				\
 	--basedir $(top_srcdir)			\
+	--vapidir $(top_srcdir)/vapi		\
 	--vapidir $(top_builddir)/libgitg
 
 AM_VALAFLAGS = 					\
@@ -31,19 +34,16 @@ libgitg_ext_1_0_la_LDFLAGS = \
 
 libgitg_ext_1_0_la_LIBADD = $(LIBGITG_EXT_LIBS)
 
-INST_H_FILES =				\
-	libgitg-ext.h
-
 VALA_FILES =					\
 	gitg-ext-assembly-info.vala		\
 	gitg-ext-application.vala		\
 	gitg-ext-ui-element.vala		\
-	gitg-ext-panel.vala			\
-	gitg-ext-view.vala			\
+	gitg-ext-activity.vala			\
 	gitg-ext-message-id.vala		\
 	gitg-ext-message.vala			\
 	gitg-ext-message-bus.vala		\
-	gitg-ext-object-selection.vala		\
+	gitg-ext-history.vala			\
+	gitg-ext-history-panel.vala		\
 	gitg-ext-command-line.vala		\
 	gitg-ext-preferences.vala		\
 	gitg-ext-ui.vala
@@ -53,12 +53,13 @@ libgitg_ext_1_0_la_SOURCES =		\
 	gitg-ext-resources.c
 
 headerdir = $(prefix)/include/libgitg-ext-1.0/libgitg-ext
-header_DATA = $(INST_H_FILES)
+header_DATA = libgitg-ext.h
 
 vapidir = $(prefix)/share/vala/vapi
 vapi_DATA = libgitg-ext-1.0.vapi
 
 GitgExt-1.0.gir: libgitg-ext-1.0.la
+libgitg-ext-1.0.vapi: libgitg-ext-1.0.la
 libgitg-ext.h: libgitg-ext-1.0.la
 
 # Ignore all warnings for vala code...
@@ -83,7 +84,7 @@ typelib_DATA = GitgExt-1.0.typelib
 
 if ENABLE_PYTHON
 overridesdir = $(pyoverridesdir)
-overrides_PYTHON =                      \
+overrides_PYTHON = \
 	GitgExt.py
 endif
 
@@ -112,10 +113,10 @@ EXTRA_DIST =				\
 	$(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/resources resources/resources.xml)
 
 CLEANFILES = 					\
-	$(VALA_FILES:.vala=.c)		\
+	$(VALA_FILES:.vala=.c)			\
 	GitgExt-1.0.gir				\
 	GitgExt-1.0.typelib			\
-	libgitg-ext-1.0.vapi		\
+	libgitg-ext-1.0.vapi			\
 	libgitg_ext_1_0_la_vala.stamp
 
 dist-hook:
@@ -123,3 +124,5 @@ dist-hook:
 
 -include $(top_srcdir)/git.mk
 -include $(top_srcdir)/valadoc.mk
+
+# vi:ts=8:noet

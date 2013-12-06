@@ -1,0 +1,257 @@
+body, html {
+  padding: 0;
+  margin: 0;
+}
+
+div#templates {
+  display: none;
+}
+
+div#diff {
+  font-family: monospace;
+  -webkit-tab-size: 4;
+}
+
+div#diff div.file {
+  overflow: auto;
+}
+
+div#diff div.file table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+img.avatar {
+  float: left;
+  padding-right: 10px;
+  border-radius: 10px 10px 10px 10px;
+  min-width: 50px;
+  min-height: 50px;
+}
+
+div.commit {
+  padding: 10px;
+  font-family: sans-serif;
+  background: #f3f3f3;
+}
+
+div.commit table {
+  border-collapse: collapse;
+}
+
+div.commit table td:first-child {
+  font-weight: bold;
+  padding-right: 15px;
+}
+
+div.commit div.message {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+div#diff div.file table .gutter {
+  padding-left: 6px;
+  padding-right: 6px;
+  background-color: #ececec;
+  color: #aaa;
+  text-align: right;
+}
+
+div#diff div.file table td {
+  white-space: pre;
+}
+
+span.tab {
+  overflow: hidden;
+  display: inline-block;
+}
+
+div#diff div.file table.wrapped td {
+  white-space: pre-wrap;
+}
+
+div#diff div.file:first-child table.contents {
+  margin-top: 0px;
+}
+
+div#diff div.file table tr.context td:last-child {
+  background-color: #fafafa;
+}
+
+
+div#diff div.file table tr.added td:last-child {
+  background-color: #ddffdd;
+}
+
+div#diff div.file table tr.removed td:last-child {
+  background-color: #ffdddd;
+}
+
+div#diff div.file table tr.hunk_header td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+div.file tr.file_header td {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background: #d3d7cf;
+}
+
+div.expander {
+  float:left;
+
+  background-color: #ececec;
+  border-radius: 5px;
+  box-shadow: 1px 1px #ccc inset;
+  margin: 5px;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 3px;
+  padding-left: 6px;
+  padding-right: 6px;
+  cursor: pointer;
+}
+
+tbody.collapsed > :not(.file_header) {
+  display:none;
+}
+
+div.stats {
+  width: 75px;
+  background-color: #ececec;
+  padding: 3px;
+  border-radius: 5px;
+  box-shadow: 1px 1px #ccc inset;
+  margin: 5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+div.stats .number, div.stats .bar {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+div.stats .bar {
+  width: 100%;
+  padding: 0px 0px 0px 6px;
+}
+
+div.stats .added, div.stats .removed {
+  height: 5px;
+  float: left;
+  display: block;
+}
+
+div.stats .added {
+  background-color: #33cc33;
+}
+
+div.stats .removed {
+  background-color: #cc3333;
+}
+
+div#diff div.file table tr.file_header td {
+  vertical-align: middle;
+}
+
+div#diff div.file table tr.file_header + tr.hunk_header td.hunk_header {
+  border-top: 0px;
+}
+
+div#diff div.file table td.hunk_header {
+  color: #aaa;
+  background-color: #ececec;
+  border-top: 1px solid #d3d7cf;
+  border-bottom: 1px solid #d3d7cf;
+}
+
+div#diff div.file table td {
+  vertical-align: top;
+}
+
+div#diff div.file table td.gutter.new {
+  border-right: 3px solid #d3d7cf;
+}
+
+div#diff div.file table tr.hunk_header td.gutter.new {
+  border: 0;
+}
+
+div#diff div.file table td.gutter.old {
+  border-right: 1px solid #d3d7cf;
+}
+
+div.commit {
+  position: relative;
+}
+
+div.commit .date, div.commit .sha1 {
+  color: #888a85;
+  font-size: 0.8em;
+}
+
+div.commit .sha1 {
+  font-family: monospace;
+  text-align: right;
+}
+
+div.commit .message {
+  white-space: pre-wrap;
+  margin-bottom: 5px;
+}
+
+a {
+  color: #3465a4;
+}
+
+div.loading {
+  margin: 30px;
+  border: 1px solid #d3d7cf;
+  background: -webkit-gradient(linear, left top, left bottom, from(#eeeeec), to(#d3d7cf));
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  padding: 30px;
+  font-family: sans-serif;
+}
+
+span.stage, span.unstage {
+  border-radius: 5px;
+  padding: 1px 3px 1px 3px;
+  color: #3465a4;
+  cursor: pointer;
+  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 1px 1px #d3d7cf inset;
+}
+
+tr.file_header span.stage, tr.file_header span.unstage {
+  box-shadow: 1px 1px #ccc inset;
+}
+
+span.stage {
+  background-color: #ddffdd;
+}
+
+span.unstage {
+  background-color: #ffdddd;
+}
+
+span.hunk_header, span.file_path {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.format_patch_button {
+  float:right;
+  margin-top:13px;
+  padding: 7px;
+  margin-right: 3px;
+  color:black;
+}
+
+/* vi:ts=2:et */

@@ -5,6 +5,9 @@ desktop_in_files = gitg.desktop.in
 desktop_DATA 	 = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
+appdatadir = $(datadir)/appdata
+appdata_DATA = gitg.appdata.xml
+
 man_MANS = gitg.1
 
 gsettings_SCHEMAS = org.gnome.gitg.gschema.xml
@@ -21,6 +24,7 @@ endif
 EXTRA_DIST =				\
 	$(desktop_in_files)		\
 	$(man_MANS)			\
+	gitg.appdata.xml		\
 	org.gnome.gitg.gschema.xml.in.in
 
 CLEANFILES =				\
@@ -32,3 +36,5 @@ DISTCLEANFILES =			\
 	$(gsettings_SCHEMAS)
 
 -include $(top_srcdir)/git.mk
+
+# vi:ts=8:noet

@@ -5,57 +5,12 @@
   </enum>
 
   <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences" path="/org/gnome/gitg/preferences/">
-    <child name="view" schema="org.gnome.gitg.preferences.view" />
+    <child name="main" schema="org.gnome.gitg.preferences.main" />
+    <child name="history" schema="org.gnome.gitg.preferences.history" />
     <child name="commit" schema="org.gnome.gitg.preferences.commit" />
-    <child name="diff" schema="org.gnome.gitg.preferences.diff" />
     <child name="hidden" schema="org.gnome.gitg.preferences.hidden" />
   </schema>
-  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.view" path="/org/gnome/gitg/preferences/view/">
-    <child name="history" schema="org.gnome.gitg.preferences.view.history" />
-    <child name="main" schema="org.gnome.gitg.preferences.view.main" />
-  </schema>
-  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.view.history" path="/org/gnome/gitg/preferences/view/history/">
-    <key name="search-filter" type="b">
-      <default>false</default>
-      <_summary>Filter Revisions When Searching</_summary>
-      <_description>
-        Whether searching filters the revisions in the history view instead of 
-        jumping to the first match.
-      </_description>
-    </key>
-    <key name="collapse-inactive-lanes" type="i">
-      <default>2</default>
-      <_summary>When to Collapse Inactive Lanes</_summary>
-      <_description>
-        Setting that indicates when an inactive lane should be collapsed. 
-        Valid values are 0 - 4, where 0 indicates 'early' and 4 indicates 'late'.
-      </_description>
-    </key>
-    <key name="collapse-inactive-lanes-active" type="b">
-      <default>true</default>
-      <!-- TODO: add _descriptions -->
-    </key>
-    <key name="topo-order" type="b">
-      <default>false</default>
-      <_summary>Show History in Topological Order</_summary>
-      <_description>
-        Setting that indicates whether to show the history in topological order.
-      </_description>
-    </key>
-    <key name="show-virtual-stash" type="b">
-      <default>true</default>
-      <!-- TODO: add _descriptions -->
-    </key>
-    <key name="show-virtual-staged" type="b">
-      <default>true</default>
-      <!-- TODO: add _descriptions -->
-    </key>
-    <key name="show-virtual-unstaged" type="b">
-      <default>true</default>
-      <!-- TODO: add _descriptions -->
-    </key>
-  </schema>
-  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.view.main" path="/org/gnome/gitg/preferences/view/main/">
+  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.main" path="/org/gnome/gitg/preferences/main/">
     <key name="clone-directory" type="s">
       <default>""</default>
       <!-- TODO: add _descriptions -->
@@ -70,10 +25,60 @@
       </_description>
     </key>
   </schema>
+  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.history" path="/org/gnome/gitg/preferences/history/">
+    <key name="collapse-inactive-lanes" type="i">
+      <default>2</default>
+      <_summary>When to Collapse Inactive Lanes</_summary>
+      <_description>
+        Setting that indicates when an inactive lane should be collapsed.
+        Valid values are 0 - 4, where 0 indicates 'early' and 4 indicates 'late'.
+      </_description>
+    </key>
+    <key name="collapse-inactive-lanes-enabled" type="b">
+      <default>true</default>
+      <_description>
+        Setting that indicates whether to collapse history lanes which do not
+        show activity. Enabling this can provide a cleaner history view when
+        there is a lot of parallel development. See collapse-inactive-lanes
+        to control when lanes should be collapsed.
+      </_description>
+    </key>
+    <key name="topological-order" type="b">
+      <default>false</default>
+      <_summary>Show History in Topological Order</_summary>
+      <_description>
+        Setting that indicates whether to show the history in topological order.
+      </_description>
+    </key>
+    <key name="show-stash" type="b">
+      <default>true</default>
+      <_description>
+        Setting that indicates whether to show items for the stash in the
+        history.
+      </_description>
+    </key>
+    <key name="show-staged" type="b">
+      <default>true</default>
+      <_description>
+         Setting that indicates whether to show a virtual item for the currently
+         staged changes in the history.
+      </_description>
+    </key>
+    <key name="show-unstaged" type="b">
+      <default>true</default>
+      <_description>
+         Setting that indicates whether to show a virtual item for the currently
+         unstaged changes in the history.
+      </_description>
+    </key>
+  </schema>
   <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.commit" path="/org/gnome/gitg/preferences/commit/">
     <child name="message" schema="org.gnome.gitg.preferences.commit.message" />
   </schema>
   <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.commit.message" path="/org/gnome/gitg/preferences/commit/message/">
+    <key name="show-markup" type="b">
+      <default>true</default>
+    </key>
     <key name="show-right-margin" type="b">
       <default>true</default>
       <_summary>Show Right Margin in Commit Message View</_summary>
@@ -83,22 +88,35 @@
         a particular column.
       </_description>
     </key>
-    <key name="right-margin-at" type="i">
+    <key name="right-margin-position" type="i">
       <default>72</default>
       <_summary>Column at Which Right Margin is Shown</_summary>
       <_description>
-        The column at which the right margin is shown if the right-margin 
+        The column at which the right margin is shown if the show-right-margin
         preference is set to TRUE.
       </_description>
     </key>
-  </schema>
-  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.diff" path="/org/gnome/gitg/preferences/diff/">
-    <key name="external" type="b">
-      <default>false</default>
-      <_summary>Allow External Diff Program</_summary>
+    <key name="show-subject-margin" type="b">
+      <default>true</default>
+      <_summary>Show Subject Margin in Commit Message View</_summary>
       <_description>
-        Allow an external diff program to be used when viewing diffs in gitg.
+        Highlight the subject text of the commit message when it passes the
+        margin specified by subject-margin-position.
       </_description>
+    </key>
+    <key name="subject-margin-position" type="i">
+      <default>50</default>
+      <_summary>Column at Which Subject Margin is Shown</_summary>
+      <_description>
+        The column at which the subject margin is shown if the show-subject-margin
+        preference is set to TRUE.
+      </_description>
+    </key>
+    <key name="enable-spell-checking" type="b">
+      <default>true</default>
+    </key>
+    <key name="spell-checking-language" type="s">
+      <default>''</default>
     </key>
   </schema>
   <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.preferences.hidden" path="/org/gnome/gitg/preferences/hidden/">
@@ -109,6 +127,8 @@
   </schema>
   <schema id="org.gnome.gitg.state" path="/org/gnome/gitg/state/">
     <child name="window" schema="org.gnome.gitg.state.window"/>
+    <child name="history" schema="org.gnome.gitg.state.history"/>
+    <child name="commit" schema="org.gnome.gitg.state.commit"/>
   </schema>
   <schema id="org.gnome.gitg.state.window" path="/org/gnome/gitg/state/window/">
     <key name="state" type="i">
@@ -128,6 +148,22 @@
     </key>
     <key name="revision-tree-view-position" type="i">
       <default>200</default>
+    </key>
+  </schema>
+  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.state.history" path="/org/gnome/gitg/state/history/">
+    <key name="paned-sidebar-position" type="i">
+      <default>200</default>
+    </key>
+    <key name="paned-panels-position" type="i">
+      <default>450</default>
+    </key>
+  </schema>
+  <schema gettext-domain="@GETTEXT_PACKAGE@" id="org.gnome.gitg.state.commit" path="/org/gnome/gitg/state/commit/">
+    <key name="paned-sidebar-position" type="i">
+      <default>200</default>
+    </key>
+    <key name="sign-off" type="b">
+      <default>false</default>
     </key>
   </schema>
 </schemalist>

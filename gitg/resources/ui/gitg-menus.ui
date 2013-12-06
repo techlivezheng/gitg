@@ -48,15 +48,8 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">_User Information</attribute>
-        <attribute name="action">win.user-information-global</attribute>
-      </item>
-    </section>
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">_Close</attribute>
-        <attribute name="action">win.close</attribute>
-        <attribute name="accel">&lt;Primary&gt;w</attribute>
+        <attribute name="label" translatable="yes">_Author Details</attribute>
+        <attribute name="action">win.author-details-global</attribute>
       </item>
     </section>
   </menu>
@@ -70,15 +63,8 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">_User Information</attribute>
-        <attribute name="action">win.user-information-repo</attribute>
-      </item>
-    </section>
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">_Close</attribute>
-        <attribute name="action">win.close</attribute>
-        <attribute name="accel">&lt;Primary&gt;w</attribute>
+        <attribute name="label" translatable="yes">_Author Details</attribute>
+        <attribute name="action">win.author-details-repo</attribute>
       </item>
     </section>
   </menu>
@@ -103,8 +89,8 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">_User Information</attribute>
-        <attribute name="action">win.user-information-global</attribute>
+        <attribute name="label" translatable="yes">_Author Details</attribute>
+        <attribute name="action">win.author-details-global</attribute>
       </item>
     </section>
     <section>
@@ -125,11 +111,6 @@
       </item>
     </section>
     <section>
-      <item>
-        <attribute name="label" translatable="yes">_Close</attribute>
-        <attribute name="action">win.close</attribute>
-        <attribute name="accel">&lt;Primary&gt;w</attribute>
-      </item>
       <item>
         <attribute name="label" translatable="yes">_Quit</attribute>
         <attribute name="action">app.quit</attribute>
@@ -154,8 +135,8 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">_User Information</attribute>
-        <attribute name="action">win.user-information-repo</attribute>
+        <attribute name="label" translatable="yes">_Author Details</attribute>
+        <attribute name="action">win.author-details-repo</attribute>
       </item>
     </section>
     <section>
@@ -176,11 +157,6 @@
       </item>
     </section>
     <section>
-      <item>
-        <attribute name="label" translatable="yes">_Close</attribute>
-        <attribute name="action">win.close</attribute>
-        <attribute name="accel">&lt;Primary&gt;w</attribute>
-      </item>
       <item>
         <attribute name="label" translatable="yes">_Quit</attribute>
         <attribute name="action">app.quit</attribute>

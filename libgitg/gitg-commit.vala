@@ -93,42 +93,12 @@ public class Commit : Ggit.Commit
 		}
 	}
 
-private string date_for_display(DateTime dt, TimeZone time_zone)
-	{
-		TimeSpan t = (new DateTime.now_local()).difference(dt);
-
-		if (t < TimeSpan.MINUTE * 29.5)
-		{
-			int rounded_minutes = (int) Math.round((float) t / TimeSpan.MINUTE);
-			return rounded_minutes <= 1 ? "A minute ago" : "%d minutes ago".printf(rounded_minutes);
-		}
-		else if (t < TimeSpan.MINUTE * 45)
-		{
-			return "Half an hour ago";
-		}
-		else if (t < TimeSpan.HOUR * 23.5)
-		{
-			int rounded_hours = (int) Math.round((float) t / TimeSpan.HOUR);
-			return rounded_hours == 1 ? "An hour ago" : "%d hours ago".printf(rounded_hours);
-		}
-		else if (t < TimeSpan.DAY * 7)
-		{
-			int rounded_days = (int) Math.round((float) t / TimeSpan.DAY);
-			return rounded_days == 1 ? "A day ago" : "%d days ago".printf(rounded_days);
-		}
-		// FIXME: Localize these date formats, Bug 699196
-		else if (dt.get_year() == new DateTime.now_local().get_year())
-		{
-			return dt.to_timezone(time_zone).format("%h %e, %I:%M %P");
-		}
-		return dt.to_timezone(time_zone).format("%h %e %Y, %I:%M %P");
-	}
-
 	public string committer_date_for_display
 	{
 		owned get
 		{
-			return date_for_display(get_committer().get_time(), get_committer().get_time_zone());
+			var dt = get_committer().get_time();
+			return (new Date.for_date_time(dt)).for_display();
 		}
 	}
 
@@ -136,7 +106,8 @@ private string date_for_display(DateTime dt, TimeZone time_zone)
 	{
 		owned get
 		{
-			return date_for_display(get_author().get_time(), get_author().get_time_zone());
+			var dt = get_author().get_time();
+			return (new Date.for_date_time(dt)).for_display();
 		}
 	}
 
@@ -151,25 +122,35 @@ private string date_for_display(DateTime dt, TimeZone time_zone)
 			var parents = get_parents();
 
 			// Create a new diff from the parents to the commit tree
-			for (var i = 0; i < parents.size(); ++i)
+			if (parents.size() == 0)
 			{
-				var parent = parents.get(0);
-
-				if (i == 0)
+				diff = new Ggit.Diff.tree_to_tree(repo,
+				                                  null,
+				                                  get_tree(),
+				                                  options);
+			}
+			else
+			{
+				for (var i = 0; i < parents.size(); ++i)
 				{
-					diff = new Ggit.Diff.tree_to_tree(repo,
-					                                  parent.get_tree(),
-					                                  get_tree(),
-					                                  options);
-				}
-				else
-				{
-					var d = new Ggit.Diff.tree_to_tree(repo,
-					                                   parent.get_tree(),
-					                                   get_tree(),
-					                                   options);
+					var parent = parents.get(0);
 
-					diff.merge(d);
+					if (i == 0)
+					{
+						diff = new Ggit.Diff.tree_to_tree(repo,
+						                                  parent.get_tree(),
+						                                  get_tree(),
+						                                  options);
+					}
+					else
+					{
+						var d = new Ggit.Diff.tree_to_tree(repo,
+						                                   parent.get_tree(),
+						                                   get_tree(),
+						                                   options);
+
+						diff.merge(d);
+					}
 				}
 			}
 		}

@@ -24,14 +24,13 @@ namespace Gitg
 public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 {
 	private Settings d_state_settings;
-	private Settings d_main_settings;
 	private Settings d_interface_settings;
 	private Repository? d_repository;
 	private GitgExt.MessageBus d_message_bus;
 	private string? d_action;
+	private Gee.HashMap<string, string> d_environment;
 
-	private UIElements<GitgExt.View> d_views;
-	private UIElements<GitgExt.Panel> d_panels;
+	private UIElements<GitgExt.Activity> d_activities;
 
 	// Widgets
 	[GtkChild]
@@ -41,15 +40,19 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 	[GtkChild]
 	private Gtk.MenuButton d_gear_menu;
 	private MenuModel d_dash_model;
-	private MenuModel d_views_model;
+	private MenuModel d_activities_model;
+
+
 
 	[GtkChild]
 	private Gtk.Button d_dash_button;
 	[GtkChild]
-	private Gtk.StackSwitcher d_commit_view_switcher;
+	private Gtk.Image dash_image;
+	[GtkChild]
+	private Gtk.StackSwitcher d_activities_switcher;
 
 	[GtkChild]
-	private Gtk.Revealer d_search_revealer;
+	private Gtk.SearchBar d_search_bar;
 	[GtkChild]
 	private Gd.TaggedEntry d_search_entry;
 
@@ -59,10 +62,21 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 	[GtkChild]
 	private Gtk.ScrolledWindow d_dash_scrolled_window;
 	[GtkChild]
-	private GitgGtk.DashView d_dash_view;
+	private Gitg.RepositoryListBox d_dash_view;
 
 	[GtkChild]
-	private Gtk.Stack d_stack_view;
+	private Gtk.Stack d_stack_activities;
+
+	[GtkChild]
+	private Gtk.Revealer d_infobar_revealer;
+	[GtkChild]
+	private Gtk.InfoBar d_infobar;
+	[GtkChild]
+	private Gtk.Label d_infobar_primary_label;
+	[GtkChild]
+	private Gtk.Label d_infobar_secondary_label;
+	[GtkChild]
+	private Gtk.Button d_infobar_close_button;
 
 	private static const ActionEntry[] win_entries = {
 		{"search", on_search_activated, null, "false", null},
@@ -71,22 +85,9 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		{"clone-repository", on_clone_repository},
 		{"close", on_close_activated},
 		{"reload", on_reload_activated},
-		{"user-information-global", on_global_user_info_activated},
-		{"user-information-repo", on_repo_user_info_activated},
+		{"author-details-global", on_global_author_details_activated},
+		{"author-details-repo", on_repo_author_details_activated},
 	};
-
-	[GtkCallback]
-	private void close_button_clicked(Gtk.Button button)
-	{
-		Gdk.Event event;
-
-		event = new Gdk.Event(Gdk.EventType.DELETE);
-
-		event.any.window = this.get_window();
-		event.any.send_event = 1;
-
-		Gtk.main_do_event(event);
-	}
 
 	[GtkCallback]
 	private void dash_button_clicked(Gtk.Button dash)
@@ -123,11 +124,16 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		repository = r;
 	}
 
+	[GtkCallback]
+	private void dash_view_show_error(string primary_msg, string secondary_message)
+	{
+		show_infobar(primary_msg, secondary_message, Gtk.MessageType.ERROR);
+	}
+
 	construct
 	{
 		add_action_entries(win_entries, this);
 
-		d_main_settings = new Settings("org.gnome.gitg.preferences.view.main");
 		d_interface_settings = new Settings("org.gnome.gitg.preferences.interface");
 
 		string menuname;
@@ -142,29 +148,53 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		}
 
 		d_dash_model = Resource.load_object<MenuModel>("ui/gitg-menus.ui", menuname + "-dash");
-		d_views_model = Resource.load_object<MenuModel>("ui/gitg-menus.ui", menuname + "-views");
+		d_activities_model = Resource.load_object<MenuModel>("ui/gitg-menus.ui", menuname + "-views");
 
-		d_search_button.bind_property("active", d_search_revealer, "reveal-child");
+		// search bar
+		d_search_bar.connect_entry(d_search_entry);
+		d_search_button.bind_property("active", d_search_bar, "search-mode-enabled", BindingFlags.BIDIRECTIONAL);
+
+		d_activities_switcher.set_stack(d_stack_activities);
+
+		d_environment = new Gee.HashMap<string, string>();
+
+		foreach (var e in Environment.list_variables())
+		{
+			d_environment[e] = Environment.get_variable(e);
+		}
+
+		if (get_direction () == Gtk.TextDirection.RTL)
+		{
+			dash_image.icon_name = "go-previous-rtl-symbolic";
+		}
+		else
+		{
+			dash_image.icon_name = "go-previous-symbolic";
+		}
 	}
 
 	private void on_close_activated()
 	{
-		destroy();
+		close();
 	}
 
-	private void on_search_activated(SimpleAction action) {
-		var state = action.get_state().get_boolean();
-		action.set_state(new Variant.boolean(!state));
-	}
-
-	private void on_gear_menu_activated(SimpleAction action) {
-		var state = action.get_state().get_boolean();
-		action.set_state(new Variant.boolean(!state));
-	}
-
-	public GitgExt.View? current_view
+	private void on_search_activated(SimpleAction action)
 	{
-		owned get { return d_views.current; }
+		var state = action.get_state().get_boolean();
+
+		action.set_state(new Variant.boolean(!state));
+	}
+
+	private void on_gear_menu_activated(SimpleAction action)
+	{
+		var state = action.get_state().get_boolean();
+
+		action.set_state(new Variant.boolean(!state));
+	}
+
+	public GitgExt.Activity? current_activity
+	{
+		owned get { return d_activities.current; }
 	}
 
 	public GitgExt.MessageBus message_bus
@@ -191,6 +221,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		{
 			// set title
 			File? workdir = d_repository.get_workdir();
+
 			if (workdir != null)
 			{
 				string parent_path = workdir.get_parent().get_path();
@@ -200,7 +231,9 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 				{
 					parent_path = parent_path.replace(Environment.get_home_dir(), "~");
 				}
+
 				title = @"$(d_repository.name) ($parent_path) - gitg";
+				d_infobar_revealer.set_reveal_child(false);
 			}
 
 			d_header_bar.set_title(d_repository.name);
@@ -217,11 +250,11 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 			d_header_bar.set_subtitle(Markup.escape_text(head_name));
 
 			d_main_stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
-			d_main_stack.set_visible_child(d_stack_view);
-			d_commit_view_switcher.show();
+			d_main_stack.set_visible_child(d_stack_activities);
+			d_activities_switcher.show();
 			d_dash_button.show();
 			d_dash_view.add_repository(d_repository);
-			d_gear_menu.menu_model = d_views_model;
+			d_gear_menu.menu_model = d_activities_model;
 		}
 		else
 		{
@@ -232,13 +265,17 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 
 			d_main_stack.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
 			d_main_stack.set_visible_child(d_dash_scrolled_window);
-			d_commit_view_switcher.hide();
+			d_activities_switcher.hide();
 			d_dash_button.hide();
 			d_gear_menu.menu_model = d_dash_model;
 		}
 
-		d_views.update();
-		activate_default_view();
+		d_activities.update();
+
+		if (d_repository != null)
+		{
+			activate_default_activity();
+		}
 	}
 
 	protected override bool window_state_event(Gdk.EventWindowState event)
@@ -261,8 +298,9 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 	{
 		var chooser = new Gtk.FileChooserDialog (_("Open Repository"), this,
 		                                         Gtk.FileChooserAction.SELECT_FOLDER,
-		                                         Gtk.Stock.CANCEL, Gtk.ResponseType.CANCEL,
-		                                         Gtk.Stock.OPEN, Gtk.ResponseType.OK);
+		                                         _("_Cancel"), Gtk.ResponseType.CANCEL,
+		                                         _("_Open"), Gtk.ResponseType.OK);
+
 		chooser.modal = true;
 
 		chooser.response.connect((c, id) => {
@@ -282,63 +320,22 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		try
 		{
 			d_repository = new Gitg.Repository(this.repository.get_location(),
-				                               null);
+			                                   null);
+
 			notify_property("repository");
-			d_views.current.reload();
+			d_activities.current.reload();
 		}
 		catch {}
 	}
 
 	private void on_clone_repository()
 	{
-		var ret = GitgExt.UI.from_builder("ui/gitg-clone-dialog.ui",
-		                                  "dialog-clone",
-		                                  "entry-url",
-		                                  "filechooserbutton-location",
-		                                  "checkbutton-bare-repository");
-
-		var dlg = ret["dialog-clone"] as Gtk.Dialog;
-		var entry_url = ret["entry-url"] as Gtk.Entry;
-		var chooser = ret["filechooserbutton-location"] as Gtk.FileChooserButton;
-		var bare = ret["checkbutton-bare-repository"] as Gtk.CheckButton;
-
-		dlg.set_transient_for(this);
-		dlg.set_default_response(Gtk.ResponseType.OK);
-
-		var default_dir = d_main_settings.get_string("clone-directory");
-
-		if (default_dir == "")
-		{
-			default_dir = Environment.get_home_dir();
-		}
-
-		chooser.set_current_folder(default_dir);
-
-		chooser.selection_changed.connect((c) => {
-			d_main_settings.set_string("clone-directory", c.get_file().get_path());
-		});
-
-		entry_url.changed.connect((e) => {
-			string ?tooltip_text = null;
-			string ?icon_name = null;
-			bool url_supported = Ggit.Remote.is_supported_url(entry_url.get_text());
-
-			if (!url_supported && (entry_url.get_text_length() > 0))
-			{
-				icon_name = "dialog-warning-symbolic";
-				tooltip_text = _("The URL introduced is not supported");
-			}
-
-			entry_url.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, icon_name);
-			entry_url.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, tooltip_text);
-
-			dlg.set_response_sensitive(Gtk.ResponseType.OK, url_supported);
-		});
+		var dlg = new CloneDialog(this);
 
 		dlg.response.connect((d, id) => {
 			if (id == Gtk.ResponseType.OK)
 			{
-				d_dash_view.clone_repository(entry_url.get_text(), chooser.get_file(), bare.get_active());
+				d_dash_view.clone_repository(dlg.url, dlg.location, dlg.is_bare);
 			}
 
 			d.destroy();
@@ -347,114 +344,10 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		dlg.show();
 	}
 
-	private void show_user_information_dialog(Ggit.Config config, string? repository_name)
-	{
-		var ret = GitgExt.UI.from_builder("ui/gitg-user-dialog.ui",
-		                                  "dialog",
-		                                  "input-name",
-		                                  "input-email",
-		                                  "label-view",
-		                                  "label-dash");
-
-		var user_information_dialog = ret["dialog"] as Gtk.Dialog;
-		var input_name = ret["input-name"] as Gtk.Entry;
-		var input_email = ret["input-email"] as Gtk.Entry;
-		var label_view = ret["label-view"] as Gtk.Label;
-		var label_dash = ret["label-dash"] as Gtk.Label;
-
-		if (repository_name == null)
-		{
-			label_view.hide();
-			label_dash.show();
-
-			if (Ggit.Config.find_global().get_path() == null)
-			{
-				show_config_error(user_information_dialog, "Unable to open the .gitconfig file", "");
-				return;
-			}
-		}
-		else
-		{
-			label_view.label = label_view.label.printf(repository_name);
-			label_view.show();
-			label_dash.hide();
-		}
-
-		string user_name = "";
-		string user_email = "";
-
-		try
-		{
-			config.refresh();
-			user_name = config.get_string("user.name");
-		}
-		catch {}
-
-		try
-		{
-			user_email = config.get_string("user.email");
-		}
-		catch {}
-
-		if (user_name != "")
-		{
-			input_name.set_text(user_name);
-		}
-		if (user_email != "")
-		{
-			input_email.set_text(user_email);
-		}
-
-		user_information_dialog.set_transient_for(this);
-
-		user_information_dialog.set_response_sensitive(Gtk.ResponseType.OK, false);
-
-		input_name.changed.connect((e) => {
-			user_information_dialog.set_response_sensitive(Gtk.ResponseType.OK, true);
-		});
-
-		input_email.changed.connect((e) => {
-			user_information_dialog.set_response_sensitive(Gtk.ResponseType.OK, true);
-		});
-
-		user_information_dialog.response.connect((d, id) => {
-			if (id == Gtk.ResponseType.OK)
-			{
-				try
-				{
-					if (input_name.get_text() == "")
-					{
-						config.delete_entry("user.name");
-					}
-					else
-					{
-						config.set_string("user.name", input_name.get_text());
-					}
-
-					if (input_email.get_text() == "")
-					{
-						config.delete_entry("user.email");
-					}
-					else
-					{
-						config.set_string("user.email", input_email.get_text());
-					}
-				}
-				catch (Error e)
-				{
-					show_config_error(user_information_dialog, "Failed to set Git user config.", e.message);
-					d.destroy();
-					return;
-				}
-			}
-			d.destroy();
-		});
-		user_information_dialog.show();
-	}
-
-	private void on_global_user_info_activated()
+	private void on_global_author_details_activated()
 	{
 		Ggit.Config global_config = null;
+
 		try
 		{
 			global_config = new Ggit.Config.default();
@@ -464,12 +357,14 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 			return;
 		}
 
-		show_user_information_dialog(global_config, null);
+		var author_details = new AuthorDetailsDialog(this, global_config, null);
+		author_details.show();
 	}
 
-	private void on_repo_user_info_activated()
+	private void on_repo_author_details_activated()
 	{
 		Ggit.Config repo_config = null;
+
 		try
 		{
 			repo_config = d_repository.get_config();
@@ -478,95 +373,34 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		{
 			return;
 		}
-		show_user_information_dialog(repo_config, d_repository.name);
+
+		var author_details = new AuthorDetailsDialog(this, repo_config, d_repository.name);
+		author_details.show();
 	}
 
-	private void show_config_error(Gtk.Window parent, string primary_message, string secondary_message)
+	private void on_current_activity_changed(Object obj, ParamSpec pspec)
 	{
-		var error_dialog = new Gtk.MessageDialog(parent,
-		                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
-		                                         Gtk.MessageType.ERROR,
-		                                         Gtk.ButtonsType.OK,
-		                                         primary_message);
-
-		error_dialog.secondary_text = secondary_message;
-		error_dialog.show();
-		error_dialog.response.connect((d, id) => {
-			error_dialog.destroy();
-		});
+		notify_property("current_activity");
 	}
 
-	private void on_view_activated(UIElements elements,
-	                               GitgExt.UIElement element)
+	private void activate_default_activity()
 	{
-		GitgExt.View? view = (GitgExt.View?)element;
+		GitgExt.Activity? def = null;
 
-		if (view != null)
-		{
-			if (view.stack_panel != null && d_panels == null)
-			{
-				d_commit_view_switcher.stack = view.stack_panel; //todo
+		d_activities.foreach((element) => {
+				GitgExt.Activity activity = (GitgExt.Activity)element;
 
-				// Initialize peas extensions set for this view
-				var engine = PluginsEngine.get_default();
-
-				d_panels = new UIElements<GitgExt.Panel>(new Peas.ExtensionSet(engine,
-				                                                               typeof(GitgExt.Panel),
-				                                                               "application",
-				                                                               this),
-				                                         view.stack_panel);
-
-				d_panels.activated.connect(on_panel_activated);
-
-			}
-
-			view.on_view_activated();
-
-			d_panels.update();
-		}
-
-		notify_property("current_view");
-	}
-
-	private void on_panel_activated(UIElements elements,
-	                                GitgExt.UIElement element)
-	{
-		GitgExt.Panel? panel = (GitgExt.Panel?)element;
-
-		if (panel != null)
-		{
-			panel.on_panel_activated();
-		}
-	}
-
-	private void activate_default_view()
-	{
-		bool didactivate = false;
-
-		d_views.foreach((element) => {
-			GitgExt.View view = (GitgExt.View)element;
-
-			if (view.is_default_for(d_action != null ? d_action : ""))
-			{
-				if (d_views.current == view)
+				if (activity.is_default_for(d_action != null ? d_action : ""))
 				{
-					on_view_activated(d_views, view);
-				}
-				else
-				{
-					d_views.current = view;
+					def = activity;
 				}
 
-				didactivate = true;
-				return false;
-			}
-
-			return true;
+				return true;
 		});
 
-		if (!didactivate && d_views.current != null)
+		if (def != null)
 		{
-			on_view_activated(d_views, d_views.current);
+			d_activities.current = def;
 		}
 	}
 
@@ -579,28 +413,59 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		// Setup message bus
 		d_message_bus = new GitgExt.MessageBus();
 
-		// Initialize peas extensions set for views
+		// Initialize peas extensions set for activities
 		var engine = PluginsEngine.get_default();
 
-		d_views = new UIElements<GitgExt.View>(new Peas.ExtensionSet(engine,
-		                                                            typeof(GitgExt.View),
-		                                                            "application",
-		                                                            this),
-		                                       d_stack_view);
+		var builtins = new GitgExt.Activity[] {
+			new GitgHistory.Activity(this),
+			new GitgCommit.Activity(this)
+		};
 
-		d_views.activated.connect(on_view_activated);
+		var extset = new Peas.ExtensionSet(engine,
+		                                   typeof(GitgExt.Activity),
+		                                   "application",
+		                                   this);
+
+		d_activities = new UIElements<GitgExt.Activity>.with_builtin(builtins,
+		                                                             extset,
+		                                                             d_stack_activities);
+
+		d_activities.notify["current"].connect(on_current_activity_changed);
 
 		// Setup window geometry saving
 		Gdk.WindowState window_state = (Gdk.WindowState)d_state_settings.get_int("state");
-		if (Gdk.WindowState.MAXIMIZED in window_state) {
-			maximize ();
+
+		if (Gdk.WindowState.MAXIMIZED in window_state)
+		{
+			maximize();
 		}
 
-		int width, height;
-		d_state_settings.get ("size", "(ii)", out width, out height);
-		resize (width, height);
+		int width;
+		int height;
+
+		d_state_settings.get("size", "(ii)", out width, out height);
+		resize(width, height);
 
 		return true;
+	}
+
+	public void set_environment(string[] environment)
+	{
+		d_environment = new Gee.HashMap<string, string>();
+
+		foreach (var e in environment)
+		{
+			string[] parts = e.split("=", 2);
+
+			if (parts.length == 1)
+			{
+				d_environment[parts[0]] = "";
+			}
+			else
+			{
+				d_environment[parts[0]] = parts[1];
+			}
+		}
 	}
 
 	public static Window? create_new(Gtk.Application app,
@@ -626,16 +491,16 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 	}
 
 	/* public API implementation of GitgExt.Application */
-	public GitgExt.View? view(string id)
+	public GitgExt.Activity? activity(string id)
 	{
-		GitgExt.View? v = d_views.lookup(id);
+		GitgExt.Activity? v = d_activities.lookup(id);
 
 		if (v != null)
 		{
-			d_views.current = v;
+			d_activities.current = v;
 		}
 
-		if (d_views.current == v)
+		if (d_activities.current == v)
 		{
 			return v;
 		}
@@ -660,9 +525,13 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		{
 			repo = Ggit.Repository.discover(path);
 		}
-		catch
+		catch (Error e)
 		{
-			// TODO: make error thingie
+			string repo_name = path.get_basename();
+
+			var primary_msg = _("'%s' is not a Git repository.").printf(repo_name);
+			show_infobar(primary_msg, e.message, Gtk.MessageType.WARNING);
+
 			return;
 		}
 
@@ -673,6 +542,29 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		catch {}
 
 		this.repository = repository;
+	}
+
+	public void show_infobar(string          primary_msg,
+	                         string          secondary_msg,
+	                         Gtk.MessageType type)
+	{
+		d_infobar.message_type = type;
+
+		var primary = "<b>%s</b>".printf(Markup.escape_text(primary_msg));
+		var secondary = "<small>%s</small>".printf(Markup.escape_text(secondary_msg));
+
+		d_infobar_primary_label.set_label(primary);
+		d_infobar_secondary_label.set_label(secondary);
+		d_infobar_revealer.set_reveal_child(true);
+
+		d_infobar_close_button.clicked.connect(() => {
+			d_infobar_revealer.set_reveal_child(false);
+		});
+	}
+
+	public Gee.Map<string, string> environment
+	{
+		owned get { return d_environment; }
 	}
 }
 

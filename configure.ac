@@ -11,7 +11,7 @@ AC_INIT([gitg],
         [gitg_version],
         [https://bugzilla.gnome.org/enter_bug.cgi?product=gitg],
         [gitg],
-        [http://live.gnome.org/Gitg])
+        [http://wiki.gnome.org/Apps/Gitg])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([gitg/gitg.vala])
@@ -90,6 +90,8 @@ GLIB_REQUIRED_VERSION=2.32
 GTK_REQUIRED_VERSION=3.9.0
 GTKSOURCEVIEW_REQUIRED_VERSION=3.1.3
 INTROSPECTION_REQUIRED=0.10.1
+WEBKITGTK_REQUIRED_VERSION=1.9.92
+LIBGIT2_GLIB_REQUIRED_VERSION=0.0.7
 
 PKG_CHECK_MODULES(LIBGITG, [
 	gthread-2.0 >= $GLIB_REQUIRED_VERSION
@@ -99,7 +101,11 @@ PKG_CHECK_MODULES(LIBGITG, [
 	gio-2.0 >= $GLIB_REQUIRED_VERSION
 	gio-unix-2.0 >= $GLIB_REQUIRED_VERSION
 	gobject-introspection-1.0 >= $INTROSPECTION_REQUIRED
-	libgit2-glib-1.0
+	libgit2-glib-1.0 >= $LIBGIT2_GLIB_REQUIRED_VERSION
+	gtk+-3.0 >= $GTK_REQUIRED_VERSION
+	webkit2gtk-3.0 >= $WEBKITGTK_REQUIRED_VERSION
+	gee-0.8
+	json-glib-1.0
 ])
 
 AC_ARG_ENABLE(docs,
@@ -122,7 +128,6 @@ AC_ARG_ENABLE(deprecations,
 
 if test "x$USE_MAINTAINER_MODE" = "xyes"; then
 LIBGITG_CFLAGS="$LIBGITG_CFLAGS -Wall -Werror -Wuninitialized -Wmissing-declarations"
-enable_deprecations="yes"
 fi
 
 if test "$enable_deprecations" = "yes"; then
@@ -140,7 +145,7 @@ AC_ARG_ENABLE(debug,
                               [disable debug information [default=yes]])],
               [enable_debug=$enableval], [enable_debug=yes])
 
-GITG_VALAFLAGS="--target-glib 2.32"
+GITG_VALAFLAGS="--target-glib 2.38"
 
 if test "x$enable_debug" = "xyes"; then
 	LIBGITG_CFLAGS="$LIBGITG_CFLAGS -g -O0"
@@ -149,44 +154,33 @@ if test "x$enable_debug" = "xyes"; then
 	AC_DEFINE([ENABLE_DEBUG],[1],[Whether debugging support is enabled])
 fi
 
+LIBGITG_CFLAGS="$LIBGITG_CFLAGS -DLIBSOUP_USE_UNSTABLE_REQUEST_API"
+
 AC_SUBST(LIBGITG_CFLAGS)
 AC_SUBST(LIBGITG_LIBS)
 
 AC_SUBST(GITG_VALAFLAGS)
 
-WEBKITGTK_REQUIRED_VERSION=1.9.92
-
-PKG_CHECK_MODULES(LIBGITG_GTK, [
-	gtk+-3.0 >= $GTK_REQUIRED_VERSION
-	webkit2gtk-3.0 >= $WEBKITGTK_REQUIRED_VERSION
-	gee-0.8
-	json-glib-1.0
-])
-
-LIBGITG_GTK_CFLAGS="$LIBGITG_CFLAGS $LIBGITG_GTK_CFLAGS -DLIBSOUP_USE_UNSTABLE_REQUEST_API"
-LIBGITG_GTK_LIBS="$LIBGITG_LIBS $LIBGITG_GTK_LIBS"
-
-AC_SUBST(LIBGITG_GTK_CFLAGS)
-AC_SUBST(LIBGITG_GTK_LIBS)
-
-LIBGITG_EXT_CFLAGS="$LIBGITG_GTK_CFLAGS"
-LIBGITG_EXT_LIBS="$LIBGITG_GTK_LIBS"
+LIBGITG_EXT_CFLAGS="$LIBGITG_CFLAGS"
+LIBGITG_EXT_LIBS="$LIBGITG_LIBS"
 
 AC_SUBST(LIBGITG_EXT_CFLAGS)
 AC_SUBST(LIBGITG_EXT_LIBS)
 
 LIBPEAS_REQUIRED_VERSION=1.5.0
 LIBPEAS_GTK_REQUIRED_VERSION=1.5.0
+GTKSPELL_REQUIRED_VERSION=3.0.3
 
 PKG_CHECK_MODULES(GITG, [
 	gtksourceview-3.0 >= $GTKSOURCEVIEW_REQUIRED_VERSION
 	gsettings-desktop-schemas
 	libpeas-1.0 >= $LIBPEAS_REQUIRED_VERSION
 	libpeas-gtk-1.0 >= $LIBPEAS_GTK_REQUIRED_VERSION
+	gtkspell3-3.0 >= $GTKSPELL_REQUIRED_VERSION
 ])
 
-GITG_CFLAGS="$LIBGITG_GTK_CFLAGS $GITG_CFLAGS"
-GITG_LIBS="$LIBGITG_GTK_LIBS $GITG_LIBS -lm"
+GITG_CFLAGS="$LIBGITG_CFLAGS $GITG_CFLAGS"
+GITG_LIBS="$LIBGITG_LIBS $GITG_LIBS -lm"
 
 AC_SUBST(GITG_CFLAGS)
 AC_SUBST(GITG_LIBS)
@@ -225,8 +219,7 @@ GITG_PLUGIN_CFLAGS="$GITG_CFLAGS"
 GITG_PLUGIN_LIBS="$GITG_LIBS 					\
 	\$(top_builddir)/libgd/libgd.la				\
 	\$(top_builddir)/libgitg/libgitg-1.0.la 		\
-	\$(top_builddir)/libgitg-ext/libgitg-ext-1.0.la 	\
-	\$(top_builddir)/libgitg-gtk/libgitg-gtk-1.0.la"
+	\$(top_builddir)/libgitg-ext/libgitg-ext-1.0.la"
 
 AC_SUBST(GITG_PLUGIN_CFLAGS)
 AC_SUBST(GITG_PLUGIN_LIBS)
@@ -238,7 +231,6 @@ GITG_PLUGIN_VALAFLAGS="				\
 	--pkg Ggit-1.0 				\
 	--pkg libgitg-ext-1.0			\
 	--pkg libgitg-1.0			\
-	--pkg libgitg-gtk-1.0			\
 	--pkg gio-2.0				\
 	--pkg gtk+-3.0				\
 	--pkg gtksourceview-3.0			\
@@ -252,7 +244,6 @@ GITG_PLUGIN_VALAFLAGS="				\
 	\$(GITG_VALAFLAGS)			\
 	--vapidir \$(top_srcdir)/vapi		\
 	--vapidir \$(top_builddir)/libgitg	\
-	--vapidir \$(top_builddir)/libgitg-gtk	\
 	--vapidir \$(top_builddir)/libgitg-ext	\
 	--vapidir \$(top_builddir)/libgd"
 
@@ -295,8 +286,7 @@ Makefile
 libgd/Makefile
 libgitg/Makefile
 libgitg/libgitg-1.0.pc
-libgitg-gtk/Makefile
-libgitg-gtk/libgitg-gtk-1.0.pc
+libgitg/tests/Makefile
 libgitg-ext/Makefile
 libgitg-ext/libgitg-ext-1.0.pc
 gitg/Makefile
@@ -307,8 +297,6 @@ data/org.gnome.gitg.gschema.xml.in
 po/Makefile.in
 tests/Makefile
 plugins/Makefile
-plugins/history/Makefile
-plugins/history/org.gnome.gitg.history.gschema.xml.in
 plugins/diff/Makefile
 plugins/diff/icons/Makefile
 plugins/files/Makefile

@@ -1,4 +1,4 @@
-INCLUDES =								\
+AM_CPPFLAGS =								\
 	-I$(top_srcdir)							\
 	-I$(srcdir)							\
 	$(GITG_PLUGIN_CFLAGS)						\
@@ -51,3 +51,5 @@ install-data-hook:
 	rm -f $(GITG_PLUGIN_LIBDIR)/libfiles.la
 
 -include $(top_srcdir)/git.mk
+
+# vi:ts=8:noet

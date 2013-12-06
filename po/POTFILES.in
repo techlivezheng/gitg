@@ -3,23 +3,33 @@
 [encoding: UTF-8]
 data/gitg.desktop.in.in
 data/org.gnome.gitg.gschema.xml.in.in
+gitg/commit/gitg-commit-dialog.vala
+gitg/commit/gitg-commit.vala
 gitg/gitg-application.vala
-gitg/gitg-preferences-interface.vala
+gitg/gitg-author-details-dialog.vala
+gitg/gitg-clone-dialog.vala
 gitg/gitg.vala
 gitg/gitg-window.vala
-[type: gettext/glade]gitg/resources/ui/gitg-clone-dialog.ui
-[type: gettext/glade]gitg/resources/ui/gitg-menus.ui
-[type: gettext/glade]gitg/resources/ui/gitg-preferences-interface.ui
-[type: gettext/glade]gitg/resources/ui/gitg-preferences.ui
-[type: gettext/glade]gitg/resources/ui/gitg-user-dialog.ui
-[type: gettext/glade]gitg/resources/ui/gitg-window.ui
+gitg/history/gitg-history-navigation.vala
+gitg/history/gitg-history.vala
+gitg/preferences/gitg-preferences-commit.vala
+gitg/preferences/gitg-preferences-history.vala
+gitg/preferences/gitg-preferences-interface.vala
+libgitg/gitg-date.vala
+libgitg/gitg-diff-view-request-patch.vala
+libgitg/gitg-diff-view.vala
+libgitg/gitg-stage.vala
 plugins/diff/gitg-diff.vala
 plugins/files/gitg-files.vala
+[type: gettext/glade]gitg/resources/ui/gitg-author-details-dialog.ui
+[type: gettext/glade]gitg/resources/ui/gitg-clone-dialog.ui
+[type: gettext/glade]gitg/resources/ui/gitg-commit-dialog.ui
+[type: gettext/glade]gitg/resources/ui/gitg-commit-paned.ui
+[type: gettext/glade]gitg/resources/ui/gitg-history-paned.ui
+[type: gettext/glade]gitg/resources/ui/gitg-menus.ui
+[type: gettext/glade]gitg/resources/ui/gitg-preferences-commit.ui
+[type: gettext/glade]gitg/resources/ui/gitg-preferences-history.ui
+[type: gettext/glade]gitg/resources/ui/gitg-preferences-interface.ui
+[type: gettext/glade]gitg/resources/ui/gitg-preferences.ui
+[type: gettext/glade]gitg/resources/ui/gitg-window.ui
 [type: gettext/glade]plugins/files/resources/view-files.ui
-plugins/history/gitg-history-command-line.vala
-plugins/history/gitg-history-navigation.vala
-plugins/history/gitg-history-preferences.vala
-plugins/history/gitg-history.vala
-plugins/history/org.gnome.gitg.history.gschema.xml.in.in
-[type: gettext/glade]plugins/history/resources/preferences.ui
-[type: gettext/glade]plugins/history/resources/view-history.ui
