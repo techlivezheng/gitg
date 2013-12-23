@@ -25,7 +25,7 @@ namespace Gitg
 		private Commit? d_commit;
 		private Settings d_fontsettings;
 
-		private static Gee.HashMap<string, DiffView> s_diffmap;
+		private static Gee.HashMap<string, DiffView> s_diff_map;
 		private static uint64 s_diff_id;
 
 		public File? custom_css { get; construct; }
@@ -67,7 +67,7 @@ namespace Gitg
 
 		static construct
 		{
-			s_diffmap = new Gee.HashMap<string, DiffView>();
+			s_diff_map = new Gee.HashMap<string, DiffView>();
 
 			var context = WebKit.WebContext.get_default();
 			context.register_uri_scheme("gitg-diff", gitg_diff_request);
@@ -127,9 +127,9 @@ namespace Gitg
 				var f = Soup.Form.decode(q);
 				var vid = f.lookup("viewid");
 
-				if (vid != null && s_diffmap.has_key(vid))
+				if (vid != null && s_diff_map.has_key(vid))
 				{
-					view = s_diffmap[vid];
+					view = s_diff_map[vid];
 				}
 			}
 
@@ -238,11 +238,6 @@ namespace Gitg
 			if (dbg)
 			{
 				settings.enable_developer_extras = true;
-
-				Timeout.add(500, () => {
-					get_inspector().show();
-					return false;
-				});
 			}
 
 			settings.javascript_can_access_clipboard = true;
@@ -262,7 +257,7 @@ namespace Gitg
 			});
 
 			++s_diff_id;
-			s_diffmap[s_diff_id.to_string()] = this;
+			s_diff_map[s_diff_id.to_string()] = this;
 
 			d_cancellable = new Cancellable();
 
@@ -296,6 +291,8 @@ namespace Gitg
 				return;
 			}
 
+			// If both `d_diff` and `d_commit` are null, clear
+			// the diff content
 			if (d_diff == null && d_commit == null)
 			{
 				run_javascript.begin("update_diff();", d_cancellable, (obj, res) => {
