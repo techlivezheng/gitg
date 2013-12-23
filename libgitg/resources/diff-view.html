@@ -19,9 +19,9 @@
         <div class="sha1"></div>
       </div>
 
-      <!-- Hunk template -->
+      <!-- Diff template -->
       <div class="file">
-        <table class="contents">
+        <table>
           <colgroup>
             <col width="0">
             <col width="0">
@@ -29,9 +29,13 @@
           </colgroup>
           <tbody>
             <tr class="file_header">
-              <td colspan="3"><!-- ${STATS} --><span class="file_path"><!-- ${FILEPATH} --></span></td>
+              <td colspan="3">
+                <span class="expander">-</span>
+                <!-- ${FILE_STATS} -->
+                <span class="file_path"><!-- ${FILE_PATH} --></span>
+              </td>
             </tr>
-            <!-- ${TABLE_BODY} -->
+            <!-- ${FILE_BODY} -->
           </tbody>
         </table>
       </div>

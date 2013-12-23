@@ -7,9 +7,10 @@ function diff_file(file, lnstate, data)
 {
 	tabrepl = '<span class="tab" style="width: ' + data.settings.tab_width + 'ex">\t</span>';
 
-	var tablecontent = '';
 	var added = 0;
 	var removed = 0;
+
+	var file_body = '';
 
 	for (var i = 0; i < file.hunks.length; ++i)
 	{
@@ -18,30 +19,14 @@ function diff_file(file, lnstate, data)
 		var cold = h.range.old.start;
 		var cnew = h.range.new.start;
 
-		var hunkheader = '<span class="hunk_header">@@ -' + h.range.old.start + ',' + h.range.old.lines + ' +' + h.range.new.start + ',' + h.range.new.lines + ' @@</span>';
+		var hunk_header = '<span class="hunk_stats">@@ -' + h.range.old.start + ',' + h.range.old.lines + ' +' + h.range.new.start + ',' + h.range.new.lines + ' @@</span>';
 
-		if (data.settings.staged || data.settings.unstaged)
-		{
-			var cls;
+		hunk_header = lnstate.stagebutton + hunk_header;
 
-			if (data.settings.staged)
-			{
-				cls = 'unstage';
-				nm = data.settings.strings.unstage;
-			}
-			else
-			{
-				cls = 'stage';
-				nm = data.settings.strings.stage;
-			}
-
-			hunkheader = '<span class="' + cls + '">' + nm + '</span>' + hunkheader;
-		}
-
-		tablecontent += '<tr class="hunk_header">\
+		file_body += '<tr class="hunk_header">\
 			<td class="gutter old">' + lnstate.gutterdots + '</td> \
 			<td class="gutter new">' + lnstate.gutterdots + '</td> \
-			<td class="hunk_header">' + hunkheader + '</td> \
+			<td class="hunk_header">' + hunk_header + '</td> \
 		</tr>';
 
 		for (var j = 0; j < h.lines.length; ++j)
@@ -90,8 +75,11 @@ function diff_file(file, lnstate, data)
 				break;
 			}
 
-			row += '<td>' + html_escape(l.content).replace(/\t/g, tabrepl) + '</td>';
-			tablecontent += row;
+			row += '<td class="code">' + html_escape(l.content).replace(/\t/g, tabrepl) + '</td>';
+
+			row += '</tr>';
+
+			file_body += row;
 
 			lnstate.processed++;
 
@@ -109,46 +97,30 @@ function diff_file(file, lnstate, data)
 		}
 	}
 
-	var filepath;
+	var file_path;
 
 	if (file.file.new.path)
 	{
-		filepath = file.file.new.path;
+		file_path = file.file.new.path;
 	}
 	else
 	{
-		filepath = file.file.old.path;
+		file_path = file.file.old.path;
 	}
 
 	var total = added + removed;
 	var addedp = Math.floor(added / total * 100);
 	var removedp = 100 - addedp;
 
-	var stats = '<div class="expander">-</div><div class="stats"><span class="number">' + (added + removed)  + '</span><span class="bar"><span class="added" style="width: ' + addedp + '%;"></span><span class="removed" style="width: ' + removedp + '%;"></span></span></div>';
+	var file_stats = '<span class="file_stats"><span class="number">' + (added + removed)  + '</span><span class="bar"><span class="added" style="width: ' + addedp + '%;"></span><span class="removed" style="width: ' + removedp + '%;"></span></span></span>';
 
-	if (data.settings.staged || data.settings.unstaged)
-	{
-		var cls;
-
-		if (data.settings.staged)
-		{
-			cls = 'unstage';
-			nm = data.settings.strings.unstage;
-		}
-		else
-		{
-			cls = 'stage';
-			nm = data.settings.strings.stage;
-		}
-
-		stats += '<span class="' + cls + '">' + nm + '</span>';
-	}
+	file_stats = lnstate.stagebutton + file_stats;
 
 	var template = data.file_template;
 	var repls = {
-		'FILEPATH': filepath,
-		'TABLE_BODY': tablecontent,
-		'STATS': stats,
+		'FILE_PATH': file_path,
+		'FILE_BODY': file_body,
+		'FILE_STATS': file_stats,
 	};
 
 	for (var r in repls)
@@ -170,10 +142,9 @@ function diff_files(files, lines, maxlines, data)
 	var f = '';
 
 	var repl = [
-		'FILEPATH',
-		'GUTTER_DOTS',
-		'TABLE_BODY',
-		'STATS'
+		'FILE_PATH',
+		'FILE_BODY',
+		'FILE_STATS'
 	];
 
 	var replacements = {};
@@ -190,8 +161,28 @@ function diff_files(files, lines, maxlines, data)
 		processed: 0,
 		nexttick: 0,
 		tickfreq: 0.01,
+		stagebutton: '',
 		replacements: replacements,
 	};
+
+	if (data.settings.staged || data.settings.unstaged)
+	{
+		var cls;
+		var nm;
+
+		if (data.settings.staged)
+		{
+			cls = 'unstage';
+			nm = data.settings.strings.unstage;
+		}
+		else
+		{
+			cls = 'stage';
+			nm = data.settings.strings.stage;
+		}
+
+		lnstate.stagebutton = '<span class="' + cls + '">' + nm + '</span>';
+	}
 
 	for (var i = 0; i < files.length; ++i)
 	{
