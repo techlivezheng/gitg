@@ -1,6 +1,7 @@
 body, html {
   padding: 0;
   margin: 0;
+  min-height: 100%;
 }
 
 div#templates {
@@ -19,6 +20,24 @@ div#diff div.file {
 div#diff div.file table {
   border-collapse: collapse;
   width: 100%;
+}
+
+div#diff div.file.background tr.file_header {
+  display: none;
+}
+
+div#diff div.file.background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+div#diff div.file.background table.file {
+  height: 100%;
 }
 
 img.avatar {
@@ -68,6 +87,14 @@ div#diff div.file table tr.context td:last-child {
 
 div#diff div.file table tr.added td:last-child {
   background-color: #ddffdd;
+}
+
+div#diff div.file table tr.added.selected td:last-child {
+  background-color: #a8cfd6;
+}
+
+div#diff div.file table tr.removed.selected td:last-child {
+  background-color: #b8bed6;
 }
 
 div#diff div.file table tr.removed td:last-child {
@@ -152,15 +179,21 @@ div#diff div.file table tr.hunk_header td.hunk_header {
   border-bottom: 1px solid #d3d7cf;
 }
 
+div#diff div.file table tr.hunk_header.selected td.hunk_header {
+  color: #aaa;
+  background-color: #ececff;
+}
+
 div#diff div.file table td {
   vertical-align: top;
 }
 
-div#diff div.file table td.gutter.new {
+div#diff div.file table td.gutter.type {
   border-right: 3px solid #d3d7cf;
+  padding: 0px 3px 0px 3px;
 }
 
-div#diff div.file table tr.hunk_header td.gutter.new {
+div#diff div.file table tr.hunk_header td.gutter.type {
   border: 0;
 }
 
@@ -201,29 +234,6 @@ div.loading {
   text-align: center;
   padding: 30px;
   font-family: sans-serif;
-}
-
-span.stage, span.unstage {
-  border-radius: 5px;
-  padding: 1px 3px 1px 3px;
-  color: #3465a4;
-  cursor: pointer;
-  margin-right: 6px;
-  display: inline-block;
-  vertical-align: middle;
-  box-shadow: 1px 1px #d3d7cf inset;
-}
-
-tr.file_header span.stage, tr.file_header span.unstage {
-  box-shadow: 1px 1px #ccc inset;
-}
-
-span.stage {
-  background-color: #ddffdd;
-}
-
-span.unstage {
-  background-color: #ffdddd;
 }
 
 span.hunk_stats, span.file_path {

@@ -1,55 +1,55 @@
-AM_CPPFLAGS =								\
+plugins_files_libfiles_la_pluginexecdir = $(GITG_PLUGIN_LIBDIR)
+plugins_files_libfiles_la_pluginexec_LTLIBRARIES = plugins/files/libfiles.la
+
+plugins_files_libfiles_la_plugindatadir = $(GITG_PLUGIN_LIBDIR)
+plugins_files_libfiles_la_plugindata_DATA = plugins/files/files.plugin
+
+plugins_files_libfiles_la_CPPFLAGS =					\
 	-I$(top_srcdir)							\
 	-I$(srcdir)							\
-	$(GITG_PLUGIN_CFLAGS)						\
-	$(WARN_CFLAGS)							\
 	-DDATADIR=\""$(datadir)"\"					\
 	-DLIBDIR=\""$(libdir)"\"
 
-plugindir = $(GITG_PLUGIN_LIBDIR)
-plugin_LTLIBRARIES = libfiles.la
-plugin_DATA = files.plugin
+plugins_files_libfiles_la_CFLAGS = 					\
+	$(GITG_PLUGIN_CFLAGS)						\
+	$(WARN_CFLAGS)							\
+	-w
 
-AM_VALAFLAGS = $(GITG_PLUGIN_VALAFLAGS)
-VALA_SOURCES =								\
-	gitg-files.vala							\
-	gitg-files-tree-store.vala
+plugins_files_libfiles_la_LDFLAGS = $(GITG_PLUGIN_LIBTOOL_FLAGS) $(GITG_PLUGIN_LIBS)
 
-libfiles_la_LDFLAGS = $(GITG_PLUGIN_LIBTOOL_FLAGS)
+plugins_files_libfiles_la_LIBADD = 					\
+	libgitg/libgitg-1.0.la 						\
+	libgitg-ext/libgitg-ext-1.0.la
 
-libfiles_la_LIBADD = $(GITG_PLUGIN_LIBS)
-libfiles_la_CFLAGS = -w
+plugins_files_libfiles_la_VALAFLAGS = $(GITG_PLUGIN_VALAFLAGS)
 
-libfiles_la_SOURCES = 				\
-	$(VALA_SOURCES)				\
-	gitg-files-resources.c
+plugins_files_libfiles_la_VALASOURCES =					\
+	plugins/files/gitg-files.vala					\
+	plugins/files/gitg-files-tree-store.vala			\
+	$(GITG_PLUGIN_VAPISOURCES)
 
-BUILT_SOURCES = 						\
-	gitg-files-resources.c					\
-	gitg-files-resources.h
+plugins_files_libfiles_la_SOURCES = 					\
+	$(plugins_files_libfiles_la_VALASOURCES)			\
+	plugins/files/gitg-files-resources.c
 
-gitg-files-resources.c: resources/resources.xml $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/resources resources/resources.xml)
-	$(GLIB_COMPILE_RESOURCES) --generate-source 	\
-		--sourcedir $(srcdir)/resources 	\
-		--target "$@" "$<"
+plugins_files_libfiles_resources_deps = $(call GRESDEPS,plugins/files/resources/resources.xml)
+plugins/files/gitg-files-resources.c: $(plugins_files_libfiles_resources_deps)
+	$(GRESGEN)
 
-gitg-files-resources.h: resources/resources.xml $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/resources resources/resources.xml)
-	$(GLIB_COMPILE_RESOURCES) --generate-header 	\
-		--sourcedir $(srcdir)/resources 	\
-		--target "$@" "$<"
+CLEANFILES +=							\
+	plugins/files/gitg-files-resources.c
 
-EXTRA_DIST = $(plugin_DATA)			\
-	resources/resources.xml			\
-	$(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/resources resources/resources.xml)
+EXTRA_DIST +=							\
+	$(plugins_files_libfiles_la_plugindata_DATA)		\
+	$(plugins_files_libfiles_resources_deps)
 
-CLEANFILES = 					\
-	$(VALA_SOURCES:.vala=.c)		\
-	$(BUILT_SOURCES)			\
-	libfiles_la_vala.stamp
-
-install-data-hook:
-	rm -f $(GITG_PLUGIN_LIBDIR)/libfiles.la
-
--include $(top_srcdir)/git.mk
+# This is a hack to make parallel install work. libtool needs to relink at
+# install (on some platforms) which requires dependency libraries to be
+# already installed. automake does not generate the appropriate dependency
+# so we do it here automatically. As an additional bonus, we have to trick
+# automake using a variable indirection for the rule because it would otherwise
+# omit the default install rule.
+install_plugins_files_libfiles_la_pluginexecLTLIBRARIES = install-plugins_files_libfiles_la_pluginexecLTLIBRARIES
+$(install_plugins_files_libfiles_la_pluginexecLTLIBRARIES): install-libgitg_extexecLTLIBRARIES
 
 # vi:ts=8:noet

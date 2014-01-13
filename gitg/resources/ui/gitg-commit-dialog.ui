@@ -81,7 +81,6 @@
               <object class="GtkLabel" id="label_user">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
                 <property name="valign">end</property>
                 <property name="hexpand">True</property>
               </object>
@@ -96,7 +95,6 @@
               <object class="GtkLabel" id="label_date">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
                 <property name="valign">start</property>
                 <property name="hexpand">True</property>
               </object>

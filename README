@@ -1,31 +1,31 @@
 = General Information =
-gitg is a GitX clone for GNOME/gtk+. It aims at being a small, fast and
-convenient tool to visualize git history and actions that benefit from a
-graphical presentation.
+gitg is a graphical user interface for git. It aims at being a small,
+fast and convenient tool to visualize the history of git repositories.
+Besides visualization, gitg also provides several utilities to manage your
+repository and commit your work.
 
-The latest version of gitg is 0.2.5.
+The latest version of gitg is 0.3.2.
 
-Website:      http://trac.novowork.com/gitg
+Website:      https://live.gnome.org/Apps/Gitg
 Bugs:         http://bugzilla.gnome.org/browse.cgi?product=gitg
 Download:     http://download.gnome.org/sources/gitg/
 Mailing list: http://mail.gnome.org/mailman/listinfo/gitg-list
 
 = Installing gitg =
-To install the latest version of gitg, make sure to download gitg-0.1.2.tar.bz2
+To install the latest version of gitg, make sure to download gitg-0.3.2.tar.xz
 from the download site. After downloading the following procedure installs
 gitg:
 
-	$ tar Jxf gitg-0.2.5.tar.xz
-	$ cd gitg-0.2.5
+	$ tar Jxf gitg-0.3.2.tar.xz
+	$ cd gitg-0.3.2
 	$ ./configure
 	$ make
 	$ sudo make install
 
-For more information on installing gitg, please view INSTALL.
+For more information on installing gitg, please see INSTALL.
 
 = Building gitg from git =
-The gitg repository is hosted on git.gnome.org. To build from git, use the
-following:
+The gitg repository is hosted on git.gnome.org. To build from git:
 
 	$ git clone git://git.gnome.org/gitg
 	$ cd gitg
@@ -34,5 +34,5 @@ following:
 
 = Using gitg =
 When gitg is installed, you can run gitg from the GNOME menu, or from a
-terminal by issuing: 'gitg'. Type 'gitg --help' to show the options you can
+terminal by issueing: 'gitg'. Type 'gitg --help' to show the options you can
 specify on the command line.

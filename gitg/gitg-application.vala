@@ -58,7 +58,7 @@ public class Application : Gtk.Application
 			 ref activity, N_("Start gitg with a particular activity"), null},
 
 			{"commit", 'c', OptionFlags.NO_ARG, OptionArg.CALLBACK,
-			 (void *)commit_activity, N_("Start gitg with the commit activity (shorthand for --view commit)"), null},
+			 (void *)commit_activity, N_("Start gitg with the commit activity (shorthand for --activity commit)"), null},
 
 			 {"no-wd", 0, 0, OptionArg.NONE,
 			 ref no_wd, N_("Do not try to load a repository from the current working directory"), null},
@@ -85,7 +85,7 @@ public class Application : Gtk.Application
 
 	private void parse_command_line(ref unowned string[] argv) throws OptionError
 	{
-		var ctx = new OptionContext(_("- git repository viewer"));
+		var ctx = new OptionContext(_("- Git repository viewer"));
 
 		ctx.add_main_entries(Options.entries, Config.GETTEXT_PACKAGE);
 		ctx.add_group(Gtk.get_option_group(true));
@@ -198,18 +198,21 @@ public class Application : Gtk.Application
 
 	private void on_app_about_activated()
 	{
+		string[] artists = {"Jakub Steiner <jimmac@gmail.com>"};
 		string[] authors = {"Jesse van den Kieboom <jessevdk@gnome.org>",
 		                    "Ignacio Casal Quinteiro <icq@gnome.org>"};
 
 		string copyright = "Copyright \xc2\xa9 2012 Jesse van den Kieboom";
-		string comments = _("gitg is a git repository viewer for gtk+/GNOME");
+		string comments = _("gitg is a Git repository viewer for gtk+/GNOME");
 
 		unowned List<Gtk.Window> wnds = get_windows();
 
 		Gtk.show_about_dialog(wnds != null ? wnds.data : null,
+		                      "artists", artists,
 		                      "authors", authors,
 		                      "copyright", copyright,
 		                      "comments", comments,
+		                      "translator-credits", _("translator-credits"),
 		                      "version", Config.VERSION,
 		                      "website", Config.PACKAGE_URL,
 		                      "website-label", _("gitg homepage"),
@@ -259,6 +262,12 @@ public class Application : Gtk.Application
 		{"preferences", on_preferences_activated}
 	};
 
+	struct Accel
+	{
+		string name;
+		string accel;
+	}
+
 	protected override void startup()
 	{
 		base.startup();
@@ -267,9 +276,26 @@ public class Application : Gtk.Application
 		d_state_settings = new Settings("org.gnome.gitg.state.window");
 		d_state_settings.delay();
 
+		// Application menu entries
 		add_action_entries(app_entries, this);
 
-		// App menu
+		const Accel[] accels = {
+			{"app.new", "<Primary>N"},
+			{"app.quit", "<Primary>Q"},
+			{"app.help", "F1"},
+
+			{"win.search", "<Primary>F"},
+			{"win.close", "<Primary>Q"},
+			{"win.reload", "<Primary>R"},
+			{"win.gear-menu", "F10"},
+			{"win.open-repository", "<Primary>O"}
+		};
+
+		foreach (var accel in accels)
+		{
+			add_accelerator(accel.accel, accel.name, null);
+		}
+
 		if (Gtk.Settings.get_default().gtk_shell_shows_app_menu)
 		{
 			MenuModel? menu = Resource.load_object<MenuModel>("ui/gitg-menus.ui", "app-menu");
@@ -280,13 +306,9 @@ public class Application : Gtk.Application
 			}
 		}
 
-		add_accelerator("<Control>F", "win.search", null);
-		add_accelerator("<Control>W", "win.close", null);
-		add_accelerator("<Control>R", "win.reload", null);
-		add_accelerator("F10", "win.gear-menu", null);
-
 		// Use our own css provider
 		Gtk.CssProvider? provider = Resource.load_css("style.css");
+
 		if (provider != null)
 		{
 			Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),

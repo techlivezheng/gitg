@@ -21,9 +21,34 @@ namespace Gitg
 {
 	public class DiffView : WebKit.WebView
 	{
+		private class DiffViewRequestInternal : DiffViewRequest
+		{
+			public DiffViewRequestInternal(DiffView? view, WebKit.URISchemeRequest request, Soup.URI uri)
+			{
+				base(view, request, uri);
+			}
+
+			protected override InputStream? run_async(Cancellable? cancellable) throws Error
+			{
+				Idle.add(() => {
+					switch (parameter("action"))
+					{
+						case "selection-changed":
+							d_view.update_has_selection(parameter("value") == "yes");
+							break;
+					}
+
+					return false;
+				});
+
+				return null;
+			}
+		}
+
 		private Ggit.Diff? d_diff;
 		private Commit? d_commit;
-		private Settings d_fontsettings;
+		private Settings? d_fontsettings;
+		private bool d_has_selection;
 
 		private static Gee.HashMap<string, DiffView> s_diff_map;
 		private static uint64 s_diff_id;
@@ -31,6 +56,12 @@ namespace Gitg
 		public File? custom_css { get; construct; }
 		public File? custom_js { get; construct; }
 		public Ggit.DiffOptions? options { get; construct set; }
+
+		[Notify]
+		public bool has_selection
+		{
+			get { return d_has_selection; }
+		}
 
 		private Cancellable d_cancellable;
 		private bool d_loaded;
@@ -70,7 +101,10 @@ namespace Gitg
 			s_diff_map = new Gee.HashMap<string, DiffView>();
 
 			var context = WebKit.WebContext.get_default();
+
 			context.register_uri_scheme("gitg-diff", gitg_diff_request);
+			context.register_uri_scheme("mailto", gitg_diff_mailto_request);
+
 			context.set_cache_model(WebKit.CacheModel.DOCUMENT_VIEWER);
 		}
 
@@ -88,7 +122,7 @@ namespace Gitg
 
 			strings.set_string_member("stage", _("stage"));
 			strings.set_string_member("unstage", _("unstage"));
-			strings.set_string_member("loading_diff", _("Loading diff..."));
+			strings.set_string_member("loading_diff", _("Loading diff…"));
 
 			o.set_object_member("strings", strings);
 
@@ -141,14 +175,29 @@ namespace Gitg
 					return new DiffViewRequestDiff(view, request, uri);
 				case "patch":
 					return new DiffViewRequestPatch(view, request, uri);
+				case "internal":
+					return new DiffViewRequestInternal(view, request, uri);
 			}
 
 			return null;
 		}
 
+		private static void gitg_diff_mailto_request(WebKit.URISchemeRequest request)
+		{
+			try
+			{
+				Gtk.show_uri(null, request.get_uri(), 0);
+			} catch {}
+		}
+
 		private static void gitg_diff_request(WebKit.URISchemeRequest request)
 		{
 			var req = parse_request(request);
+
+			if (req == null)
+			{
+				return;
+			}
 
 			if (req.view != null)
 			{
@@ -227,6 +276,23 @@ namespace Gitg
 			settings.default_monospace_font_size = fsize;
 		}
 
+		private Settings? try_settings(string schema_id)
+		{
+			var source = SettingsSchemaSource.get_default();
+
+			if (source == null)
+			{
+				return null;
+			}
+
+			if (source.lookup(schema_id, true) != null)
+			{
+				return new Settings(schema_id);
+			}
+
+			return null;
+		}
+
 		protected override void constructed()
 		{
 			base.constructed();
@@ -238,28 +304,35 @@ namespace Gitg
 			if (dbg)
 			{
 				settings.enable_developer_extras = true;
+				settings.enable_write_console_messages_to_stdout = true;
 			}
 
 			settings.javascript_can_access_clipboard = true;
 			settings.enable_page_cache = false;
 
-			d_fontsettings = new Settings("org.gnome.desktop.interface");
 			set_settings(settings);
 
-			update_font_settings();
+			d_fontsettings = try_settings("org.gnome.desktop.interface");
 
-			d_fontsettings.changed["monospace-font-name"].connect((s, k) => {
+			if (d_fontsettings != null)
+			{
 				update_font_settings();
-			});
 
-			d_fontsettings.changed["font-name"].connect((s, k) => {
-				update_font_settings();
-			});
+				d_fontsettings.changed["monospace-font-name"].connect((s, k) => {
+					update_font_settings();
+				});
+
+				d_fontsettings.changed["font-name"].connect((s, k) => {
+					update_font_settings();
+				});
+			}
 
 			++s_diff_id;
 			s_diff_map[s_diff_id.to_string()] = this;
 
 			d_cancellable = new Cancellable();
+
+			d_loaded = false;
 
 			load_changed.connect((v, ev) => {
 				if (ev == WebKit.LoadEvent.FINISHED)
@@ -273,8 +346,6 @@ namespace Gitg
 			var uri = "gitg-diff:///resource/org/gnome/gitg/gtk/diff-view/diff-view.html?viewid=" + s_diff_id.to_string();
 
 			uri += "&settings=" + Soup.URI.encode(json_settings(), null);
-
-			d_loaded = false;
 
 			load_uri(uri);
 		}
@@ -325,6 +396,84 @@ namespace Gitg
 					} catch {}
 				});
 			}
+		}
+
+		public void update_has_selection(bool hs)
+		{
+			if (d_has_selection != hs)
+			{
+				d_has_selection = hs;
+				notify_property("has-selection");
+			}
+		}
+
+		private PatchSet parse_patchset(Json.Node node)
+		{
+			PatchSet ret = new PatchSet();
+
+			var elems = node.get_array();
+			ret.filename = elems.get_element(0).get_string();
+
+			var ps = elems.get_element(1).get_array();
+
+			var l = ps.get_length();
+			ret.patches = new PatchSet.Patch[l];
+
+			for (uint i = 0; i < l; i++)
+			{
+				var p = ps.get_element(i).get_array();
+
+				ret.patches[i] = PatchSet.Patch() {
+					type = (PatchSet.Type)p.get_element(0).get_int(),
+					old_offset = (size_t)p.get_element(1).get_int(),
+					new_offset = (size_t)p.get_element(2).get_int(),
+					length = (size_t)p.get_element(3).get_int()
+				};
+			}
+
+			return ret;
+		}
+
+		public async PatchSet[] get_selection()
+		{
+			WebKit.JavascriptResult jsret;
+
+			try
+			{
+				jsret = yield run_javascript("get_selection();", d_cancellable);
+			}
+			catch (Error e)
+			{
+				stderr.printf("Error running get_selection(): %s\n", e.message);
+				return new PatchSet[] {};
+			}
+
+			var json = GitgJsUtils.get_json(jsret);
+			var parser = new Json.Parser();
+
+			try
+			{
+				parser.load_from_data(json, -1);
+			}
+			catch (Error e)
+			{
+				stderr.printf("Error parsing json: %s\n", e.message);
+				return new PatchSet[] {};
+			}
+
+			var root = parser.get_root();
+
+			var elems = root.get_array();
+			var l = elems.get_length();
+
+			var ret = new PatchSet[l];
+
+			for (uint i = 0; i < l; i++)
+			{
+				ret[i] = parse_patchset(elems.get_element(i));
+			}
+
+			return ret;
 		}
 	}
 }

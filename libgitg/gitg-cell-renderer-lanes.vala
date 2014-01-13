@@ -29,6 +29,8 @@ namespace Gitg
 
 		private int d_last_height;
 
+		private delegate double DirectionFunc(double i);
+
 		private uint num_lanes
 		{
 			get { return commit.get_lanes().length(); }
@@ -40,18 +42,18 @@ namespace Gitg
 			       LabelRenderer.width(widget, font_desc, labels);
 		}
 
-		public override void get_size(Gtk.Widget     widget,
-		                              Gdk.Rectangle? area,
-		                              out int        xoffset,
-		                              out int        yoffset,
-		                              out int        width,
-		                              out int        height)
+		public override void get_preferred_width(Gtk.Widget widget,
+		                                         out int    minimum_width,
+		                                         out int    natural_width)
 		{
-			xoffset = 0;
-			yoffset = 0;
+			base.get_preferred_width(widget, out minimum_width, out natural_width);
 
-			width = (int)total_width(widget);
-			height = area != null ? area.height : 1;
+			var w = (int)total_width(widget);
+
+			if (w > minimum_width)
+			{
+				minimum_width = w;
+			}
 		}
 
 		private void draw_arrow(Cairo.Context context,
@@ -101,6 +103,7 @@ namespace Gitg
 		private void draw_paths_real(Cairo.Context context,
 		                             Gdk.Rectangle area,
 		                             Commit?       commit,
+		                             DirectionFunc f,
 		                             double        yoffset)
 		{
 			if (commit == null)
@@ -119,8 +122,8 @@ namespace Gitg
 
 				foreach (var from in lane.from)
 				{
-					double x1 = area.x + from * cw + cw / 2.0;
-					double x2 = area.x + to * cw + cw / 2.0;
+					double x1 = area.x + f(from * cw + cw / 2.0);
+					double x2 = area.x + f(to * cw + cw / 2.0);
 					double y1 = area.y + yoffset * ch;
 					double y2 = area.y + (yoffset + 1) * ch;
 					double y3 = area.y + (yoffset + 2) * ch;
@@ -135,30 +138,38 @@ namespace Gitg
 		}
 
 		private void draw_top_paths(Cairo.Context context,
-		                            Gdk.Rectangle area)
+		                            Gdk.Rectangle area,
+		                            DirectionFunc f)
 		{
-			draw_paths_real(context, area, commit, -1);
+			draw_paths_real(context, area, commit, f, -1);
 		}
 
 		private void draw_bottom_paths(Cairo.Context context,
-		                               Gdk.Rectangle area)
+		                               Gdk.Rectangle area,
+		                               DirectionFunc f)
 		{
-			draw_paths_real(context, area, next_commit, 1);
+			draw_paths_real(context, area, next_commit, f, 1);
 		}
 
 		private void draw_paths(Cairo.Context context,
-		                        Gdk.Rectangle area)
+		                        Gdk.Rectangle area,
+		                        DirectionFunc f)
 		{
 			context.set_line_width(2.0);
 			context.set_line_cap(Cairo.LineCap.ROUND);
 
-			draw_top_paths(context, area);
-			draw_bottom_paths(context, area);
+			context.save();
+
+			draw_top_paths(context, area, f);
+			draw_bottom_paths(context, area, f);
 			draw_arrows(context, area);
+
+			context.restore();
 		}
 
 		private void draw_indicator(Cairo.Context context,
-		                            Gdk.Rectangle area)
+		                            Gdk.Rectangle area,
+		                            DirectionFunc f)
 		{
 			double offset;
 			double radius;
@@ -168,7 +179,7 @@ namespace Gitg
 
 			context.set_line_width(2.0);
 
-			context.arc(area.x + offset + radius,
+			context.arc(area.x + f(offset + radius),
 			            area.y + area.height / 2.0,
 			            radius,
 			            0,
@@ -187,15 +198,50 @@ namespace Gitg
 		}
 
 		private void draw_labels(Cairo.Context context,
-		                         Gdk.Rectangle area,
-		                         Gtk.Widget    widget)
+		                         Gtk.Widget    widget,
+		                         Gdk.Rectangle area)
 		{
-			uint offset;
+			int offset;
 
-			offset = num_lanes * lane_width;
+			offset = (int)(num_lanes * lane_width);
 
+			var rtl = (widget.get_style_context().get_state() & Gtk.StateFlags.DIR_RTL) != 0;
+
+			if (rtl)
+			{
+				offset = -offset;
+			}
+
+			context.save();
 			context.translate(offset, 0);
 			LabelRenderer.draw(widget, font_desc, context, labels, area);
+			context.restore();
+		}
+
+		private void draw_lane(Cairo.Context context,
+		                       Gtk.Widget    widget,
+		                       Gdk.Rectangle area)
+		{
+			DirectionFunc f;
+
+			var rtl = (widget.get_style_context().get_state() & Gtk.StateFlags.DIR_RTL) != 0;
+
+			context.save();
+
+			if (rtl)
+			{
+				context.translate(area.width, 0);
+				f = (a) => -a;
+			}
+			else
+			{
+				f = (a) => a;
+			}
+
+			draw_paths(context, area, f);
+			draw_indicator(context, area, f);
+
+			context.restore();
 		}
 
 		public override void render(Cairo.Context         context,
@@ -207,6 +253,8 @@ namespace Gitg
 			var ncell_area = cell_area;
 			var narea = area;
 
+			var rtl = (widget.get_style_context().get_state() & Gtk.StateFlags.DIR_RTL) != 0;
+
 			d_last_height = area.height;
 
 			if (commit != null)
@@ -216,16 +264,28 @@ namespace Gitg
 				Gdk.cairo_rectangle(context, area);
 				context.clip();
 
-				draw_paths(context, area);
-				draw_indicator(context, area);
-				draw_labels(context, area, widget);
+				draw_lane(context, widget, area);
+				draw_labels(context, widget, area);
 
 				var tw = total_width(widget);
 
-				narea.x += (int)tw;
-				ncell_area.x += (int)tw;
+				if (!rtl)
+				{
+					narea.x += (int)tw;
+					ncell_area.x += (int)tw;
+				}
+				else
+				{
+					narea.width -= (int)tw;
+					ncell_area.width -= (int)tw;
+				}
 
 				context.restore();
+			}
+
+			if (rtl == (Pango.find_base_dir(text, -1) != Pango.Direction.RTL))
+			{
+				xalign = 1.0f;
 			}
 
 			base.render(context, widget, narea, ncell_area, flags);

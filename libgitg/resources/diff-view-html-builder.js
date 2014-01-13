@@ -3,6 +3,56 @@ function html_escape(s)
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function Template(template, placeholders)
+{
+	var components = [template];
+
+	for (var i = 0; i < placeholders.length; i++)
+	{
+		var name = placeholders[i];
+		var varspec = '\\$\\{' + name + '\\}';
+		var r = new RegExp('<!-- ' + varspec + ' -->|' + varspec, 'g');
+
+		var newcomp = [];
+
+		for (var j = 0; j < components.length; j += 2)
+		{
+			var parts = components[j].split(r);
+
+			for (var k = 0; k < parts.length; k++)
+			{
+				newcomp.push(parts[k]);
+
+				if (k != parts.length - 1)
+				{
+					newcomp.push(name);
+				}
+			}
+
+			if (j < components.length - 1)
+			{
+				newcomp.push(components[j + 1]);
+			}
+		}
+
+		components = newcomp;
+	}
+
+	this.components = components;
+}
+
+Template.prototype.execute = function(replacements) {
+	var ret = '';
+
+	for (var i = 0; i < this.components.length - 1; i += 2)
+	{
+		var name = this.components[i + 1];
+		ret += this.components[i] + replacements[name];
+	}
+
+	return ret + this.components[this.components.length - 1];
+}
+
 function diff_file(file, lnstate, data)
 {
 	tabrepl = '<span class="tab" style="width: ' + data.settings.tab_width + 'ex">\t</span>';
@@ -16,16 +66,28 @@ function diff_file(file, lnstate, data)
 	{
 		var h = file.hunks[i];
 
+		if (!h)
+		{
+			file_body += '<tr class="context"> \
+				<td class="gutter old">' + lnstate.gutterdots + '</td> \
+				<td class="gutter new">' + lnstate.gutterdots + '</td> \
+				<td class="gutter type">&nbsp;</td> \
+				<td></td> \
+			</tr>';
+			continue;
+		}
+
 		var cold = h.range.old.start;
 		var cnew = h.range.new.start;
 
 		var hunk_header = '<span class="hunk_stats">@@ -' + h.range.old.start + ',' + h.range.old.lines + ' +' + h.range.new.start + ',' + h.range.new.lines + ' @@</span>';
 
-		hunk_header = lnstate.stagebutton + hunk_header;
+		hunk_header = hunk_header;
 
-		file_body += '<tr class="hunk_header">\
+		file_body += '<tr class="hunk_header"> \
 			<td class="gutter old">' + lnstate.gutterdots + '</td> \
 			<td class="gutter new">' + lnstate.gutterdots + '</td> \
+			<td class="gutter type">&nbsp;</td> \
 			<td class="hunk_header">' + hunk_header + '</td> \
 		</tr>';
 
@@ -34,7 +96,7 @@ function diff_file(file, lnstate, data)
 			var l = h.lines[j];
 			var o = String.fromCharCode(l.type);
 
-			var row = '<tr class="';
+			var row = '<tr data-offset="' + l.offset + '" data-length="' + l.length + '" class="';
 
 			switch (o)
 			{
@@ -68,13 +130,20 @@ function diff_file(file, lnstate, data)
 					row += 'context"> \
 						<td class="gutter old"></td> \
 						<td class="gutter new"></td>';
-						l.content = l.content.substr(1, l.content.length);
+					l.content = l.content.substr(1, l.content.length);
 				break;
 				default:
+					o = ' ';
 					row += '">';
 				break;
 			}
 
+			if (o == ' ')
+			{
+				o = '&nbsp;';
+			}
+
+			row += '<td class="gutter type">' + o + '</td>';
 			row += '<td class="code">' + html_escape(l.content).replace(/\t/g, tabrepl) + '</td>';
 
 			row += '</tr>';
@@ -97,62 +166,54 @@ function diff_file(file, lnstate, data)
 		}
 	}
 
-	var file_path;
+	var file_path = '';
+	var file_stats = '';
+	var file_classes = '';
 
-	if (file.file.new.path)
+	if (file.file)
 	{
-		file_path = file.file.new.path;
+		if (file.file.new.path)
+		{
+			file_path = file.file.new.path;
+		}
+		else
+		{
+			file_path = file.file.old.path;
+		}
+
+		var total = added + removed;
+		var addedp = Math.floor(added / total * 100);
+		var removedp = 100 - addedp;
+
+		file_stats = '<span class="file_stats"><span class="number">' + (added + removed)  + '</span><span class="bar"><span class="added" style="width: ' + addedp + '%;"></span><span class="removed" style="width: ' + removedp + '%;"></span></span></span>';
 	}
 	else
 	{
-		file_path = file.file.old.path;
+		file_classes = 'background';
 	}
 
-	var total = added + removed;
-	var addedp = Math.floor(added / total * 100);
-	var removedp = 100 - addedp;
-
-	var file_stats = '<span class="file_stats"><span class="number">' + (added + removed)  + '</span><span class="bar"><span class="added" style="width: ' + addedp + '%;"></span><span class="removed" style="width: ' + removedp + '%;"></span></span></span>';
-
-	file_stats = lnstate.stagebutton + file_stats;
-
-	var template = data.file_template;
 	var repls = {
 		'FILE_PATH': file_path,
 		'FILE_BODY': file_body,
 		'FILE_STATS': file_stats,
+		'FILE_FILENAME': file_path,
+		'FILE_CLASSES': file_classes
 	};
 
-	for (var r in repls)
-	{
-		// As we are using the repl in the later 'template.replace()'
-		// as the replacement in which character '$' is special, we
-		// need to make sure each occurence of '$' character in the
-		// replacement is represented as '$$' (which stands for a
-		// literal '$'), so, we need to use '$$$$' here to get '$$'.
-		var repl = repls[r].replace(/\$/g, '$$$$');
-		template = template.replace(lnstate.replacements[r], repl);
-	}
-
-	return template;
+	return lnstate.template.execute(repls);
 }
 
 function diff_files(files, lines, maxlines, data)
 {
-	var f = '';
-
-	var repl = [
+	var placeholders = [
 		'FILE_PATH',
 		'FILE_BODY',
-		'FILE_STATS'
+		'FILE_STATS',
+		'FILE_FILENAME',
+		'FILE_CLASSES'
 	];
 
-	var replacements = {};
-
-	for (var r in repl)
-	{
-		replacements[repl[r]] = new RegExp('<!-- \\$\\{' + repl[r] + '\\} -->', 'g');
-	}
+	var template = new Template(data.file_template, placeholders);
 
 	var lnstate = {
 		lines: lines,
@@ -161,28 +222,11 @@ function diff_files(files, lines, maxlines, data)
 		processed: 0,
 		nexttick: 0,
 		tickfreq: 0.01,
-		stagebutton: '',
-		replacements: replacements,
+		template: template,
 	};
 
-	if (data.settings.staged || data.settings.unstaged)
-	{
-		var cls;
-		var nm;
-
-		if (data.settings.staged)
-		{
-			cls = 'unstage';
-			nm = data.settings.strings.unstage;
-		}
-		else
-		{
-			cls = 'stage';
-			nm = data.settings.strings.stage;
-		}
-
-		lnstate.stagebutton = '<span class="' + cls + '">' + nm + '</span>';
-	}
+	// special empty background filler
+	var f = diff_file({hunks: [null]}, lnstate, data);
 
 	for (var i = 0; i < files.length; ++i)
 	{

@@ -20,16 +20,17 @@
       </div>
 
       <!-- Diff template -->
-      <div class="file">
-        <table>
+      <div class="file ${FILE_CLASSES}" data-filename="${FILE_FILENAME}">
+        <table class="file">
           <colgroup>
+            <col width="0">
             <col width="0">
             <col width="0">
             <col width="100%">
           </colgroup>
           <tbody>
             <tr class="file_header">
-              <td colspan="3">
+              <td colspan="4">
                 <span class="expander">-</span>
                 <!-- ${FILE_STATS} -->
                 <span class="file_path"><!-- ${FILE_PATH} --></span>

@@ -173,10 +173,10 @@ namespace Gitg
 			{
 				var content = line.get_content();
 
-				var sc = ((string)content)[0:content.length];
-
-				builder.set_member_name("type").add_int_value((int)line.get_origin());
-				builder.set_member_name("content").add_string_value(sc);
+				builder.set_member_name("type").add_int_value((int64)line.get_origin());
+				builder.set_member_name("content").add_string_value(line.get_text());
+				builder.set_member_name("offset").add_int_value((int64)line.get_content_offset());
+				builder.set_member_name("length").add_int_value((int64)content.length);
 			}
 			builder.end_object();
 		}

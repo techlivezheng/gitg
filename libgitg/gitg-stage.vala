@@ -33,7 +33,61 @@ public errordomain StageError
 {
 	PRE_COMMIT_HOOK_FAILED,
 	COMMIT_MSG_HOOK_FAILED,
-	NOTHING_TO_COMMIT
+	NOTHING_TO_COMMIT,
+	INDEX_ENTRY_NOT_FOUND
+}
+
+public class PatchSet
+{
+	public enum Type
+	{
+		ADD    = 'a',
+		REMOVE = 'r'
+	}
+
+	public struct Patch
+	{
+		Type   type;
+		size_t old_offset;
+		size_t new_offset;
+		size_t length;
+	}
+
+	public string  filename;
+	public Patch[] patches;
+
+	public PatchSet reversed()
+	{
+		var ret = new PatchSet();
+
+		ret.filename = filename;
+		ret.patches = new Patch[patches.length];
+
+		for (int i = 0; i < patches.length; i++)
+		{
+			var orig = patches[i];
+
+			var p = Patch() {
+				old_offset = orig.new_offset,
+				new_offset = orig.old_offset,
+				length = orig.length
+			};
+
+			switch (patches[i].type)
+			{
+				case Type.ADD:
+					p.type = Type.REMOVE;
+					break;
+				case Type.REMOVE:
+					p.type = Type.ADD;
+					break;
+			}
+
+			ret.patches[i] = p;
+		}
+
+		return ret;
+	}
 }
 
 public class Stage : Object
@@ -551,6 +605,111 @@ public class Stage : Object
 		yield stage(d_repository.get_workdir().resolve_relative_path(path));
 	}
 
+	private void copy_stream(OutputStream dest, InputStream src, ref size_t pos, size_t index, size_t length) throws Error
+	{
+		if (length == 0)
+		{
+			return;
+		}
+
+		var buf = new uint8[length];
+
+		if (pos != index)
+		{
+			((Seekable)src).seek(index, SeekType.SET);
+			pos = index;
+		}
+
+		src.read_all(buf, null);
+		dest.write_all(buf, null);
+
+		pos += length;
+	}
+
+	private void apply_patch(Ggit.Index index, InputStream old_stream, InputStream new_stream, PatchSet patch) throws Error
+	{
+		var patched_stream = d_repository.create_blob();
+
+		size_t old_ptr = 0;
+		size_t new_ptr = 0;
+
+		// Copy old_content to patched_stream while applying patches as
+		// specified in patch.patches from new_stream
+		foreach (var p in patch.patches)
+		{
+			// Copy from old_ptr until p.old_offset
+			copy_stream(patched_stream,
+			            old_stream,
+			            ref old_ptr,
+			            old_ptr,
+			            p.old_offset - old_ptr);
+
+			if (p.type == PatchSet.Type.REMOVE)
+			{
+				// Removing, just advance old stream
+				((Seekable)old_stream).seek(p.length, SeekType.CUR);
+				old_ptr += p.length;
+			}
+			else
+			{
+				// Inserting, copy from new_stream
+				copy_stream(patched_stream,
+				            new_stream,
+				            ref new_ptr,
+				            p.new_offset,
+				            p.length);
+			}
+		}
+
+		// Copy remaining part of old
+		patched_stream.splice(old_stream, OutputStreamSpliceFlags.NONE);
+		patched_stream.close();
+
+		var new_id = patched_stream.get_id();
+
+		var new_entry = d_repository.create_index_entry_for_path(patch.filename,
+		                                                         new_id);
+
+		index.add(new_entry);
+		index.write();
+	}
+
+	/**
+	 * Stage a patch to the index.
+	 *
+	 * @param patch the patch to stage.
+	 *
+	 * Stage a provided patch to the index. The patch should contain changes
+	 * of the file in the current working directory to the contents of the
+	 * index (i.e. as obtained from diff_workdir)
+	 */
+	public async void stage_patch(PatchSet patch) throws Error
+	{
+		// new file is the current file in the working directory
+		var newf = d_repository.get_workdir().resolve_relative_path(patch.filename);
+		var new_stream = yield newf.read_async();
+
+		yield thread_index((index) => {
+			var entries = index.get_entries();
+			var entry = entries.get_by_path(newf, 0);
+
+			if (entry == null)
+			{
+				throw new StageError.INDEX_ENTRY_NOT_FOUND(patch.filename);
+			}
+
+			var old_blob = d_repository.lookup<Ggit.Blob>(entry.get_id());
+			unowned uchar[] old_content = old_blob.get_raw_content();
+
+			var old_stream = new MemoryInputStream.from_bytes(new Bytes(old_content));
+
+			apply_patch(index, old_stream, new_stream, patch);
+
+			new_stream.close();
+			old_stream.close();
+		});
+	}
+
 	/**
 	 * Unstage a file from the index.
 	 *
@@ -595,6 +754,47 @@ public class Stage : Object
 	public async void unstage_path(string path) throws Error
 	{
 		yield unstage(d_repository.get_workdir().resolve_relative_path(path));
+	}
+
+	/**
+	 * Unstage a patch from the index.
+	 *
+	 * @param patch the patch to unstage.
+	 *
+	 * Unstage a provided patch from the index. The patch should contain changes
+	 * of the file in the index to the file in HEAD.
+	 */
+	public async void unstage_patch(PatchSet patch) throws Error
+	{
+		var file = d_repository.get_workdir().resolve_relative_path(patch.filename);
+		var tree = yield get_head_tree();
+
+		yield thread_index((index) => {
+			var entries = index.get_entries();
+			var entry = entries.get_by_path(file, 0);
+
+			if (entry == null)
+			{
+				throw new StageError.INDEX_ENTRY_NOT_FOUND(patch.filename);
+			}
+
+			var head_entry = tree.get_by_path(patch.filename);
+			var head_blob = d_repository.lookup<Ggit.Blob>(head_entry.get_id());
+			var index_blob = d_repository.lookup<Ggit.Blob>(entry.get_id());
+
+			unowned uchar[] head_content = head_blob.get_raw_content();
+			unowned uchar[] index_content = index_blob.get_raw_content();
+
+			var head_stream = new MemoryInputStream.from_bytes(new Bytes(head_content));
+			var index_stream = new MemoryInputStream.from_bytes(new Bytes(index_content));
+
+			var reversed = patch.reversed();
+
+			apply_patch(index, index_stream, head_stream, reversed);
+
+			head_stream.close();
+			index_stream.close();
+		});
 	}
 
 	public async Ggit.Diff? diff_index(StageStatusFile f) throws Error

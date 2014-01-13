@@ -1,57 +1,52 @@
-# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Aviary.pl
-# Jeśli masz jakiekolwiek uwagi odnoszące się do tłumaczenia lub chcesz
-# pomóc w jego rozwijaniu i pielęgnowaniu, napisz do nas:
-# gnomepl@aviary.pl
-# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Piotr Drąg <piotrdrag@gmail.com>, 2012-2014.
-# Aviary.pl <gnomepl@aviary.pl>, 2012-2014.
+# Hebrew translations for gitg package.
+# Copyright (C) 2014 THE gitg'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gitg package.
+# יוסף אור בוצ׳קו <yoseforb@gmail.com>, 2014.
+# Yosef Or Boczko <yoseforb@gmail.com>, 2014.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: gitg\n"
+"Project-Id-Version: gitg 0.2.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-07 23:40+0100\n"
-"PO-Revision-Date: 2014-01-07 23:41+0100\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Polish <gnomepl@aviary.pl>\n"
-"Language: pl\n"
+"POT-Creation-Date: 2014-01-07 16:26+0200\n"
+"PO-Revision-Date: 2014-01-07 16:36+0200\n"
+"Last-Translator: Yosef Or Boczko <yoseforb@gmail.com>\n"
+"Language-Team: עברית <>\n"
+"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
-"X-Poedit-Language: Polish\n"
-"X-Poedit-Country: Poland\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n>2||n==0) ? 1 : 2;\n"
+"X-Generator: Gtranslator 2.91.6\n"
 
-#: ../data/gitg.desktop.in.in.h:1 ../gitg/gitg.vala:54
+#: ../data/gitg.desktop.in.in.h:1 ../gitg/gitg.vala:35
 #: ../gitg/resources/ui/gitg-window.ui.h:1
 msgid "gitg"
 msgstr "gitg"
 
 #: ../data/gitg.desktop.in.in.h:2
 msgid "Git repository browser"
-msgstr "Przeglądarka repozytoriów git"
+msgstr "דפדפן מאגר Git"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:1
 msgid "Orientation of the main interface (vertical or horizontal)"
-msgstr "Ułożenie głównego interfejsu (pionowe lub poziome)"
+msgstr "Orientation of the main interface (vertical or horizontal)"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:2
 msgid "Setting that sets the orientation of the main interface."
-msgstr "Ustawienie, które ustawia ułożenie głównego interfejsu."
+msgstr "Setting that sets the orientation of the main interface."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:3
 msgid "When to Collapse Inactive Lanes"
-msgstr "Kiedy zwijać nieaktywne linie"
+msgstr "When to Collapse Inactive Lanes"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:4
 msgid ""
 "Setting that indicates when an inactive lane should be collapsed. Valid "
 "values are 0 - 4, where 0 indicates 'early' and 4 indicates 'late'."
 msgstr ""
-"Ustawienie wskazujące, kiedy nieaktywna linia powinna zostać zwinięta. "
-"Prawidłowe wartości to 0 - 4, gdzie 0 oznacza \"wcześnie\" a 4 oznacza "
-"\"późno\"."
+"Setting that indicates when an inactive lane should be collapsed. Valid "
+"values are 0 - 4, where 0 indicates 'early' and 4 indicates 'late'."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:5
 msgid ""
@@ -60,589 +55,568 @@ msgid ""
 "lot of parallel development. See collapse-inactive-lanes to control when "
 "lanes should be collapsed."
 msgstr ""
-"Ustawienie wskazujące, czy zwijać nieaktywne linie historii. Włączenie tej "
-"opcji powoduje wyświetlanie czystszej historii w przypadkach, gdy "
-"repozytorium jest rozwijane w wielu kierunkach jednocześnie. Opcja "
-"\"collapse-inactive-lanes\" kontroluje, kiedy linie powinny być zwijane."
+"Setting that indicates whether to collapse history lanes which do not show "
+"activity. Enabling this can provide a cleaner history view when there is a "
+"lot of parallel development. See collapse-inactive-lanes to control when "
+"lanes should be collapsed."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:6
 msgid "Show History in Topological Order"
-msgstr "Wyświetlanie historii w porządku topologicznym"
+msgstr "Show History in Topological Order"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:7
 msgid ""
 "Setting that indicates whether to show the history in topological order."
 msgstr ""
-"Ustawienie wskazujące, czy wyświetlać historię w porządku topologicznym."
+"Setting that indicates whether to show the history in topological order."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:8
 msgid ""
 "Setting that indicates whether to show items for the stash in the history."
-msgstr "Ustawienie wskazujące, czy wyświetlać elementy dla schowka w historii."
+msgstr ""
+"Setting that indicates whether to show items for the stash in the history."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:9
 msgid ""
 "Setting that indicates whether to show a virtual item for the currently "
 "staged changes in the history."
 msgstr ""
-"Ustawienie wskazujące, czy wyświetlać w historii wirtualny element dla zmian "
-"będących w przechowalni."
+"Setting that indicates whether to show a virtual item for the currently "
+"staged changes in the history."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:10
 msgid ""
 "Setting that indicates whether to show a virtual item for the currently "
 "unstaged changes in the history."
 msgstr ""
-"Ustawienie wskazujące, czy wyświetlać w historii wirtualny element dla zmian "
-"nie będących w przechowalni."
+"Setting that indicates whether to show a virtual item for the currently "
+"unstaged changes in the history."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:11
 msgid "Show Right Margin in Commit Message View"
-msgstr "Wyświetlanie prawego marginesu w widoku komunikatu zatwierdzenia"
+msgstr "Show Right Margin in Commit Message View"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:12
 msgid ""
 "Show a right margin indicator in the commit message view. This can be used "
 "to easily see where to break the commit message at a particular column."
 msgstr ""
-"Wyświetlanie wskaźnika prawego marginesu w widoku komunikatu zatwierdzenia. "
-"Może być używane, aby łatwo podzielić tekst na wiersze."
+"Show a right margin indicator in the commit message view. This can be used "
+"to easily see where to break the commit message at a particular column."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:13
 msgid "Column at Which Right Margin is Shown"
-msgstr "Kolumna, w której wyświetlany jest prawy margines"
+msgstr "Column at Which Right Margin is Shown"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:14
 msgid ""
 "The column at which the right margin is shown if the show-right-margin "
 "preference is set to TRUE."
 msgstr ""
-"Kolumna, w której wyświetlany jest prawy margines, jeśli preferencja \"show-"
-"right-margin\" jest ustawiona na wartość \"true\"."
+"The column at which the right margin is shown if the show-right-margin "
+"preference is set to TRUE."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:15
 msgid "Show Subject Margin in Commit Message View"
-msgstr "Wyświetlanie marginesu tematu w widoku komunikatu zatwierdzenia"
+msgstr "Show Subject Margin in Commit Message View"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:16
 msgid ""
 "Highlight the subject text of the commit message when it passes the margin "
 "specified by subject-margin-position."
 msgstr ""
-"Wyróżnianie tekstu tematu komunikatu zatwierdzenia, kiedy przekracza on "
-"margines podany w \"subject-margin-position\"."
+"Highlight the subject text of the commit message when it passes the margin "
+"specified by subject-margin-position."
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:17
 msgid "Column at Which Subject Margin is Shown"
-msgstr "Kolumna, w której wyświetlany jest margines tematu"
+msgstr "Column at Which Subject Margin is Shown"
 
 #: ../data/org.gnome.gitg.gschema.xml.in.in.h:18
 msgid ""
 "The column at which the subject margin is shown if the show-subject-margin "
 "preference is set to TRUE."
 msgstr ""
-"Kolumna, w której wyświetlany jest margines tematu, jeśli preferencja \"show-"
-"subject-margin\" jest ustawiona na wartość \"true\"."
+"The column at which the subject margin is shown if the show-subject-margin "
+"preference is set to TRUE."
 
 #: ../gitg/commit/gitg-commit-dialog.vala:283
 #, c-format
 msgid "Cannot set spell checking language: %s"
-msgstr "Nie można ustawić języka sprawdzania pisowni: %s"
+msgstr "לא ניתן להגדיר שפה לבדיקת איות: %s"
 
 #: ../gitg/commit/gitg-commit.vala:59
 #: ../gitg/preferences/gitg-preferences-commit.vala:119
 #: ../gitg/resources/ui/gitg-commit-dialog.ui.h:1
 msgid "Commit"
-msgstr "Zatwierdzenie"
+msgstr "הגשה"
 
 #: ../gitg/commit/gitg-commit.vala:123
 msgid "_Stage selection"
-msgstr "_Przenieś zaznaczone do przechowalni"
+msgstr "_שילוב הבחירה"
 
 #: ../gitg/commit/gitg-commit.vala:146
 #, c-format
 msgid "Failed to stage the file `%s'"
-msgstr "Przeniesienie pliku \"%s\" do przechowalni się nie powiodło."
+msgstr "נכשל שילוב הקובץ `%s`"
 
 #: ../gitg/commit/gitg-commit.vala:165
 #, c-format
 msgid "Failed to stage the removal of file `%s'"
-msgstr "Przeniesienie usunięcia pliku \"%s\" do przechowalni się nie powiodło"
+msgstr "נכשל שילוב מחיקת הקובץ `%s`"
 
 #: ../gitg/commit/gitg-commit.vala:204
 msgid "_Unstage selection"
-msgstr "_Przenieś zaznaczone z przechowalni"
+msgstr "_ביטול שילוב הבחירה"
 
 #: ../gitg/commit/gitg-commit.vala:227
 #, c-format
 msgid "Failed to unstage the removal of file `%s'"
-msgstr "Przeniesienie usunięcia pliku \"%s\" z przechowalni się nie powiodło"
+msgstr "נכשל שילוב מחיקת הקובץ `%s`"
 
 #: ../gitg/commit/gitg-commit.vala:246
 #, c-format
 msgid "Failed to unstage the file `%s'"
-msgstr "Przeniesienie pliku \"%s\" z przechowalni się nie powiodło"
+msgstr "נכשל ביטול שילוב הקובץ `%s`"
 
 #: ../gitg/commit/gitg-commit.vala:370
 msgid "Staged"
-msgstr "W przechowalni"
+msgstr "משולב"
 
 #: ../gitg/commit/gitg-commit.vala:374
 msgid "No staged files"
-msgstr "Brak plików w przechowalni"
+msgstr "אין קבצים משולבים"
 
 #: ../gitg/commit/gitg-commit.vala:383
 msgid "Unstaged"
-msgstr "Nie w przechowalni"
+msgstr "לא משולב"
 
 #: ../gitg/commit/gitg-commit.vala:387
 msgid "No unstaged files"
-msgstr "Brak plików nie będących w przechowalni"
+msgstr "אין קבצים שאינם משולבים"
 
 #: ../gitg/commit/gitg-commit.vala:396
 msgid "Untracked"
-msgstr "Nieśledzone"
+msgstr "לא במעקב"
 
 #: ../gitg/commit/gitg-commit.vala:400
 msgid "No untracked files"
-msgstr "Brak nieśledzonych plików"
+msgstr "אין קבצים שאינם במעקב"
 
 #: ../gitg/commit/gitg-commit.vala:436
 msgid "There are no changes to be committed"
-msgstr "Brak zmian do zatwierdzenia"
+msgstr "אין שינויים להגשה"
 
 #: ../gitg/commit/gitg-commit.vala:437
 msgid "Use amend to change the commit message of the previous commit"
-msgstr ""
-"Należy użyć polecenia \"amend\", aby zmienić komunikat poprzedniego "
-"zatwierdzenia"
+msgstr "ניתן להשתמש בתיקון לשינוי הודעת ההגשה הקודמת"
 
 #: ../gitg/commit/gitg-commit.vala:463
 msgid "Failed to commit"
-msgstr "Zatwierdzenie się nie powiodło"
+msgstr "נכשלה ההגשה"
 
 #. TODO: better to show user info dialog directly or something
 #: ../gitg/commit/gitg-commit.vala:479 ../gitg/commit/gitg-commit.vala:712
 msgid "Failed to pass pre-commit"
-msgstr "Przejście sprawdzania przed zatwierdzeniem się nie powiodło"
+msgstr "נכשלה העברת קדם הגשה"
 
 #: ../gitg/commit/gitg-commit.vala:700
 msgid ""
 "Your user name and email are not configured yet. Please go to the user "
 "configuration and provide your name and email."
 msgstr ""
-"Nazwa użytkownika i adres e-mail nie zostały jeszcze skonfigurowane. Proszę "
-"przejść do konfiguracji użytkownika i je podać."
+"שם המשתמש וכתובת הדוא״ל שלך טרם הוגדרו. יש ללכת לתצורת משתמש ולספק פרטים אלה."
 
 #: ../gitg/commit/gitg-commit.vala:704
 msgid ""
 "Your user name is not configured yet. Please go to the user configuration "
 "and provide your name."
-msgstr ""
-"Nazwa użytkownika nie została jeszcze skonfigurowana. Proszę przejść do "
-"konfiguracji użytkownika i ją podać."
+msgstr "שם המשתמש שלך טרם הוגדר. יש ללכת לתצורה משתמש ולספק את השם שלך."
 
 #: ../gitg/commit/gitg-commit.vala:708
 msgid ""
 "Your email is not configured yet. Please go to the user configuration and "
 "provide your email."
 msgstr ""
-"Adres e-mail nie został jeszcze skonfigurowany. Proszę przejść do "
-"konfiguracji użytkownika i go podać."
+"כתובת הדוא״ל שלך טרם הוגדר. יש ללכת לתצורת משתמש ולספק את כתובת הדוא״ל שלך."
 
 #: ../gitg/commit/gitg-commit.vala:769
 msgid "Failed to stage selection"
-msgstr "Przeniesienie zaznaczonego do przechowalni się nie powiodło"
+msgstr "נכשל שילוב הבחירה"
 
 #: ../gitg/commit/gitg-commit.vala:773
 msgid "Failed to unstage selection"
-msgstr "Przeniesienie zaznaczonego z przechowalni się nie powiodło"
+msgstr "נכשל ביטול שילוב הבחירה"
 
 #: ../gitg/gitg-application.vala:55
 msgid "Show the application's version"
-msgstr "Wyświetla wersję programu"
+msgstr "Show the application's version"
 
 #: ../gitg/gitg-application.vala:58
 msgid "Start gitg with a particular activity"
-msgstr "Uruchamia program gitg w podanej aktywności"
+msgstr "Start gitg with a particular activity"
 
 #: ../gitg/gitg-application.vala:61
 msgid "Start gitg with the commit activity (shorthand for --activity commit)"
-msgstr ""
-"Uruchamia program gitg w aktywności zatwierdzania (skrót dla \"--activity "
-"commit\")"
+msgstr "Start gitg with the commit activity (shorthand for --activity commit)"
 
 #: ../gitg/gitg-application.vala:64
 msgid "Do not try to load a repository from the current working directory"
-msgstr "Bez próby wczytania repozytorium z bieżącego katalogu roboczego"
+msgstr "Do not try to load a repository from the current working directory"
 
 #: ../gitg/gitg-application.vala:88
 msgid "- Git repository viewer"
-msgstr "- przeglądarka repozytoriów git"
+msgstr "- מציג מאגר Git"
 
 #: ../gitg/gitg-application.vala:206
 msgid "gitg is a Git repository viewer for gtk+/GNOME"
-msgstr "gitg to przeglądarka repozytoriów git dla GTK+/GNOME"
+msgstr "‏gitg הוא מציג מאגרי Git עבור gtk+/GNOME"
 
 #: ../gitg/gitg-application.vala:215
 msgid "translator-credits"
-msgstr ""
-"Piotr Drąg <piotrdrag@gmail.com>, 2012-2014\n"
-"Aviary.pl <gnomepl@aviary.pl>, 2012-2014"
+msgstr "יוסף אור בוצ׳קו <yoseforb@gmail.com>"
 
 #: ../gitg/gitg-application.vala:218
 msgid "gitg homepage"
-msgstr "Witryna programu gitg"
+msgstr "אתר הבית של gitg"
 
 #: ../gitg/gitg-author-details-dialog.vala:65
 msgid "Unable to open the .gitconfig file."
-msgstr "Nie można otworzyć pliku .gitconfig."
+msgstr "לא ניתן לפתוח את הקובץ .gitconfig."
 
 #: ../gitg/gitg-author-details-dialog.vala:147
 msgid "Failed to set Git user config."
-msgstr "Ustawienie konfiguracji użytkownika Git się nie powiodło."
+msgstr "נכשל להגדיר תצורה משתמש עבור Git."
 
 #: ../gitg/gitg-clone-dialog.vala:88
 msgid "The URL introduced is not supported"
-msgstr "Wprowadzony adres URL nie jest obsługiwany"
-
-#: ../gitg/gitg.vala:64
-msgid ""
-"We are terribly sorry, but gitg requires libgit2 (a library on which gitg "
-"depends) to be compiled with threading support.\n"
-"\n"
-"If you manually compiled libgit2, then please configure libgit2 with -"
-"DTHREADSAFE:BOOL=ON.\n"
-"\n"
-"Otherwise, report a bug in your distributions' bug reporting system for "
-"providing libgit2 without threading support."
-msgstr ""
-"Program gitg wymaga skompilowania libgit2 (biblioteki, od której zależy "
-"program gitg) z obsługą wątków.\n"
-"\n"
-"Jeśli ręcznie skompilowano bibliotekę libgit2, to proszę ją skonfigurować za "
-"pomocą opcji -DTHREADSAFE:BOOL=ON.\n"
-"\n"
-"W przeciwnym przypadku proszę zgłosić błąd w systemie zgłaszania błędów "
-"dystrybucji z informacją, że biblioteka libgit2 nie dostarcza obsługi wątków."
+msgstr "הכתובת המוזנת אינה נמתכת"
 
 #: ../gitg/gitg-window.vala:263
 msgid "Projects"
-msgstr "Projekty"
+msgstr "מיזמים"
 
 #: ../gitg/gitg-window.vala:299
 msgid "Open Repository"
-msgstr "Otwarcie repozytorium"
+msgstr "פתיחת מאגר"
 
 #: ../gitg/gitg-window.vala:301
 #: ../libgitg/gitg-diff-view-request-patch.vala:109
 msgid "_Cancel"
-msgstr "_Anuluj"
+msgstr "_ביטול"
 
 #: ../gitg/gitg-window.vala:302
 msgid "_Open"
-msgstr "_Otwórz"
+msgstr "_פתיחה"
 
 #: ../gitg/gitg-window.vala:532
 #, c-format
 msgid "'%s' is not a Git repository."
-msgstr "\"%s\" nie jest repozytorium Git."
+msgstr "‏`%s` אינו מאגר Git"
 
 #: ../gitg/history/gitg-history-navigation.vala:199
 #: ../gitg/history/gitg-history-navigation.vala:307
 msgid "All commits"
-msgstr "Wszystkie zatwierdzenia"
+msgstr "כל ההגשות"
 
 #. Branches
 #: ../gitg/history/gitg-history-navigation.vala:202
 msgid "Branches"
-msgstr "Gałęzie"
+msgstr "ענפים"
 
 #. Remotes
 #: ../gitg/history/gitg-history-navigation.vala:239
 msgid "Remotes"
-msgstr "Zdalne"
+msgstr "מרוחקים"
 
 #. Tags
 #: ../gitg/history/gitg-history-navigation.vala:265
 msgid "Tags"
-msgstr "Etykiety"
+msgstr "תגיות"
 
 #: ../gitg/history/gitg-history.vala:164
 #: ../gitg/preferences/gitg-preferences-history.vala:144
 msgid "History"
-msgstr "Historia"
+msgstr "היסטוריה"
 
 #: ../gitg/preferences/gitg-preferences-interface.vala:73
 msgid "Interface"
-msgstr "Interfejs"
+msgstr "ממשק"
 
 #: ../libgitg/gitg-date.vala:316
 msgid "Now"
-msgstr "Teraz"
+msgstr "עכשיו"
 
 #: ../libgitg/gitg-date.vala:320
 #, c-format
 msgid "A minute ago"
 msgid_plural "%d minutes ago"
-msgstr[0] "Minuta temu"
-msgstr[1] "%d minuty temu"
-msgstr[2] "%d minut temu"
+msgstr[0] "לפני דקה"
+msgstr[1] "לפני %d דקות"
+msgstr[2] "לפני שתי דקות"
 
 #: ../libgitg/gitg-date.vala:325
 msgid "Half an hour ago"
-msgstr "Pół godziny temu"
+msgstr "לפני חצי שעה"
 
 #: ../libgitg/gitg-date.vala:330
 #, c-format
 msgid "An hour ago"
 msgid_plural "%d hours ago"
-msgstr[0] "Godzina temu"
-msgstr[1] "%d godziny temu"
-msgstr[2] "%d godzin temu"
+msgstr[0] "לפני שעה"
+msgstr[1] "לפני %d שעות"
+msgstr[2] "לפני שעתיים"
 
 #: ../libgitg/gitg-date.vala:335
 #, c-format
 msgid "A day ago"
 msgid_plural "%d days ago"
-msgstr[0] "Jeden dzień temu"
-msgstr[1] "%d dni temu"
-msgstr[2] "%d dni temu"
+msgstr[0] "לפני יום"
+msgstr[1] "לפני %d ימים"
+msgstr[2] "לפני יומיים"
 
 #: ../libgitg/gitg-diff-view-request-patch.vala:107
 msgid "Save Patch File"
-msgstr "Zapis pliku łaty"
+msgstr "שמירת טלאי לקובץ"
 
 #: ../libgitg/gitg-diff-view-request-patch.vala:111
 msgid "_Save"
-msgstr "_Zapisz"
+msgstr "_שמירה"
 
 #: ../libgitg/gitg-diff-view.vala:123
 msgid "stage"
-msgstr "przenieś do przechowalni"
+msgstr "שילוב"
 
 #: ../libgitg/gitg-diff-view.vala:124
 msgid "unstage"
-msgstr "przenieś z przechowalni"
+msgstr "ביטול שילוב"
 
 #: ../libgitg/gitg-diff-view.vala:125
 msgid "Loading diff…"
-msgstr "Wczytywanie różnicy…"
+msgstr "טוען הבדלים…"
 
 #: ../libgitg/gitg-stage.vala:333
 #, c-format
 msgid "Could not read commit message after running commit-msg hook: %s"
-msgstr ""
-"Nie można odczytać komunikatu zatwierdzenia po wykonaniu haka \"commit-msg"
-"\": %s"
+msgstr "לא ניתן לקרוא הודעת הגשה אחרי הרצת commit-msg hook: ‏%s"
 
 #: ../plugins/diff/gitg-diff.vala:62
 msgid "Diff"
-msgstr "Różnica"
+msgstr "הבדלים"
 
 #: ../plugins/files/gitg-files.vala:63
 msgid "Files"
-msgstr "Pliki"
+msgstr "קבצים"
 
 #. ex: ts=4 noet
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:1
 msgid "Author Details"
-msgstr "Informacje o autorze"
+msgstr "פרטי יוצר"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:3
 #, no-c-format
 msgid "Note: The Git config file '%s' does not exist."
-msgstr "Uwaga: plik konfiguracji git \"%s\" nie istnieje."
+msgstr "שים לב: קובץ תצורה Git ‏`%s` אינו קיים."
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:4
 msgid "Enter details to set as default for all repositories:"
-msgstr ""
-"Proszę wprowadzić informacje do ustawienia jako domyślne dla wszystkich "
-"repozytoriów:"
+msgstr "יש להזין פרטים לקביעה כבררת מחדל עבור כל המאגרים:"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:6
 #, no-c-format
 msgid "Enter details for repository '%s':"
-msgstr "Proszę wprowadzić informacje dla repozytorium \"%s\":"
+msgstr "יש להזין פרטים עבור המאגר `%s`:"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:7
 msgid "E-mail: "
-msgstr "Adres e-mail: "
+msgstr "דוא״ל:"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:8
 msgid "Name: "
-msgstr "Imię i nazwisko: "
+msgstr "שם:"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:9
 msgid "Cancel"
-msgstr "Anuluj"
+msgstr "ביטול"
 
 #: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:10
 msgid "Save"
-msgstr "Zapisz"
+msgstr "שמירה"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:1
 msgid "Clone Repository"
-msgstr "Sklonowanie repozytorium"
+msgstr "שיבוט מאגר"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:2
 msgid "Cl_one"
-msgstr "Skl_onuj"
+msgstr "_שיבוט"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:3
 msgid "Remote _URL:"
-msgstr "Zdalny adres _URL:"
+msgstr "כתובת _URL מרוחקת:"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:4
 msgid "_Local Folder:"
-msgstr "_Lokalny katalog:"
+msgstr "תיקייה _מקומית:"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:5
 msgid "Select location…"
-msgstr "Wybierz położenie…"
+msgstr "בחירת מיקום…"
 
 #: ../gitg/resources/ui/gitg-clone-dialog.ui.h:6
 msgid "Bare repository"
-msgstr "Puste repozytorium"
+msgstr "חשיפת מאגר"
 
 #: ../gitg/resources/ui/gitg-commit-dialog.ui.h:2
 #: ../gitg/resources/ui/gitg-commit-paned.ui.h:2
 msgid "C_ommit"
-msgstr "_Zatwierdzenie"
+msgstr "ה_גשה"
 
 #: ../gitg/resources/ui/gitg-commit-dialog.ui.h:3
 msgid "Add _signed-off-by signature"
-msgstr "Dodanie podpisu \"_signed-off-by\""
+msgstr "הוספת _חתימה"
 
 #: ../gitg/resources/ui/gitg-commit-dialog.ui.h:4
 msgid "_Amend previous commit"
-msgstr "_Poprawienie poprzedniego zatwierdzenia"
+msgstr "לתקן הגשה _קודמת"
 
 #: ../gitg/resources/ui/gitg-commit-dialog.ui.h:5
 #: ../gitg/resources/ui/gitg-window.ui.h:2
 msgid "Close"
-msgstr "Zamknij"
+msgstr "סגירה"
 
 #: ../gitg/resources/ui/gitg-commit-paned.ui.h:1
 msgid "Skip commit _hooks"
-msgstr "Pominięcie _haków zatwierdzenia"
+msgstr "לדלג על הגשת _hooks"
 
 #: ../gitg/resources/ui/gitg-commit-paned.ui.h:3
 msgid "S_tage selection"
-msgstr "P_rzenieś zaznaczone do przechowalni"
+msgstr "_שילוב הבחירה"
 
 #: ../gitg/resources/ui/gitg-history-paned.ui.h:1
 msgid "Subject"
-msgstr "Temat"
+msgstr "נושא"
 
 #: ../gitg/resources/ui/gitg-history-paned.ui.h:2
 msgid "Author"
-msgstr "Autor"
+msgstr "יוצר"
 
 #: ../gitg/resources/ui/gitg-history-paned.ui.h:3
 msgid "Date"
-msgstr "Data"
+msgstr "תאריך"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:1
 msgid "_New Window"
-msgstr "_Nowe okno"
+msgstr "_חלון חדש"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:2
 msgid "_Preferences"
-msgstr "_Preferencje"
+msgstr "ה_עדפות"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:3
 msgid "_Help"
-msgstr "Pomo_c"
+msgstr "ע_זרה"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:4
 msgid "_About"
-msgstr "_O programie"
+msgstr "על _אודות"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:5
 msgid "_Quit"
-msgstr "Za_kończ"
+msgstr "_יציאה"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:6
 msgid "_Open Repository…"
-msgstr "_Otwórz repozytorium…"
+msgstr "_פתיחת מאגר…"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:7
 msgid "_Clone Repository…"
-msgstr "S_klonuj repozytorium…"
+msgstr "_שיבוט מאגר…"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:8
 msgid "_Author Details"
-msgstr "_Informacje o autorze"
+msgstr "פרטי יו_צר"
 
 #: ../gitg/resources/ui/gitg-menus.ui.h:9
 msgid "_Reload"
-msgstr "_Wczytaj ponownie"
+msgstr "טעינה מ_חדש"
 
 #: ../gitg/resources/ui/gitg-preferences-commit.ui.h:1
 msgid "Show markup"
-msgstr "Wyświetlanie składni"
+msgstr "הצגת סימון"
 
 #: ../gitg/resources/ui/gitg-preferences-commit.ui.h:2
 msgid "Display _subject margin at column:"
-msgstr "Wyświetlanie marginesu _tematu w kolumnie:"
+msgstr "הצגת שוליים בכותרת ב_עמודה:"
 
 #: ../gitg/resources/ui/gitg-preferences-commit.ui.h:3
 msgid "Display right _margin at column:"
-msgstr "Wyświetlanie prawego _marginesu w kolumnie:"
+msgstr "הצגת שוליים י_מניים בעמודה:"
 
 #: ../gitg/resources/ui/gitg-preferences-commit.ui.h:4
 msgid "Enable spell checking"
-msgstr "Włączenie sprawdzania pisowni"
+msgstr "לאפשר בדיקת איות"
 
 #: ../gitg/resources/ui/gitg-preferences-commit.ui.h:5
 msgid "Commit Message"
-msgstr "Komunikat zatwierdzenia"
+msgstr "הודעת הגשה"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:1
 msgid "Commits"
-msgstr "Zatwierdzenia"
+msgstr "הגשות"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:2
 msgid "Collapse inactive lanes"
-msgstr "Zwijanie nieaktywnych linii"
+msgstr ""
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:3
 msgid "Show stash in history"
-msgstr "Wyświetlanie schowków w historii"
+msgstr "הצגת היסטוריית stash"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:4
 msgid "Show staged changes in history"
-msgstr "Wyświetlanie w historii zmian będących w poczekalni"
+msgstr "הצגת שינויי שילוב בהיסטוריה"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:5
 msgid "Show unstaged changes in history"
-msgstr "Wyświetlanie w historii zmian nie będących w poczekalni"
+msgstr "הצגת שינויי ביטול שילוב בהיסטוריה"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:6
 msgid "Show history in topological order"
-msgstr "Wyświetlanie historii w porządku topologicznym"
+msgstr "הצגת היסטוריה בסדר טופולוגי"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:7
 msgid "Early"
-msgstr "Wcześnie"
+msgstr "מוקדם"
 
 #: ../gitg/resources/ui/gitg-preferences-history.ui.h:8
 msgid "Late"
-msgstr "Późno"
+msgstr "מאוחר"
 
 #: ../gitg/resources/ui/gitg-preferences-interface.ui.h:1
 msgid "Layout"
-msgstr "Układ"
+msgstr "פריסה"
 
 #: ../gitg/resources/ui/gitg-preferences-interface.ui.h:2
 msgid "Use horizontal layout"
-msgstr "Użycie poziomego układu"
+msgstr "שימוש בפריסה אופקית"
 
 #: ../gitg/resources/ui/gitg-preferences.ui.h:1
 msgid "Preferences"
-msgstr "Preferencje"
+msgstr "העדפות"
 
 #: ../plugins/files/resources/view-files.ui.h:1
 msgid "column"
-msgstr "kolumna"
+msgstr "עמודה"
+
+#~ msgid "gitg Preferences"
+#~ msgstr "העדפות gitg"
+
+#~ msgid "%d hours ago"
+#~ msgstr "לפני %d שעות"
+
+#~ msgid "%d days ago"
+#~ msgstr "לפני %d ימים"
+
+#~ msgid "%d minutes ago"
+#~ msgstr "לפני %d דקות"

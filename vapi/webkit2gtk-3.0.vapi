@@ -366,6 +366,7 @@ namespace WebKit {
 		public bool enable_tabs_to_links { get; set construct; }
 		public bool enable_webaudio { get; set construct; }
 		public bool enable_webgl { get; set construct; }
+		public bool enable_write_console_messages_to_stdout { get; set construct; }
 		public bool enable_xss_auditor { get; set construct; }
 		public string fantasy_font_family { get; set construct; }
 		public bool javascript_can_access_clipboard { get; set construct; }
@@ -407,6 +408,7 @@ namespace WebKit {
 		[CCode (has_construct_function = false)]
 		protected URISchemeRequest ();
 		public void finish (GLib.InputStream stream, int64 stream_length, string? mime_type);
+		public void finish_error (GLib.Error error);
 		public unowned string get_path ();
 		public unowned string get_scheme ();
 		public unowned string get_uri ();

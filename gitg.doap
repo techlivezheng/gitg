@@ -6,11 +6,12 @@
          xmlns="http://usefulinc.com/ns/doap#">
   <name xml:lang="en">gitg</name>
   <shortdesc xml:lang="en">git repository viewer for gtk+/GNOME</shortdesc>
-  <description>gitg is a GitX clone for GNOME/gtk+. It aims at
-  being a small, fast and convenient tool to visualize git history and actions
-  that benefit from a graphical presentation.</description>
+  <description>gitg is a graphical user interface for git. It aims at being a small,
+  fast and convenient tool to visualize the history of git repositories.
+  Besides visualization, gitg also provides several utilities to manage your
+  repository and commit your work.</description>
 
-  <homepage rdf:resource="http://trac.novowork.com/gitg" />
+  <homepage rdf:resource="https://live.gnome.org/Apps/Gitg" />
   <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/gitg-list" />
   <download-page rdf:resource="http://download.gnome.org/sources/gitg/" />
   <bug-database rdf:resource="http://bugzilla.gnome.org/browse.cgi?product=gitg" />
@@ -20,6 +21,14 @@
       <foaf:name>Jesse van den Kieboom</foaf:name>
       <foaf:mbox rdf:resource="mailto:jessevdk@gnome.org" />
       <gnome:userid>jessevdk</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Ignacio Casal Quinteiro</foaf:name>
+      <foaf:mbox rdf:resource="mailto:icq@gnome.org" />
+      <gnome:userid>icq</gnome:userid>
     </foaf:Person>
   </maintainer>
 

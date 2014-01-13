@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I libgd ${ACLOCAL_FLAGS}
 
-SUBDIRS = libgd libgitg libgitg-ext plugins gitg data po tests
+SUBDIRS = libgd po
 
 DISTCLEANFILES = \
 	intltool-extract \
@@ -11,7 +11,7 @@ DISTCLEANFILES = \
 
 EXTRA_DIST = \
 	autogen.sh \
-	MAINTAINERS
+	PACKAGING
 
 MAINTAINERCLEANFILES = 		\
 	$(GITIGNORE_MAINTAINERCLEANFILES_TOPLEVEL) \
@@ -73,6 +73,53 @@ generate-changelog:
 	  | sed -e "s/^\(commit [abcdef0-9]\{40\}\) (.*refs\/tags\/\(v\([0-9.]\+\)\).*)/$$sep\nVersion \3\n$$sep\n\n\1/g" -e 's/^\(commit [abcdef0-9]\{40\}\).*/\1/g' | ruby -e 'puts STDIN.read.gsub(/commit\s*(.*)\nAuthor:\s*(.*)\nDate:\s*(.*)\n/, "\\3 \\2\ncommit \\1\n")' > $(distdir)/c-l; \
 	  mv $(distdir)/c-l $(distdir)/ChangeLog; \
 	fi
+
+GRESDEPS = $(srcdir)/$1 $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/$(dir $1) $(srcdir)/$1)
+
+GRESGEN = $(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target="$@" --sourcedir="$(dir $<)" --generate-source "$<"
+
+noinst_HEADERS    =
+GITIGNOREFILES    =
+CLEANFILES        =
+bin_PROGRAMS      =
+noinst_PROGRAMS   =
+SCALABLE_ICONS    =
+gsettings_SCHEMAS =
+TESTS             =
+
+GITG_PLUGIN_VAPISOURCES =			\
+	libgitg-ext/libgitg-ext-1.0.vapi	\
+	libgitg/libgitg-1.0.vapi
+
+include libgitg/Makefile.am
+include libgitg-ext/Makefile.am
+include plugins/Makefile.am
+include gitg/Makefile.am
+include data/Makefile.am
+include tests/Makefile.am
+
+include icons.mk
+
+@INTLTOOL_DESKTOP_RULE@
+@INTLTOOL_XML_NOMERGE_RULE@
+@GSETTINGS_RULES@
+
+GITIGNOREFILES += $(gsettings_SCHEMAS)
+
+EXTRA_DIST +=				\
+	vapi/config.vapi		\
+	vapi/gitg-js-utils.vapi		\
+	vapi/gobject-introspection.vapi	\
+	vapi/gtksourceview-3.0.deps	\
+	vapi/gtksourceview-3.0.vapi	\
+	vapi/libpeas-1.0.vapi		\
+	vapi/libsoup-2.4.deps		\
+	vapi/libsoup-2.4.vapi		\
+	vapi/webkit2gtk-3.0.deps	\
+	vapi/webkit2gtk-3.0.vapi
+
+%.typelib: %.gir
+	$(INTROSPECTION_COMPILER) $(INTROSPECTION_COMPILER_ARGS) --includedir=$(top_srcdir) -o $@ $<
 
 .PHONY: generate-changelog
 

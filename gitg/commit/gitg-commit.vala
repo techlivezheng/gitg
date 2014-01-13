@@ -87,7 +87,7 @@ namespace GitgCommit
 			if ((status & (Ggit.StatusFlags.INDEX_NEW |
 			               Ggit.StatusFlags.WORKING_TREE_NEW)) != 0)
 			{
-				return "document-new";
+				return "list-add-symbolic";
 			}
 			else if ((status & (Ggit.StatusFlags.INDEX_MODIFIED |
 			                    Ggit.StatusFlags.INDEX_RENAMED |
@@ -95,12 +95,12 @@ namespace GitgCommit
 			                    Ggit.StatusFlags.WORKING_TREE_MODIFIED |
 			                    Ggit.StatusFlags.WORKING_TREE_TYPECHANGE)) != 0)
 			{
-				return "gtk-edit";
+				return "text-editor-symbolic";
 			}
 			else if ((status & (Ggit.StatusFlags.INDEX_DELETED |
 			                    Ggit.StatusFlags.WORKING_TREE_DELETED)) != 0)
 			{
-				return "edit-delete";
+				return "edit-delete-symbolic";
 			}
 
 			return null;
@@ -119,6 +119,8 @@ namespace GitgCommit
 
 					d_main.diff_view.unstaged = true;
 					d_main.diff_view.staged = false;
+
+					d_main.button_stage.label = _("_Stage selection");
 
 					d_main.diff_view.diff = d;
 				}
@@ -198,6 +200,8 @@ namespace GitgCommit
 
 					d_main.diff_view.unstaged = false;
 					d_main.diff_view.staged = true;
+
+					d_main.button_stage.label = _("_Unstage selection");
 
 					d_main.diff_view.diff = d;
 				}
@@ -729,6 +733,54 @@ namespace GitgCommit
 			}
 		}
 
+		private async void stage_unstage_selection(bool staging) throws Error
+		{
+			var selection = yield d_main.diff_view.get_selection();
+			var stage = application.repository.stage;
+
+			foreach (var pset in selection)
+			{
+				if (staging)
+				{
+					yield stage.stage_patch(pset);
+				}
+				else
+				{
+					yield stage.unstage_patch(pset);
+				}
+			}
+		}
+
+		private void on_stage_clicked()
+		{
+			var staging = d_main.diff_view.unstaged;
+
+			stage_unstage_selection.begin(staging, (obj, res) => {
+				try
+				{
+					stage_unstage_selection.end(res);
+				}
+				catch (Error e)
+				{
+					string msg;
+
+					if (staging)
+					{
+						msg = _("Failed to stage selection");
+					}
+					else
+					{
+						msg = _("Failed to unstage selection");
+					}
+
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+					return;
+				}
+
+				reload();
+			});
+		}
+
 		private void build_ui()
 		{
 			d_main = new Paned();
@@ -740,6 +792,15 @@ namespace GitgCommit
 			d_main.button_commit.clicked.connect(() => {
 				on_commit_clicked();
 			});
+
+			d_main.button_stage.clicked.connect(() => {
+				on_stage_clicked();
+			});
+
+			d_main.diff_view.bind_property("has-selection",
+			                               d_main.button_stage,
+			                               "sensitive",
+			                               BindingFlags.DEFAULT);
 		}
 	}
 }

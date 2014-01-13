@@ -1,36 +1,47 @@
-AM_CPPFLAGS = -g -I$(top_srcdir) -I$(top_srcdir)/gitg -I$(top_srcdir)/libgitg $(GITG_DEBUG_FLAGS) $(GITG_CFLAGS)
+tests_common_cppflags =			\
+	-I$(top_srcdir)			\
+	-I$(top_srcdir)/gitg		\
+	-I$(top_srcdir)/libgitg
 
-noinst_PROGRAMS = $(TEST_PROGS) $(DEMO_PROGS)
+tests_common_cflags = 			\
+	-g				\
+	$(GITG_DEBUG_FLAGS)		\
+	$(GITG_CFLAGS)			\
+	-w
 
-AM_VALAFLAGS = $(GITG_PLUGIN_VALAFLAGS)
+tests_common_ldflags = 			\
+	$(GITG_PLUGIN_LIBS)
 
-DEMO_PROGS = diff-view repository-list-box progress-bin
+tests_common_valaflags = $(GITG_PLUGIN_VALAFLAGS)
 
-diff_view_SOURCES = diff-view.vala
-diff_view_LDADD = $(GITG_PLUGIN_LIBS)
-diff_view_CFLAGS = $(GITG_PLUGIN_CFLAGS) -w
+noinst_PROGRAMS += $(TESTS_DEMO_PROGS)
 
-repository_list_box_SOURCES = repository-list-box.vala
-repository_list_box_LDADD = $(GITG_PLUGIN_LIBS)
-repository_list_box_CFLAGS = $(GITG_PLUGIN_CFLAGS) -w
+TESTS_DEMO_PROGS =			\
+	tests/diff-view			\
+	tests/repository-list-box	\
+	tests/progress-bin
 
-progress_bin_SOURCES = progress-bin.vala
-progress_bin_LDADD = $(GITG_PLUGIN_LIBS)
-progress_bin_CFLAGS = $(GITG_PLUGIN_CFLAGS) -w
+tests_diff_view_SOURCES = tests/diff-view.vala $(GITG_PLUGIN_VAPISOURCES)
+tests_diff_view_VALAFLAGS = $(tests_common_valaflags)
+tests_diff_view_CFLAGS = $(tests_common_cflags)
+tests_diff_view_LDFLAGS = $(tests_common_ldflags)
+tests_diff_view_CPPFLAGS = $(tests_common_cppflags)
+tests_diff_view_LDADD = libgitg/libgitg-1.0.la
 
-TESTS = $(TEST_PROGS)
+tests_repository_list_box_SOURCES = tests/repository-list-box.vala $(GITG_PLUGIN_VAPISOURCES)
+tests_repository_list_box_VALAFLAGS = $(tests_common_valaflags)
+tests_repository_list_box_CFLAGS = $(tests_common_cflags)
+tests_repository_list_box_LDFLAGS = $(tests_common_ldflags)
+tests_repository_list_box_CPPFLAGS = $(tests_common_cppflags)
+tests_repository_list_box_LDADD = libgitg/libgitg-1.0.la
 
-BUILT_SOURCES = 				\
-	diff_view_vala.stamp			\
-	repository_list_box_vala.stamp			\
-	progress_bin_vala.stamp
+tests_progress_bin_SOURCES = tests/progress-bin.vala $(GITG_PLUGIN_VAPISOURCES)
+tests_progress_bin_VALAFLAGS = $(tests_common_valaflags)
+tests_progress_bin_CFLAGS = $(tests_common_cflags)
+tests_progress_bin_LDFLAGS = $(tests_common_ldflags)
+tests_progress_bin_CPPFLAGS = $(tests_common_cppflags)
+tests_progress_bin_LDADD = libgitg/libgitg-1.0.la
 
-CLEANFILES =					\
-	$(diff_view_SOURCES:.vala=.c)		\
-	$(repository_list_box_SOURCES:.vala=.c)		\
-	$(progress_bin_SOURCES:.vala=.c)	\
-	$(BUILT_SOURCES)
-
--include $(top_srcdir)/git.mk
+include tests/libgitg/Makefile.am
 
 # vi:ts=8:noet

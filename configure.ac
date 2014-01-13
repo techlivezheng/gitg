@@ -3,8 +3,8 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.64])
 
 m4_define(gitg_major_version, 0)
-m4_define(gitg_minor_version, 2)
-m4_define(gitg_micro_version, 5)
+m4_define(gitg_minor_version, 3)
+m4_define(gitg_micro_version, 2)
 m4_define(gitg_version, gitg_major_version.gitg_minor_version.gitg_micro_version)
 
 AC_INIT([gitg],
@@ -25,7 +25,7 @@ AC_SUBST(GITG_MINOR_VERSION, gitg_minor_version)
 AC_DEFINE(GITG_MICRO_VERSION, gitg_micro_version, [GitG micro version])
 AC_SUBST(GITG_MICRO_VERSION, gitg_micro_version)
 
-AM_INIT_AUTOMAKE([1.11 tar-ustar dist-xz no-dist-gzip -Wno-portability])
+AM_INIT_AUTOMAKE([1.11 tar-ustar dist-xz no-dist-gzip -Wno-portability subdir-objects])
 AM_MAINTAINER_MODE([enable])
 
 AM_SILENT_RULES([yes])
@@ -35,13 +35,12 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PATH_PROG(GZIP, gzip)
-
-AM_PATH_PYTHON([3.2.3])
+AC_PROG_MKDIR_P
 AM_PROG_VALAC([0.20.1.23])
 
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
-AC_PATH_PROG(GTK_UPDATE_ICON_CACHE, gtk-update-icon-cache-3.0)
+AC_PATH_PROG(GTK_UPDATE_ICON_CACHE, gtk-update-icon-cache)
 
 AC_PATH_PROG(VALADOC, valadoc)
 
@@ -86,12 +85,12 @@ AC_DEFINE_UNQUOTED(GITG_LIBDIR,"$GITG_LIBDIR", [lib dir])
 
 AC_CHECK_LIB([m], [sinf])
 
-GLIB_REQUIRED_VERSION=2.32
-GTK_REQUIRED_VERSION=3.9.0
-GTKSOURCEVIEW_REQUIRED_VERSION=3.1.3
+GLIB_REQUIRED_VERSION=2.38
+GTK_REQUIRED_VERSION=3.10.0
+GTKSOURCEVIEW_REQUIRED_VERSION=3.10
 INTROSPECTION_REQUIRED=0.10.1
-WEBKITGTK_REQUIRED_VERSION=1.9.92
-LIBGIT2_GLIB_REQUIRED_VERSION=0.0.7
+WEBKITGTK_REQUIRED_VERSION=2.2
+LIBGIT2_GLIB_REQUIRED_VERSION=0.0.10
 
 PKG_CHECK_MODULES(LIBGITG, [
 	gthread-2.0 >= $GLIB_REQUIRED_VERSION
@@ -107,6 +106,27 @@ PKG_CHECK_MODULES(LIBGITG, [
 	gee-0.8
 	json-glib-1.0
 ])
+
+AC_MSG_CHECKING([for libgit2-glib threading support])
+
+cflags_save="${CFLAGS}"
+libs_save="${LIBS}"
+
+CFLAGS="${LIBGITG_CFLAGS}"
+LIBS="${LIBGITG_LIBS}"
+
+AC_TRY_RUN([
+	#include <libgit2-glib/ggit.h>
+	int
+	main(int argc, const char *argv[])
+	{
+		ggit_init ();
+		return ((ggit_get_capabilities() & GGIT_CAP_THREADS) != 0) ? 0 : 1;
+	}
+],[AC_MSG_RESULT([yes])],[AC_MSG_ERROR([no, please recompile a threadsafe version of libgit2 (-DTHREADSAFE:BOOL=ON)])])
+
+CFLAGS="${cflags_save}"
+LIBS="${libs_save}"
 
 AC_ARG_ENABLE(docs,
               [AS_HELP_STRING([--enable-docs],
@@ -188,6 +208,17 @@ AC_SUBST(GITG_LIBS)
 GOBJECT_INTROSPECTION_REQUIRE($INTROSPECTION_REQUIRED)
 AC_SUBST(INTROSPECTION_REQUIRED)
 
+INTROSPECTION_GIRDIR=`$PKG_CONFIG \
+--define-variable="prefix=${prefix}" \
+--define-variable="datarootdir=${datarootdir}" \
+--define-variable="datadir=${datadir}" \
+--variable=girdir gobject-introspection-1.0`
+
+INTROSPECTION_TYPELIBDIR=`$PKG_CONFIG \
+--define-variable="prefix=${prefix}" \
+--define-variable="libdir=${libdir}" \
+--variable=typelibdir gobject-introspection-1.0`
+
 GNOME_COMPILE_WARNINGS([maximum])
 
 GLIB_GSETTINGS
@@ -216,10 +247,7 @@ GITG_PLUGIN_LIBDIR="$libdir/gitg/plugins"
 AC_SUBST(GITG_PLUGIN_LIBDIR)
 
 GITG_PLUGIN_CFLAGS="$GITG_CFLAGS"
-GITG_PLUGIN_LIBS="$GITG_LIBS 					\
-	\$(top_builddir)/libgd/libgd.la				\
-	\$(top_builddir)/libgitg/libgitg-1.0.la 		\
-	\$(top_builddir)/libgitg-ext/libgitg-ext-1.0.la"
+GITG_PLUGIN_LIBS="$GITG_LIBS"
 
 AC_SUBST(GITG_PLUGIN_CFLAGS)
 AC_SUBST(GITG_PLUGIN_LIBS)
@@ -229,8 +257,6 @@ AC_SUBST(GITG_PLUGIN_LIBTOOL_FLAGS)
 
 GITG_PLUGIN_VALAFLAGS="				\
 	--pkg Ggit-1.0 				\
-	--pkg libgitg-ext-1.0			\
-	--pkg libgitg-1.0			\
 	--pkg gio-2.0				\
 	--pkg gtk+-3.0				\
 	--pkg gtksourceview-3.0			\
@@ -260,15 +286,17 @@ AC_ARG_ENABLE([python],
               [enable_python="auto"])
 
 if test "x$enable_python" = "xauto"; then
-        PKG_CHECK_EXISTS([pygobject-3.0 >= $PYGOBJECT_REQUIRED],
-                         [enable_python=yes],[enable_python=no])
+	PKG_CHECK_EXISTS([pygobject-3.0 >= $PYGOBJECT_REQUIRED],
+	                 [enable_python=yes],[enable_python=no])
 fi
 
 if test "x$enable_python" = "xyes"; then
-        PKG_CHECK_MODULES(PYTHON, [pygobject-3.0 >= $PYGOBJECT_REQUIRED])
+	AM_PATH_PYTHON([3.2.3])
 
-        pyoverridesdir=`$PYTHON -c "import gi; print(gi._overridesdir)"`
-        AC_SUBST(pyoverridesdir)
+	PKG_CHECK_MODULES(PYTHON, [pygobject-3.0 >= $PYGOBJECT_REQUIRED])
+
+	pyoverridesdir="\$(pyexecdir)/gi/overrides"
+	AC_SUBST(pyoverridesdir)
 fi
 
 AM_CONDITIONAL(ENABLE_PYTHON, test x"$enable_python" = "xyes")
@@ -284,22 +312,11 @@ LIBGD_INIT([
 AC_CONFIG_FILES([
 Makefile
 libgd/Makefile
-libgitg/Makefile
 libgitg/libgitg-1.0.pc
-libgitg/tests/Makefile
-libgitg-ext/Makefile
 libgitg-ext/libgitg-ext-1.0.pc
-gitg/Makefile
-data/Makefile
 data/gitg.desktop.in
-data/icons/Makefile
 data/org.gnome.gitg.gschema.xml.in
 po/Makefile.in
-tests/Makefile
-plugins/Makefile
-plugins/diff/Makefile
-plugins/diff/icons/Makefile
-plugins/files/Makefile
 ])
 
 AC_OUTPUT
