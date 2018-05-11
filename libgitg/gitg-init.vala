@@ -42,10 +42,10 @@ public void init() throws Error
 
 	gitg_inited = true;
 
-	if ((Ggit.get_capabilities() & Ggit.CapFlags.THREADS) == 0)
+	if ((Ggit.get_features() & Ggit.FeatureFlags.THREADS) == 0)
 	{
 		gitg_initerr = new InitError.THREADS_UNSAFE("no thread support");
-	
+
 		warning("libgit2 must be built with threading support in order to run gitg");
 		throw gitg_initerr;
 	}
@@ -65,6 +65,20 @@ public void init() throws Error
 
 	factory.register(typeof(Ggit.Commit),
 	                 typeof(Gitg.Commit));
+
+	factory.register(typeof(Ggit.Remote),
+	                 typeof(Gitg.Remote));
+
+	// Add our own css provider
+	Gtk.CssProvider? provider = Gitg.Resource.load_css("libgitg-style.css");
+
+	if (provider != null)
+	{
+		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),
+		                                         provider,
+		                                         600);
+	}
+
 }
 
 }

@@ -29,7 +29,6 @@ public class UIElements<T> : Object
 	private Gtk.Stack d_stack;
 	private Gee.HashMap<string, int> d_builtin_elements;
 
-	[Notify]
 	public T? current
 	{
 		get
@@ -49,6 +48,21 @@ public class UIElements<T> : Object
 			{
 				set_current_impl((GitgExt.UIElement)value);
 			}
+		}
+	}
+
+	public T[] available_elements
+	{
+		owned get
+		{
+			var ret = new T[0];
+
+			foreach (var elem in d_available_elements)
+			{
+				ret += (T)elem;
+			}
+
+			return ret;
 		}
 	}
 
@@ -101,7 +115,7 @@ public class UIElements<T> : Object
 	{
 		return (T)d_elements[id];
 	}
-	
+
 	private bool is_available(GitgExt.UIElement element)
 	{
 		return d_available_elements.find(element) != null;
@@ -113,6 +127,11 @@ public class UIElements<T> : Object
 		    !element.enabled ||
 		    (d_current != null && d_current == element) ||
 		    !is_available(element))
+		{
+			return;
+		}
+
+		if (d_current == element)
 		{
 			return;
 		}
@@ -180,7 +199,7 @@ public class UIElements<T> : Object
 
 		d_stack.add_with_properties(e.widget,
 		                            "name", e.id,
-		                            "title", e.display_name,
+		                            "title", e.description,
 		                            "icon-name", e.icon,
 		                            "position", insert_position);
 	}
@@ -188,6 +207,12 @@ public class UIElements<T> : Object
 	private void available_changed(Object o, ParamSpec spec)
 	{
 		update();
+	}
+
+	private void enabled_changed(Object o, ParamSpec spec)
+	{
+		var e = o as GitgExt.UIElement;
+		e.widget.sensitive = e.enabled;
 	}
 
 	private void on_element_activate(GitgExt.UIElement e)
@@ -205,6 +230,8 @@ public class UIElements<T> : Object
 		}
 
 		e.notify["available"].connect(available_changed);
+		e.notify["enabled"].connect(enabled_changed);
+		
 		e.activate.connect(on_element_activate);
 	}
 

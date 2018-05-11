@@ -24,17 +24,17 @@ public class Dirs
 {
 	public static string data_dir
 	{
-		get { return Config.GITG_DATADIR; }
+		owned get { return PlatformSupport.get_data_dir(); }
 	}
 
 	public static string locale_dir
 	{
-		get { return Config.GITG_LOCALEDIR; }
+		owned get { return PlatformSupport.get_locale_dir(); }
 	}
 
 	public static string lib_dir
 	{
-		get { return Config.GITG_LIBDIR; }
+		owned get { return PlatformSupport.get_lib_dir(); }
 	}
 
 	public static string plugins_dir
@@ -49,12 +49,17 @@ public class Dirs
 
 	public static string user_plugins_dir
 	{
-		owned get { return Path.build_filename(Environment.get_user_data_dir(), "gitg", "plugins"); }
+		owned get { return Path.build_filename(user_data_dir, "plugins"); }
 	}
 
 	public static string user_plugins_data_dir
 	{
 		owned get { return user_plugins_dir; }
+	}
+
+	public static string user_data_dir
+	{
+		owned get { return Path.build_filename(Environment.get_user_data_dir(), "gitg"); }
 	}
 
 	public static string build_data_file(string part, ...)

@@ -27,24 +27,77 @@ namespace GitgDiff
 		public GitgExt.Application? application { owned get; construct set; }
 		public GitgExt.History? history { owned get; construct set; }
 
-		private Gtk.ScrolledWindow d_sw;
 		private Gitg.DiffView d_diff;
 		private Gitg.WhenMapped d_whenMapped;
 
-		construct
+		private ulong d_selection_changed_id;
+
+		protected override void constructed()
 		{
-			d_sw = new Gtk.ScrolledWindow(null, null);
-			d_sw.show();
+			base.constructed();
 
 			d_diff = new Gitg.DiffView();
+
+			d_diff.show_parents = true;
+
+			application.bind_property("repository", d_diff, "repository", BindingFlags.SYNC_CREATE);
+
 			d_diff.show();
 
-			d_sw.add(d_diff);
+			var settings = new Settings("org.gnome.gitg.preferences.diff");
 
-			d_whenMapped = new Gitg.WhenMapped(d_sw);
+			settings.bind("ignore-whitespace",
+			              d_diff,
+			              "ignore-whitespace",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
 
-			history.selection_changed.connect(on_selection_changed);
+			settings.bind("changes-inline",
+			              d_diff,
+			              "changes-inline",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("context-lines",
+			              d_diff,
+			              "context-lines",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("tab-width",
+			              d_diff,
+			              "tab-width",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("wrap",
+			              d_diff,
+			              "wrap-lines",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings = new Settings("org.gnome.gitg.preferences.interface");
+
+			settings.bind("use-gravatar",
+			              d_diff,
+			              "use-gravatar",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("enable-diff-highlighting",
+			              d_diff,
+			              "highlight",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			d_whenMapped = new Gitg.WhenMapped(d_diff);
+
+			d_selection_changed_id = history.selection_changed.connect(on_selection_changed);
 			on_selection_changed(history);
+		}
+
+		protected override void dispose()
+		{
+			if (history != null && d_selection_changed_id != 0)
+			{
+				history.disconnect(d_selection_changed_id);
+				d_selection_changed_id = 0;
+			}
+
+			base.dispose();
 		}
 
 		public string id
@@ -62,6 +115,11 @@ namespace GitgDiff
 			owned get { return _("Diff"); }
 		}
 
+		public string description
+		{
+			owned get { return _("Show the changes introduced by the selected commit"); }
+		}
+
 		public string? icon
 		{
 			owned get { return "diff-symbolic"; }
@@ -69,6 +127,8 @@ namespace GitgDiff
 
 		private void on_selection_changed(GitgExt.History history)
 		{
+			var hasset = false;
+
 			history.foreach_selected((commit) => {
 				var c = commit as Gitg.Commit;
 
@@ -76,6 +136,7 @@ namespace GitgDiff
 				{
 					d_whenMapped.update(() => {
 						d_diff.commit = c;
+						hasset = true;
 					}, this);
 
 					return false;
@@ -83,11 +144,16 @@ namespace GitgDiff
 
 				return true;
 			});
+
+			if (!hasset)
+			{
+				d_diff.commit = null;
+			}
 		}
 
 		public Gtk.Widget? widget
 		{
-			owned get { return d_sw; }
+			owned get { return d_diff; }
 		}
 
 		public bool enabled

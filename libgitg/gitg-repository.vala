@@ -64,6 +64,11 @@ public class Repository : Ggit.Repository
 		}
 	}
 
+	public void clear_refs_cache()
+	{
+		d_refs = null;
+	}
+
 	private void ensure_refs()
 	{
 		if (d_refs != null)
@@ -138,19 +143,34 @@ public class Repository : Ggit.Repository
 		return base.lookup_reference(name) as Ref;
 	}
 
-	public new Ref create_reference(string name, Ggit.OId oid) throws Error
+	public new Ref lookup_reference_dwim(string short_name) throws Error
 	{
-		return base.create_reference(name, oid) as Ref;
+		return base.lookup_reference_dwim(short_name) as Ref;
 	}
 
-	public new Ref create_symbolic_reference(string name, string target) throws Error
+	public new Branch create_branch(string name, Ggit.Object obj, Ggit.CreateFlags flags) throws Error
 	{
-		return base.create_symbolic_reference(name, target) as Ref;
+		return base.create_branch(name, obj, flags) as Branch;
+	}
+
+	public new Ref create_reference(string name, Ggit.OId oid, string message) throws Error
+	{
+		return base.create_reference(name, oid, message) as Ref;
+	}
+
+	public new Ref create_symbolic_reference(string name, string target, string message) throws Error
+	{
+		return base.create_symbolic_reference(name, target, message) as Ref;
 	}
 
 	public new Ref get_head() throws Error
 	{
 		return base.get_head() as Ref;
+	}
+
+	public static new Repository init_repository(File location, bool is_bare) throws Error
+	{
+		return Ggit.Repository.init_repository(location, is_bare) as Repository;
 	}
 
 	public Stage stage
@@ -164,6 +184,63 @@ public class Repository : Ggit.Repository
 
 			return d_stage;
 		}
+	}
+
+	public Ggit.Signature get_signature_with_environment(Gee.Map<string, string> env, string envname = "COMMITER") throws Error
+	{
+		string? user = null;
+		string? email = null;
+		DateTime? date = null;
+
+		var nameenv = @"GIT_$(envname)_NAME";
+		var emailenv = @"GIT_$(envname)_EMAIL";
+		var dateenv = @"GIT_$(envname)_DATE";
+
+		if (env.has_key(nameenv))
+		{
+			user = env[nameenv];
+		}
+
+		if (env.has_key(emailenv))
+		{
+			email = env[emailenv];
+		}
+
+		if (env.has_key(dateenv))
+		{
+			try
+			{
+				date = Gitg.Date.parse(env[dateenv]);
+			}
+			catch {}
+		}
+
+		if (date == null)
+		{
+			date = new DateTime.now_local();
+		}
+
+		var conf = get_config().snapshot();
+
+		if (user == null)
+		{
+			try
+			{
+				user = conf.get_string("user.name");
+			} catch {}
+		}
+
+		if (email == null)
+		{
+			try
+			{
+				email = conf.get_string("user.email");
+			} catch {}
+		}
+
+		return new Ggit.Signature(user != null ? user : "",
+		                          email != null ? email : "",
+		                          date);
 	}
 }
 

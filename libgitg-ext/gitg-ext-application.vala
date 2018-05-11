@@ -35,6 +35,9 @@ public interface Application : Object
 	 */
 	public abstract Gitg.Repository? repository { owned get; set; }
 
+	public signal void repository_changed_externally(ExternalChangeHint hint);
+	public signal void repository_commits_changed();
+
 	/**
 	 * An application wide message bus over which plugins can communicate.
 	 */
@@ -46,6 +49,23 @@ public interface Application : Object
 	public abstract GitgExt.Activity? current_activity { owned get; }
 
 	/**
+	 * The environment with which the application was opened.
+	 */
+	public abstract Gee.Map<string, string> environment { owned get; }
+
+	/**
+	 * Get the committer signature and verify that both its name and
+	 * e-mail are set. If not, the application will show an approppriate
+	 * error message and return null.
+	 */
+	public abstract Ggit.Signature? get_verified_committer();
+
+	/**
+	 * Get the notifications manager for the application.
+	 */
+	public abstract Notifications notifications { owned get; }
+
+	/**
 	 * Set the current application main activity.
 	 *
 	 * @param id the id of the activity {@link UIElement.id}.
@@ -53,13 +73,32 @@ public interface Application : Object
 	 * @return the created new main activity, or ``null`` if no activity with the
 	 *         given id exists.
 	 */
-	public abstract GitgExt.Activity? activity(string id);
+	public abstract GitgExt.Activity? get_activity_by_id(string id);
+	public abstract GitgExt.Activity? set_activity_by_id(string id);
+
+	public abstract void user_query(UserQuery query);
+	public abstract async Gtk.ResponseType user_query_async(UserQuery query);
 
 	public abstract void show_infobar(string          primary_msg,
 	                                  string          secondary_msg,
 	                                  Gtk.MessageType type);
 
-	public abstract Gee.Map<string, string> environment { owned get; }
+	public abstract bool busy { get; set; }
+
+	public abstract Application open_new(Ggit.Repository repository, string? hint = null);
+
+	public abstract RemoteLookup remote_lookup { owned get; }
+
+	public abstract void open_repository(File path);
+}
+
+[Flags]
+public enum ExternalChangeHint
+{
+	NONE = 0,
+
+	REFS  = 1 << 0,
+	INDEX = 1 << 1
 }
 
 }

@@ -103,6 +103,8 @@ public class Stage : Object
 
 	public async void refresh() throws Error
 	{
+		d_head_tree = null;
+
 		yield thread_index((index) => {
 			index.read(false);
 		});
@@ -267,10 +269,9 @@ public class Stage : Object
 
 	private bool has_index_changes()
 	{
-		var opts = Ggit.StatusOption.EXCLUDE_SUBMODULES;
 		var show = Ggit.StatusShow.INDEX_ONLY;
 
-		var options = new Ggit.StatusOptions(opts, show, null);
+		var options = new Ggit.StatusOptions(0, show, null);
 		bool has_changes = false;
 
 		try
@@ -366,24 +367,39 @@ public class Stage : Object
 		}
 	}
 
-	public async Ggit.OId? commit(string             message,
-	                              Ggit.Signature     author,
-	                              Ggit.Signature     committer,
-	                              StageCommitOptions options) throws Error
+	public async Ggit.OId? commit_index(Ggit.Index         index,
+	                                    Ggit.Ref           reference,
+	                                    string             message,
+	                                    Ggit.Signature     author,
+	                                    Ggit.Signature     committer,
+	                                    Ggit.OId[]?        parents,
+	                                    StageCommitOptions options) throws Error
+	{
+		Ggit.OId? treeoid = null;
+
+		yield Async.thread(() => {
+			treeoid = index.write_tree_to(d_repository);
+		});
+
+		return yield commit_tree(treeoid, reference, message, author, committer, parents, options);
+	}
+
+	public async Ggit.OId? commit_tree(Ggit.OId           treeoid,
+	                                   Ggit.Ref           reference,
+	                                   string             message,
+	                                   Ggit.Signature     author,
+	                                   Ggit.Signature     committer,
+	                                   Ggit.OId[]?        parents,
+	                                   StageCommitOptions options) throws Error
 	{
 		Ggit.OId? ret = null;
 
-		bool skip_hooks = (options & StageCommitOptions.SKIP_HOOKS) != 0;
-		bool amend = (options & StageCommitOptions.AMEND) != 0;
-
-		yield thread_index((index) => {
-			if (!amend && !has_index_changes())
-			{
-				throw new StageError.NOTHING_TO_COMMIT("Nothing to commit");
-			}
+		yield Async.thread(() => {
+			bool skip_hooks = (options & StageCommitOptions.SKIP_HOOKS) != 0;
+			bool amend = (options & StageCommitOptions.AMEND) != 0;
 
 			// Write tree from index
-			var conf = d_repository.get_config();
+			var conf = d_repository.get_config().snapshot();
 
 			string emsg = message;
 
@@ -401,52 +417,54 @@ public class Stage : Object
 				emsg = commit_msg_hook(emsg, author, committer);
 			}
 
-			var treeoid = index.write_tree();
-
-			// Note: get the symbolic ref here
-			var head = d_repository.lookup_reference("HEAD");
-
-			Ggit.OId? headoid = null;
+			Ggit.OId? refoid = null;
 
 			try
 			{
 				// Resolve the ref and get the actual target id
-				headoid = head.resolve().get_target();
+				refoid = reference.resolve().get_target();
 			} catch {}
 
-			Ggit.OId[] parents;
+			if (!amend)
+			{
+				Ggit.OId[] pars;
 
-			if (headoid == null)
-			{
-				parents = new Ggit.OId[] {};
-			}
-			else
-			{
-				if (amend)
+				if (parents == null)
 				{
-					var commit = d_repository.lookup<Ggit.Commit>(headoid);
-					var p = commit.get_parents();
-
-					parents = new Ggit.OId[p.size()];
-
-					for (int i = 0; i < p.size(); ++i)
+					if (refoid == null)
 					{
-						parents[i] = p.get_id(i);
+						pars = new Ggit.OId[] {};
+					}
+					else
+					{
+						pars = new Ggit.OId[] { refoid };
 					}
 				}
 				else
 				{
-					parents = new Ggit.OId[] { headoid };
+					pars = parents;
 				}
-			}
 
-			ret = d_repository.create_commit_from_oids("HEAD",
-			                                           author,
-			                                           committer,
-			                                           encoding,
-			                                           emsg,
-			                                           treeoid,
-			                                           parents);
+				ret = d_repository.create_commit_from_ids(reference.get_name(),
+				                                          author,
+				                                          committer,
+				                                          encoding,
+				                                          emsg,
+				                                          treeoid,
+				                                          pars);
+			}
+			else
+			{
+				var refcommit = d_repository.lookup<Ggit.Commit>(refoid);
+				var tree = d_repository.lookup<Ggit.Tree>(treeoid);
+
+				ret = refcommit.amend(reference.get_name(),
+				                       author,
+				                       committer,
+				                       encoding,
+				                       emsg,
+				                       tree);
+			}
 
 			bool always_update = false;
 
@@ -464,27 +482,27 @@ public class Stage : Object
 
 			reflogmsg += ": " + get_subject(message);
 
-			// Update reflog of HEAD
+			// Update reflog of reference
 			try
 			{
-				if (always_update || head.has_reflog())
+				if (always_update || reference.has_log())
 				{
-					var reflog = head.get_reflog();
+					var reflog = reference.get_log();
 					reflog.append(ret, committer, reflogmsg);
 					reflog.write();
 				}
 			} catch {}
 
-			if (head.get_reference_type() == Ggit.RefType.SYMBOLIC)
+			if (reference.get_reference_type() == Ggit.RefType.SYMBOLIC)
 			{
 				// Update reflog of whereever HEAD points to
 				try
 				{
-					var resolved = head.resolve();
+					var resolved = reference.resolve();
 
-					if (always_update || resolved.has_reflog())
+					if (always_update || resolved.has_log())
 					{
-						var reflog = resolved.get_reflog();
+						var reflog = resolved.get_log();
 
 						reflog.append(ret, committer, reflogmsg);
 						reflog.write();
@@ -492,9 +510,47 @@ public class Stage : Object
 				} catch {}
 			}
 
+			if (reference.get_name() == "HEAD")
+			{
+				d_head_tree = null;
+			}
+
 			// run post commit
 			post_commit_hook(author);
 		});
+
+		return ret;
+	}
+
+	public async Ggit.OId? commit(string             message,
+	                              Ggit.Signature     author,
+	                              Ggit.Signature     committer,
+	                              StageCommitOptions options) throws Error
+	{
+		bool amend = (options & StageCommitOptions.AMEND) != 0;
+		Ggit.OId? ret = null;
+
+		lock(d_index_mutex)
+		{
+			Ggit.Index? index = null;
+
+			yield Async.thread(() => {
+				index = d_repository.get_index();
+			});
+
+			if (!amend && !has_index_changes())
+			{
+				throw new StageError.NOTHING_TO_COMMIT("Nothing to commit");
+			}
+
+			ret = yield commit_index(index,
+			                         d_repository.lookup_reference("HEAD"),
+			                         message,
+			                         author,
+			                         committer,
+			                         null,
+			                         options);
+		}
 
 		return ret;
 	}
@@ -529,8 +585,6 @@ public class Stage : Object
 
 			stream.write_all(blob.get_raw_content(), null);
 			stream.close();
-
-			index.write();
 		});
 	}
 
@@ -547,6 +601,100 @@ public class Stage : Object
 	public async void revert_path(string path) throws Error
 	{
 		yield revert(d_repository.get_workdir().resolve_relative_path(path));
+	}
+
+	/**
+	 * Revert a patch in the working directory.
+	 *
+	 * @param patch the patch to revert.
+	 *
+	 * Revert a provided patch from the working directory. The patch should
+	 * contain changes of the file in the current working directory to the contents
+	 * of the index (i.e. as obtained from diff_workdir)
+	 */
+	public async void revert_patch(PatchSet patch) throws Error
+	{
+		// new file is the current file in the working directory
+		var workdirf = d_repository.get_workdir().resolve_relative_path(patch.filename);
+		var workdirf_stream = yield workdirf.read_async();
+
+		yield thread_index((index) => {
+			var entries = index.get_entries();
+			var entry = entries.get_by_path(workdirf, 0);
+
+			if (entry == null)
+			{
+				throw new StageError.INDEX_ENTRY_NOT_FOUND(patch.filename);
+			}
+
+			var index_blob = d_repository.lookup<Ggit.Blob>(entry.get_id());
+			unowned uchar[] index_content = index_blob.get_raw_content();
+
+			var index_stream = new MemoryInputStream.from_bytes(new Bytes(index_content));
+			var reversed = patch.reversed();
+
+			FileIOStream? out_stream = null;
+			File ?outf = null;
+
+			try
+			{
+				outf = File.new_tmp(null, out out_stream);
+
+				apply_patch_stream(workdirf_stream,
+				                   index_stream,
+				                   out_stream.output_stream,
+				                   reversed);
+			}
+			catch (Error e)
+			{
+				workdirf_stream.close();
+				index_stream.close();
+
+				if (outf != null)
+				{
+					try
+					{
+						outf.delete();
+					} catch {}
+				}
+
+				throw e;
+			}
+
+			workdirf_stream.close();
+			index_stream.close();
+
+			if (out_stream != null)
+			{
+				out_stream.close();
+			}
+
+			// Move outf to workdirf
+			try
+			{
+				var repl = workdirf.replace(null,
+				                            false,
+				                            FileCreateFlags.NONE);
+
+				repl.splice(outf.read(),
+				            OutputStreamSpliceFlags.CLOSE_SOURCE |
+				            OutputStreamSpliceFlags.CLOSE_TARGET);
+			}
+			catch (Error e)
+			{
+				try
+				{
+					outf.delete();
+				} catch {}
+
+				throw e;
+			}
+
+			try
+			{
+				outf.delete();
+			} catch {}
+		});
 	}
 
 	/**
@@ -605,6 +753,26 @@ public class Stage : Object
 		yield stage(d_repository.get_workdir().resolve_relative_path(path));
 	}
 
+	/**
+	 * Stage a commit to the index.
+	 *
+	 * @param path path relative to the working directory.
+	 * @param id the id of the commit object to stage at the given path.
+	 *
+	 * Stage a commit to the index with a relative path. This will record the
+	 * given commit id for file pointed to at path in the index.
+	 */
+	public async void stage_commit(string path, Ggit.Commit commit) throws Error
+	{
+		yield thread_index((index) => {
+			var entry = d_repository.create_index_entry_for_path(path, commit.get_id());
+			entry.set_commit(commit);
+
+			index.add(entry);
+			index.write();
+		});
+	}
+
 	private void copy_stream(OutputStream dest, InputStream src, ref size_t pos, size_t index, size_t length) throws Error
 	{
 		if (length == 0)
@@ -626,10 +794,30 @@ public class Stage : Object
 		pos += length;
 	}
 
-	private void apply_patch(Ggit.Index index, InputStream old_stream, InputStream new_stream, PatchSet patch) throws Error
+	private void apply_patch(Ggit.Index  index,
+	                         InputStream old_stream,
+	                         InputStream new_stream,
+	                         PatchSet    patch) throws Error
 	{
 		var patched_stream = d_repository.create_blob();
 
+		apply_patch_stream(old_stream, new_stream, patched_stream, patch);
+
+		patched_stream.close();
+		var new_id = patched_stream.get_id();
+
+		var new_entry = d_repository.create_index_entry_for_path(patch.filename,
+		                                                         new_id);
+
+		index.add(new_entry);
+		index.write();
+	}
+
+	private void apply_patch_stream(InputStream  old_stream,
+	                                InputStream  new_stream,
+	                                OutputStream patched_stream,
+	                                PatchSet     patch) throws Error
+	{
 		size_t old_ptr = 0;
 		size_t new_ptr = 0;
 
@@ -663,15 +851,6 @@ public class Stage : Object
 
 		// Copy remaining part of old
 		patched_stream.splice(old_stream, OutputStreamSpliceFlags.NONE);
-		patched_stream.close();
-
-		var new_id = patched_stream.get_id();
-
-		var new_entry = d_repository.create_index_entry_for_path(patch.filename,
-		                                                         new_id);
-
-		index.add(new_entry);
-		index.write();
 	}
 
 	/**
@@ -797,18 +976,45 @@ public class Stage : Object
 		});
 	}
 
-	public async Ggit.Diff? diff_index(StageStatusFile f) throws Error
+	public async Ggit.Diff? diff_index_all(StageStatusItem[]? files,
+	                                       Ggit.DiffOptions?  defopts = null) throws Error
 	{
-		var opts = new Ggit.DiffOptions(Ggit.DiffOption.INCLUDE_UNTRACKED |
-		                                Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
-		                                Ggit.DiffOption.RECURSE_UNTRACKED_DIRS,
-		                                3,
-		                                3,
-		                                null,
-		                                null,
-		                                new string[] {f.path});
+		var opts = new Ggit.DiffOptions();
 
-		var tree = yield get_head_tree();
+		opts.flags = Ggit.DiffOption.INCLUDE_UNTRACKED |
+		             Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
+		             Ggit.DiffOption.RECURSE_UNTRACKED_DIRS;
+
+
+		if (files != null)
+		{
+			var pspec = new string[files.length];
+
+			for (var i = 0; i < files.length; i++)
+			{
+				pspec[i] = files[i].path;
+			}
+
+			opts.pathspec = pspec;
+		}
+
+		if (defopts != null)
+		{
+			opts.flags |= defopts.flags;
+
+			opts.n_context_lines = defopts.n_context_lines;
+			opts.n_interhunk_lines = defopts.n_interhunk_lines;
+
+			opts.old_prefix = defopts.old_prefix;
+			opts.new_prefix = defopts.new_prefix;
+		}
+
+		Ggit.Tree? tree = null;
+
+		if (!d_repository.is_empty())
+		{
+			tree = yield get_head_tree();
+		}
 
 		return new Ggit.Diff.tree_to_index(d_repository,
 		                                   tree,
@@ -816,20 +1022,54 @@ public class Stage : Object
 		                                   opts);
 	}
 
-	public async Ggit.Diff? diff_workdir(StageStatusFile f) throws Error
+	public async Ggit.Diff? diff_index(StageStatusItem   f,
+	                                   Ggit.DiffOptions? defopts = null) throws Error
 	{
-		var opts = new Ggit.DiffOptions(Ggit.DiffOption.INCLUDE_UNTRACKED |
-		                                Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
-		                                Ggit.DiffOption.RECURSE_UNTRACKED_DIRS,
-		                                3,
-		                                3,
-		                                null,
-		                                null,
-		                                new string[] {f.path});
+		return yield diff_index_all(new StageStatusItem[] {f}, defopts);
+	}
+
+	public async Ggit.Diff? diff_workdir_all(StageStatusItem[] files,
+	                                         Ggit.DiffOptions? defopts = null) throws Error
+	{
+		var opts = new Ggit.DiffOptions();
+
+		opts.flags = Ggit.DiffOption.INCLUDE_UNTRACKED |
+		             Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
+		             Ggit.DiffOption.RECURSE_UNTRACKED_DIRS |
+		             Ggit.DiffOption.SHOW_UNTRACKED_CONTENT;
+
+		if (files != null)
+		{
+			var pspec = new string[files.length];
+
+			for (var i = 0; i < files.length; i++)
+			{
+				pspec[i] = files[i].path;
+			}
+
+			opts.pathspec = pspec;
+		}
+
+		if (defopts != null)
+		{
+			opts.flags |= defopts.flags;
+
+			opts.n_context_lines = defopts.n_context_lines;
+			opts.n_interhunk_lines = defopts.n_interhunk_lines;
+
+			opts.old_prefix = defopts.old_prefix;
+			opts.new_prefix = defopts.new_prefix;
+		}
 
 		return new Ggit.Diff.index_to_workdir(d_repository,
 		                                      d_repository.get_index(),
 		                                      opts);
+	}
+
+	public async Ggit.Diff? diff_workdir(StageStatusItem   f,
+	                                     Ggit.DiffOptions? defopts = null) throws Error
+	{
+		return yield diff_workdir_all(new StageStatusItem[] {f}, defopts);
 	}
 }
 

@@ -1,1204 +1,1765 @@
-# Norwegian Bokmål translation of giggle.
+# Norwegian Bokmål translation of gitg.
 # Copyright (C) 2001 Free Software Foundation, Inc.
-# Kjartan Maraas <kmaraas@gnome.org>, 2001-2010.
+# Kjartan Maraas <kmaraas@gnome.org>, 2001-2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: giggle\n"
+"Project-Id-Version: gitg 3.23.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-14 17:37+0100\n"
-"PO-Revision-Date: 2010-03-14 17:36+0100\n"
+"POT-Creation-Date: 2017-02-19 19:34+0100\n"
+"PO-Revision-Date: 2017-02-19 19:58+0100\n"
 "Last-Translator: Kjartan Maraas <kmaraas@gnome.org>\n"
-"Language-Team: Norwegian/Bokmaal <i18n-nb@lister.ping.uio.no>\n"
+"Language-Team: Norwegian bokmål <i18n-nb@lister.ping.uio.no>\n"
+"Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../data/gitg.desktop.in.in.h:1
-#, fuzzy
-msgid "Git repository browser"
-msgstr "Ekste_rnt lager"
+#: ../contrib/xml/xml-reader.c:327
+#, c-format
+msgid "Could not parse XML from stream"
+msgstr ""
 
-#. Translators: this is the application name as in g_set_application_name
-#: ../data/gitg.desktop.in.in.h:2 ../gitg/gitg.c:181
-#: ../gitg/gitg-window.c:1238 ../gitg/gitg-window.c:1251
-#: ../gitg/gitg-branch-actions.c:146 ../gitg/gitg-branch-actions.c:199
-#: ../gitg/gitg-window.ui.h:18
+#: ../data/gitg.desktop.in.in.h:1 ../gitg/gitg.vala:39
+#: ../gitg/resources/ui/gitg-window.ui.h:1
 msgid "gitg"
+msgstr "gitg"
+
+#: ../data/gitg.desktop.in.in.h:2
+msgid "Git repository browser"
+msgstr "Git utforsker"
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:1
+msgid "Default Clone Directory"
+msgstr "Forvalgt katalog for kloning"
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:2
+msgid ""
+"The default directory in which new repositories should be suggested to be "
+"cloned."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:1
-msgid "Column at Which Right Margin is Shown"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:3
+msgid "Orientation of the main interface (vertical or horizontal)"
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:2
-msgid "Filter Revisions When Searching"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:4
+msgid "Setting that sets the orientation of the main interface."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:3
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:5
+msgid "Default Activity"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:6
+msgid "The activity which gitg activates by default when first launched."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:7
+msgid "Use Gravatar"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:8
+msgid "Enable the use of gravatar to display user avatars."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:9
+msgid "Enable Monitoring"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:10
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:10
+msgid "Automatically update when external changes to .git are detected"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:11
+msgid "Enable Diff Highlighting"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:12
+msgid ""
+"Setting that determines whether to enable syntax highlighting in diff views."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:13
+msgid "When to Collapse Inactive Lanes"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:14
 msgid ""
 "Setting that indicates when an inactive lane should be collapsed. Valid "
 "values are 0 - 4, where 0 indicates 'early' and 4 indicates 'late'."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:4
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:15
+msgid ""
+"Setting that indicates whether to collapse history lanes which do not show "
+"activity. Enabling this can provide a cleaner history view when there is a "
+"lot of parallel development. See collapse-inactive-lanes to control when "
+"lanes should be collapsed."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:16
+msgid "Show History in Topological Order"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:17
 msgid ""
 "Setting that indicates whether to show the history in topological order."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:5
-msgid "Setting that sets the orientation layout of the main view."
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:18
+msgid "Show Stashed Changes"
+msgstr "Vis lagrede endringer"
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:19
+msgid ""
+"Setting that indicates whether to show items for the stash in the history."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:6
-msgid "Show History in Topological Order"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:20
+msgid "Show Staged Changes"
+msgstr "Vis klargjorte endringer"
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:21
+msgid ""
+"Setting that indicates whether to show a virtual item for the currently "
+"staged changes in the history."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:7
-msgid "Show Main View in Vertical Layout"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:22
+msgid "Show Unstaged Changes"
+msgstr "Vis endringer som ikke er klargjort for insjekking"
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:23
+msgid ""
+"Setting that indicates whether to show a virtual item for the currently "
+"unstaged changes in the history."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:8
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:24
+msgid "Mainline Head"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:25
+msgid ""
+"Setting that indicates whether to always preserve a mainline in the history "
+"for the current HEAD."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:26
+msgid "Default selection of the history activity"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:27
+msgid ""
+"Setting that determines the default selection on startup of the history "
+"activity."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:28
+msgid "Reference Sort Order"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:29
+msgid "The order by which references in the history sidebar should be sorted."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:30
+msgid "Show Upstream With Branch"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:31
+msgid ""
+"Determines whether to also show the upstream (remote) tracking branch when "
+"selecting a local branch in the history view."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:32
 msgid "Show Right Margin in Commit Message View"
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:9
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:33
 msgid ""
 "Show a right margin indicator in the commit message view. This can be used "
 "to easily see where to break the commit message at a particular column."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:10
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:34
+msgid "Column at Which Right Margin is Shown"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:35
 msgid ""
-"The column at which the right margin is shown if the right-margin preference "
-"is set to TRUE."
+"The column at which the right margin is shown if the show-right-margin "
+"preference is set to TRUE."
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:11
-msgid "The command to handle GITG scheme URLs"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:36
+msgid "Show Subject Margin in Commit Message View"
 msgstr ""
 
-#: ../data/gitg.schemas.in.h:12
-msgid "The command to handle GITG scheme URLs."
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:13
-msgid "When to Collapse Inactive Lanes"
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:14
-msgid "Whether command to handle GITG scheme URLs is enabled"
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:15
-msgid "Whether command to handle GITG scheme URLs is enabled."
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:16
-msgid "Whether command to handle GITG scheme URLs needs a terminal"
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:17
-msgid "Whether command to handle GITG scheme URLs needs a terminal."
-msgstr ""
-
-#: ../data/gitg.schemas.in.h:18
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:37
 msgid ""
-"Whether searching filters the revisions in the history view instead of "
-"jumping to the first match."
+"Highlight the subject text of the commit message when it passes the margin "
+"specified by subject-margin-position."
 msgstr ""
 
-#: ../gitg/gitg.c:52
-#, fuzzy
-msgid "Show the application's version"
-msgstr "Klipp ut utvalget"
-
-#: ../gitg/gitg.c:53
-msgid "Start gitg in commit mode"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:38
+msgid "Column at Which Subject Margin is Shown"
 msgstr ""
 
-#: ../gitg/gitg.c:54
-#, fuzzy
-msgid "Select commit after loading the repository"
-msgstr "Velg katalog"
-
-#: ../gitg/gitg.c:64
-#, fuzzy
-msgid "- git repository viewer"
-msgstr "Ekste_rnt lager"
-
-#: ../gitg/gitg-commit-view.c:209 ../gitg/gitg-revision-tree-view.c:183
-msgid "Cannot display file content as text"
-msgstr ""
-
-#: ../gitg/gitg-commit-view.c:1482
-msgid "You must first stage some changes before committing"
-msgstr ""
-
-#: ../gitg/gitg-commit-view.c:1490
-msgid "Please enter a commit message before committing"
-msgstr ""
-
-#: ../gitg/gitg-commit-view.c:1502
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:39
 msgid ""
-"Your user name or email could not be retrieved for use in the sign off "
-"message"
+"The column at which the subject margin is shown if the show-subject-margin "
+"preference is set to TRUE."
 msgstr ""
 
-#: ../gitg/gitg-commit-view.c:1504
-msgid "Something went wrong while trying to commit"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:40
+msgid "Enable Spell Checking"
 msgstr ""
 
-#: ../gitg/gitg-commit-view.c:1680
-msgid "Revert fail"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:41
+msgid ""
+"Setting which determines whether or not spell checking is enabled when "
+"writing a commit message."
 msgstr ""
 
-#: ../gitg/gitg-commit-view.c:1691
-msgid "Are you sure you want to revert these changes?"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:42
+msgid "Spell Checking Language"
 msgstr ""
 
-#: ../gitg/gitg-commit-view.c:1694
-msgid "Reverting changes is permanent and cannot be undone"
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:43
+msgid ""
+"The language to use when spell checking is enabled for writing a commit "
+"message."
 msgstr ""
 
-#: ../gitg/gitg-repository.c:606
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:44
+msgid "Ignore Whitespace Changes"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:45
+msgid ""
+"Setting that indicates whether to ignore whitespace changes when showing the "
+"diff of a commit."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:46
+msgid "Show Changes Inline"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:47
+msgid ""
+"Setting that indicates whether changes within lines should be shown inline."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:48
+msgid "Wrap"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:49
+msgid "Wrap lines."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:50
+msgid "Number of Before/After Context Lines"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:51
+msgid ""
+"Setting that determines how many lines of context (before and after) should "
+"be shown when showing the diff of a commit."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:52
+msgid "Rendered Width of a Tab Character"
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:53
+msgid ""
+"Setting that determines how much space a tab character should occupy when "
+"showing the diff of a commit."
+msgstr ""
+
+#: ../data/org.gnome.gitg.gschema.xml.in.in.h:54
+msgid ""
+"Setting that determines how many lines of context (before and after) should "
+"be shown when showing the diff to be staged/unstaged in the commit area."
+msgstr ""
+
+#: ../gitg/commit/gitg-commit-dialog.vala:308
+#, c-format
+msgid "Cannot set spell checking language: %s"
+msgstr "Kan ikke sette språk for stavekontroll: %s"
+
+#: ../gitg/commit/gitg-commit-dialog.vala:508
+#: ../gitg/commit/gitg-commit.vala:1076
+msgid "There are no changes to be committed"
+msgstr "Det er ingen endringer som skal sjekkes inn"
+
+#: ../gitg/commit/gitg-commit-dialog.vala:509
+#: ../gitg/commit/gitg-commit.vala:1077
+msgid "Use amend to change the commit message of the previous commit"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:113
+msgctxt "Activity"
+msgid "Commit"
+msgstr "Sjekk inn"
+
+#: ../gitg/commit/gitg-commit.vala:118
+msgid "Create new commits and manage the staging area"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:193
+msgid "_Stage selection"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:232
+#, c-format
+msgid "Failed to stage the removal of submodule `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:248
+#, c-format
+msgid "Failed to open the repository of submodule `%s' while trying to stage"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:262
+#, c-format
+msgid ""
+"Failed to lookup the working directory commit of submodule `%s' while trying "
+"to stage"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:275
+#, fuzzy, c-format
+msgid "Failed to stage the submodule `%s'"
+msgstr "Velg kataloger"
+
+#: ../gitg/commit/gitg-commit.vala:297
+#, c-format
+msgid "Failed to stage the removal of file `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:311
+#, c-format
+msgid "Failed to stage the file `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:583
+msgid "_Unstage selection"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:649
+#, c-format
+msgid "Failed to unstage the removal of file `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:650
+#, c-format
+msgid "Failed to unstage the file `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:657
+#, c-format
+msgid "Failed to unstage the removal of submodule `%s'"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:658
+#, fuzzy, c-format
+msgid "Failed to unstage the submodule `%s'"
+msgstr "Velg kataloger"
+
+#. Populate staged items
+#: ../gitg/commit/gitg-commit.vala:862
+msgid "Staged"
+msgstr "Klargjort"
+
+#: ../gitg/commit/gitg-commit.vala:870
+msgid "No staged files"
+msgstr "Ingen klargjorte filer"
+
+#. Populate unstaged items
+#: ../gitg/commit/gitg-commit.vala:893
+msgid "Unstaged"
+msgstr "Fjernet fra klargjøringsområde"
+
+#: ../gitg/commit/gitg-commit.vala:901
 #, fuzzy
-msgid "Staged changes"
+msgid "No unstaged files"
+msgstr "Endrede filer"
+
+#. Populate untracked items
+#: ../gitg/commit/gitg-commit.vala:924
+msgid "Untracked"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:928
+msgid "No untracked files"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:953
+msgid "Submodule"
+msgstr "Undermodul"
+
+#: ../gitg/commit/gitg-commit.vala:957
+msgid "No dirty submodules"
+msgstr "Ingen skitne undermoduler"
+
+#: ../gitg/commit/gitg-commit.vala:1106
+msgid "Failed to commit"
+msgstr "Klarte ikke å sjekke inn"
+
+#: ../gitg/commit/gitg-commit.vala:1122
+msgid "Failed to pass pre-commit"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:1330 ../gitg/commit/gitg-commit.vala:1480
+msgid "Discard changes"
+msgstr "Forkast endringer"
+
+#: ../gitg/commit/gitg-commit.vala:1331
+msgid "Are you sure you want to permanently discard the selected changes?"
+msgstr ""
+
+#: ../gitg/commit/gitg-commit.vala:1340 ../gitg/commit/gitg-commit.vala:1506
+#: ../gitg/commit/gitg-commit.vala:1621
+#: ../gitg/gitg-commit-action-create-patch.vala:145
+#: ../gitg/gitg-dash-view.vala:444 ../gitg/gitg-window.vala:190
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:2
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:2
+#: ../gitg/resources/ui/gitg-commit-dialog.ui.h:2
+#: ../gitg/resources/ui/gitg-create-branch-dialog.ui.h:2
+#: ../gitg/resources/ui/gitg-create-tag-dialog.ui.h:2
+#: ../gitg/resources/ui/gitg-window.ui.h:9
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:1
+msgid "_Cancel"
+msgstr "A_vbryt"
+
+#: ../gitg/commit/gitg-commit.vala:1341 ../gitg/commit/gitg-commit.vala:1507
+msgid "Discard"
+msgstr "Forkast"
+
+#: ../gitg/commit/gitg-commit.vala:1370
+msgid "Failed to discard selection"
+msgstr "Klarte ikke å forkaste utvalg"
+
+#: ../gitg/commit/gitg-commit.vala:1400
+msgid "Failed to stage selection"
+msgstr "Klarte ikke å klargjøre utvalg"
+
+#: ../gitg/commit/gitg-commit.vala:1404
+#, fuzzy
+msgid "Failed to unstage selection"
+msgstr "Klarte ikke å fjerne utvalg fra klargjøring"
+
+#: ../gitg/commit/gitg-commit.vala:1464
+msgid "Failed to discard changes"
+msgstr "Klarte ikke å forkaste endringer"
+
+#: ../gitg/commit/gitg-commit.vala:1485
+#, c-format
+msgid ""
+"Are you sure you want to permanently discard all changes made to the file `"
+"%s'?"
+msgstr "Er du sikker på at du vil forkaste alle endringer gjort i filen «%s» permanent?"
+
+#: ../gitg/commit/gitg-commit.vala:1496
+#, c-format
+msgid ""
+"Are you sure you want to permanently discard all changes made to the files "
+"%s and `%s'?"
+msgstr "Er du sikker på at du vil forkaste alle endringer gjort i filene %s og «%s» permanent?"
+
+#: ../gitg/commit/gitg-commit.vala:1579
+msgid "Failed to delete files"
+msgstr "Klarte ikke å slette filer"
+
+#: ../gitg/commit/gitg-commit.vala:1595
+msgid "Delete file"
+msgid_plural "Delete files"
+msgstr[0] "Slett fil"
+msgstr[1] "Slett filer"
+
+#: ../gitg/commit/gitg-commit.vala:1600
+#, c-format
+msgid "Are you sure you want to permanently delete the file `%s'?"
+msgstr "Er du sikker på at du vil slette filen «%s» permanent?"
+
+#: ../gitg/commit/gitg-commit.vala:1611
+#, c-format
+msgid "Are you sure you want to permanently delete the files %s and `%s'?"
+msgstr "Er du sikker på at du vil slette filene %s og «%s» permanent?"
+
+#: ../gitg/commit/gitg-commit.vala:1657
+#, fuzzy
+msgid "_Stage changes"
 msgstr "_Forkast endringer"
 
-#: ../gitg/gitg-repository.c:608
+#: ../gitg/commit/gitg-commit.vala:1669
+#, fuzzy
+msgid "_Unstage changes"
+msgstr "_Forkast endringer"
+
+#: ../gitg/commit/gitg-commit.vala:1681
+msgid "_Discard changes"
+msgstr "_Forkast endringer"
+
+#: ../gitg/commit/gitg-commit.vala:1693
+msgid "D_elete file"
+msgid_plural "D_elete files"
+msgstr[0] "Sl_ett fil"
+msgstr[1] "Sl_ett filer"
+
+#: ../gitg/commit/gitg-commit.vala:1723
+msgid "_Edit file"
+msgstr "R_ediger fil"
+
+#: ../gitg/gitg-action-support.vala:95
+#, c-format, fuzzy
+msgid "Failed to stash changes: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-action-support.vala:130
 #, fuzzy
 msgid "Unstaged changes"
 msgstr "_Forkast endringer"
 
-#: ../gitg/gitg-repository.c:1235
-#, fuzzy
-msgid "Not a valid git repository"
-msgstr "Ekste_rnt lager"
-
-#: ../gitg/gitg-revision-tree-view.c:513
-msgid "(Empty)"
-msgstr ""
-
-#: ../gitg/gitg-window.c:430
-#, fuzzy
-msgid "Select branch"
-msgstr "Slett gren «%s»"
-
-#: ../gitg/gitg-window.c:493
-#, c-format
-msgid "Push local branch <%s> to remote branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-window.c:500
-#, c-format
-msgid "Merge/rebase local branch <%s> with/on local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-window.c:507
-#, c-format
-msgid "Merge/rebase local branch <%s> with/on remote branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-window.c:514
-#, c-format
-msgid "Apply stash to local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-window.c:576
-#, c-format
-msgid "Cherry-pick revision on <%s>"
-msgstr ""
-
-#: ../gitg/gitg-window.c:840
-#, c-format
-msgid "Loaded %d revisions in %.2fs"
-msgstr ""
-
-#: ../gitg/gitg-window.c:860
-#, c-format
-msgid "Loading %d revisions..."
-msgstr ""
-
-#: ../gitg/gitg-window.c:869
-#, fuzzy
-msgid "Could not find git repository"
-msgstr "Velg katalog"
-
-#: ../gitg/gitg-window.c:1171
-#, fuzzy
-msgid "Local branches"
-msgstr "Grener"
-
-#: ../gitg/gitg-window.c:1192
-#, fuzzy
-msgid "All branches"
-msgstr "Grener"
-
-#: ../gitg/gitg-window.c:1267
-#, fuzzy
-msgid "Begin loading repository"
-msgstr "Ekste_rnt lager"
-
-#: ../gitg/gitg-window.c:1451
-#, fuzzy
-msgid "Open git repository"
-msgstr "Ekste_rnt lager"
-
-#: ../gitg/gitg-window.c:1572
-msgid "gitg is a git repository viewer for gtk+/GNOME"
-msgstr ""
-
-#: ../gitg/gitg-window.c:1573
+#: ../gitg/gitg-action-support.vala:131
 msgid ""
-"This program is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version.\n"
-"\n"
-"This program is distributed in the hope that it will be useful,\n"
-"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n"
-"\n"
-"You should have received a copy of the GNU General Public License\n"
-"along with this program; if not, write to the Free Software\n"
-"Foundation, Inc., 59 Temple Place, Suite 330,\n"
-"Boston, MA 02111-1307, USA."
+"You appear to have unstaged changes in your working directory. Would you "
+"like to stash the changes before the checkout?"
 msgstr ""
 
-#: ../gitg/gitg-window.c:2040
-msgid "new"
-msgstr ""
+#: ../gitg/gitg-action-support.vala:133
+#: ../gitg/gitg-commit-action-cherry-pick.vala:163
+#: ../gitg/gitg-ref-action-delete.vala:88
+#: ../gitg/gitg-ref-action-merge.vala:194
+#: ../gitg/resources/ui/gitg-remote-notification.ui.h:1
+#: ../gitg/resources/ui/gitg-simple-notification.ui.h:1
+msgid "Cancel"
+msgstr "Avbryt"
 
-#: ../gitg/gitg-window.c:2148 ../gitg/gitg-window.c:2187
-#, fuzzy, c-format
-msgid "New local branch <%s>"
-msgstr "Slett gren «%s»"
-
-#: ../gitg/gitg-window.c:2160 ../gitg/gitg-branch-actions.c:316
-msgid "Remove remote branch"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2165
-msgid "Checkout working copy"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2166
-msgid "Remove local branch"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2168
-msgid "Rename local branch"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2176 ../gitg/gitg-branch-actions.c:392
-#, fuzzy
-msgid "Remove stash"
-msgstr "Ekstern"
-
-#: ../gitg/gitg-window.c:2182 ../gitg/gitg-branch-actions.c:454
-#: ../gitg/gitg-branch-actions.c:456
-#, fuzzy
-msgid "Remove tag"
-msgstr "Ekstern"
-
-#: ../gitg/gitg-window.c:2483
-msgid "Please make sure to fill in both the tag name and the commit message"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2487
-msgid "Please make sure to fill in the tag name"
-msgstr ""
-
-#: ../gitg/gitg-window.c:2496
-msgid "Not all fields are correctly filled in"
-msgstr ""
-
-#. Single one, pick filename
-#: ../gitg/gitg-window.c:2590
-#, fuzzy
-msgid "Save format patch"
-msgstr "_Søk"
-
-#: ../gitg/gitg-branch-actions.c:249
-#, c-format
-msgid "Branch <%s> could not be removed"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:250
-msgid ""
-"This usually means that the branch is not fully merged in HEAD. Do you want "
-"to forcefully remove the branch?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:251
-msgid "Force remove"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:260
-#, c-format
-msgid "Branch <%s> could not be forcefully removed"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:293
-#, c-format
-msgid "Failed to remove remote branch <%s>."
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:314
-#, c-format
-msgid "Are you sure you want to remove the remote branch <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:315
-msgid "This permanently removes the remote branch."
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:332 ../gitg/gitg-menus.xml.h:11
-msgid "Remove branch"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:390
-msgid "Are you sure you want to remove this stash item?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:391
-msgid "This permanently removes the stash item"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:418
-msgid "Failed to remove stash"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:419
-msgid "The stash item could not be successfully removed"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:450
-#, c-format
-msgid "Are you sure you want to remove the tag <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:473
-#, c-format
-msgid "The tag <%s> could not be successfully removed"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:477
-msgid "Failed to remove tag"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:534
-#, c-format
-msgid "Branch <%s> could not be renamed to <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:535
-msgid ""
-"This usually means that a branch with that name already exists. Do you want "
-"to overwrite the branch?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:536
-msgid "Force rename"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:545
-#, c-format
-msgid "Branch <%s> could not be forcefully renamed"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:585 ../gitg/gitg-preferences.ui.h:13
-#: ../gitg/gitg-repository.ui.h:6 ../gitg/gitg-tag.ui.h:4
-msgid "Name:"
-msgstr "Navn:"
-
-#: ../gitg/gitg-branch-actions.c:693
-msgid "Do you want to temporarily stash these changes?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:697
-msgid "Do you want to stash and reapply these changes?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:702
-msgid "You have uncommited changes in your current working tree"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:704
+#: ../gitg/gitg-action-support.vala:134
 #, fuzzy
 msgid "Stash changes"
-msgstr "Vis _endringer"
+msgstr "_Forkast endringer"
 
-#: ../gitg/gitg-branch-actions.c:880
-msgid "Failed to save current index state"
-msgstr ""
+#: ../gitg/gitg-action-support.vala:138 ../gitg/gitg-action-support.vala:165
+msgid "Failed with conflicts"
+msgstr "Feilet med konflikter"
 
-#: ../gitg/gitg-branch-actions.c:934 ../gitg/gitg-branch-actions.c:1216
-#: ../gitg/gitg-branch-actions.c:1508 ../gitg/gitg-branch-actions.c:1758
-#, c-format
-msgid "Failed to checkout local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:972
-#, c-format
-msgid "Failed to checkout remote branch <%s> to local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1012
-#, c-format
-msgid "Failed to checkout tag <%s> to local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1103
-#, c-format
-msgid "Failed to rebase %s branch <%s> onto %s branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1107
-#, c-format
-msgid "Failed to merge %s branch <%s> with %s branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1115 ../gitg/gitg-branch-actions.c:1117
-#: ../gitg/gitg-branch-actions.c:1183 ../gitg/gitg-branch-actions.c:1185
-#: ../gitg/gitg-branch-actions.c:1224 ../gitg/gitg-branch-actions.c:1226
-#: ../gitg/gitg-branch-actions.c:1260 ../gitg/gitg-branch-actions.c:1262
-#: ../gitg/gitg-branch-actions.c:1307 ../gitg/gitg-branch-actions.c:1309
-msgid "local"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1115 ../gitg/gitg-branch-actions.c:1117
-#: ../gitg/gitg-branch-actions.c:1183 ../gitg/gitg-branch-actions.c:1185
-#: ../gitg/gitg-branch-actions.c:1224 ../gitg/gitg-branch-actions.c:1226
-#: ../gitg/gitg-branch-actions.c:1260 ../gitg/gitg-branch-actions.c:1262
-#: ../gitg/gitg-branch-actions.c:1307 ../gitg/gitg-branch-actions.c:1309
-#, fuzzy
-msgid "remote"
-msgstr "Ekstern"
-
-#: ../gitg/gitg-branch-actions.c:1134 ../gitg/gitg-branch-actions.c:1677
-msgid "The stashed changes have been stored to be reapplied manually"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1139 ../gitg/gitg-branch-actions.c:1682
-msgid "Failed to checkout previously checked out branch"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1160 ../gitg/gitg-branch-actions.c:1703
-msgid "Failed to reapply stash correctly"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1161 ../gitg/gitg-branch-actions.c:1704
-msgid ""
-"There might be unresolved conflicts in the working tree or index which you "
-"need to resolve manually"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1182
-#, c-format
-msgid "Are you sure you want to merge %s branch <%s> onto %s branch <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1190 ../gitg/gitg-branch-actions.c:1192
-#: ../gitg/gitg-branch-actions.c:1236 ../gitg/gitg-menus.xml.h:6
-msgid "Merge"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1217
-msgid "The branch on which to merge could not be checked out"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1223
-#, c-format
-msgid "Merging %s branch <%s> onto %s branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1259
-#, c-format
-msgid "Are you sure you want to rebase %s branch <%s> onto %s branch <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1267 ../gitg/gitg-branch-actions.c:1269
-#: ../gitg/gitg-branch-actions.c:1319 ../gitg/gitg-menus.xml.h:9
-msgid "Rebase"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1292
-msgid "Unable to rebase"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1293
-msgid ""
-"There are still uncommitted changes in your working tree and you are trying "
-"to rebase a branch onto the currently checked out branch. Either remove, "
-"stash or commit your changes first and try again"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1306
-#, c-format
-msgid "Rebasing %s branch <%s> onto %s branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1345
-#, c-format
-msgid "Failed to push local branch <%s> to remote <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1346
-msgid ""
-"This usually means that the remote branch could not be fast-forwarded. Try "
-"fetching the latest changes."
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1370
-#, c-format
-msgid "Are you sure you want to push <%s> to <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1376 ../gitg/gitg-branch-actions.c:1378
-#: ../gitg/gitg-branch-actions.c:1399 ../gitg/gitg-branch-actions.c:1432
-#: ../gitg/gitg-branch-actions.c:1434 ../gitg/gitg-branch-actions.c:1457
-msgid "Push"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1391
-#, c-format
-msgid "Pushing local branch <%s> to remote branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1426
-#, c-format
-msgid "Are you sure you want to push <%s> to remote <%s/%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1444
-#, c-format
-msgid "Pushing local branch <%s> to remote branch <%s/%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1481
-#, c-format
-msgid "Are you sure you want to apply the stash item to local branch <%s>?"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1486 ../gitg/gitg-branch-actions.c:1488
-msgid "Apply stash"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1527
-#, c-format
-msgid "The stash could not be applied to local branch <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1531
-msgid "Failed to apply stash"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1591
-msgid ""
-"The tag object could not be successfully created. Please make sure you have "
-"a GPG key and the key is unlocked"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1595
-msgid "The tag object could not be successfully created"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1600
-#, fuzzy
-msgid "Failed to create tag"
+#: ../gitg/gitg-action-support.vala:181
+#, fuzzy, c-format
+msgid "Failed to checkout conflicts: %s"
 msgstr "Velg kataloger"
 
-#: ../gitg/gitg-branch-actions.c:1657
+#: ../gitg/gitg-action-support.vala:199
+msgid "Failed to obtain author details"
+msgstr ""
+
+#: ../gitg/gitg-action-support.vala:223
+#: ../gitg/gitg-ref-action-checkout.vala:88
 #, c-format
-msgid "Failed to cherry-pick on <%s>"
-msgstr ""
+msgid "Failed to lookup commit: %s"
+msgstr "Klarte ikke å finne innsjekking: %s"
 
-#: ../gitg/gitg-branch-actions.c:1724
+#: ../gitg/gitg-action-support.vala:255
+#, fuzzy, c-format
+msgid "Failed to create commit: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-action-support.vala:277
 #, c-format
-msgid "Are you sure you want to cherry-pick that revision on <%s>?"
+msgid "Failed to checkout index: %s"
+msgstr "Klarte ikke å sjekke ut indeks: %s"
+
+#: ../gitg/gitg-application.vala:56
+msgid "Show the application's version"
+msgstr "Vis versjon for programmet"
+
+#: ../gitg/gitg-application.vala:59
+msgid "Start gitg with a particular activity"
 msgstr ""
 
-#: ../gitg/gitg-branch-actions.c:1729 ../gitg/gitg-branch-actions.c:1731
-#: ../gitg/gitg-branch-actions.c:1779
-msgid "Cherry-pick"
+#: ../gitg/gitg-application.vala:62
+msgid "Start gitg with the commit activity (shorthand for --activity commit)"
 msgstr ""
 
-#: ../gitg/gitg-branch-actions.c:1759
-msgid "The branch on which to cherry-pick could not be checked out"
+#: ../gitg/gitg-application.vala:65
+msgid "Do not try to load a repository from the current working directory"
 msgstr ""
 
-#: ../gitg/gitg-branch-actions.c:1766
+#: ../gitg/gitg-application.vala:94
+msgid "- Git repository viewer"
+msgstr "- Git utforsker"
+
+#: ../gitg/gitg-application.vala:222
+msgid "gitg is a Git repository viewer for gtk+/GNOME"
+msgstr "gitg er et program for å vise Git-lager for gtk+/GNOME"
+
+#: ../gitg/gitg-application.vala:231
+msgid "translator-credits"
+msgstr "Kjartan Maraas <kmaraas@gnome.org>"
+
+#: ../gitg/gitg-application.vala:234
+msgid "gitg homepage"
+msgstr "gitg hjemmeside"
+
+#: ../gitg/gitg-application.vala:364
+msgid ""
+"We are terribly sorry, but gitg requires libgit2 (a library on which gitg "
+"depends) to be compiled with threading support.\n"
+"\n"
+"If you manually compiled libgit2, then please configure libgit2 with -"
+"DTHREADSAFE:BOOL=ON.\n"
+"\n"
+"Otherwise, report a bug in your distributions' bug reporting system for "
+"providing libgit2 without threading support."
+msgstr ""
+
+#. ex: ts=4 noet
+#: ../gitg/gitg-author-details-dialog.vala:97
+#: ../gitg/gitg-author-details-dialog.vala:117
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:1
+msgid "Author Details"
+msgstr "Detaljer om forfatter"
+
+#: ../gitg/gitg-author-details-dialog.vala:98
+msgid "Enter default details used for all repositories:"
+msgstr ""
+
+#. Translators: %s is the repository name
+#: ../gitg/gitg-author-details-dialog.vala:120
 #, c-format
-msgid "Cherry-picking on <%s>"
+msgid "Override global details for repository '%s':"
 msgstr ""
 
-#: ../gitg/gitg-branch-actions.c:1836
-msgid "Failed to generate format-patch"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1882
-#, c-format
-msgid "Generating format-patch for <%s>"
-msgstr ""
-
-#: ../gitg/gitg-branch-actions.c:1888 ../gitg/gitg-menus.xml.h:5
+#: ../gitg/gitg-author-details-dialog.vala:232
 #, fuzzy
-msgid "Format patch"
+msgid "Failed to set Git user config."
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-clone-dialog.vala:89
+msgid "The URL introduced is not supported"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:53
+msgid "Cherry pick onto"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:58
+msgid "Cherry pick this commit onto a branch"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:117
+#, fuzzy, c-format
+msgid "Failed to lookup the commit for branch %s: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:132
+#, fuzzy, c-format
+msgid "Failed to cherry-pick the commit: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:144
+#: ../gitg/gitg-commit-action-cherry-pick.vala:160
+msgid "Cherry pick has conflicts"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:153
+#, c-format
+msgid ""
+"The cherry pick of %s onto %s has caused conflicts, would you like to "
+"checkout branch %s with the cherry pick to your working directory to resolve "
+"the conflicts?"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:157
+#, c-format
+msgid ""
+"The cherry-pick of %s onto %s has caused conflicts, would you like to "
+"checkout the cherry pick to your working directory to resolve the conflicts?"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:164
+#: ../gitg/gitg-ref-action-checkout.vala:48
+#: ../gitg/gitg-ref-action-merge.vala:195
+msgid "Checkout"
+msgstr "Sjekk ut"
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:168
+msgid "Cherry pick failed with conflicts"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:179
+msgid "Cherry pick finished with conflicts in working directory"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:199
+#, c-format
+msgid "Cherry pick %s onto %s"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:224
+msgid "Successfully cherry picked"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-cherry-pick.vala:261
+#, c-format
+msgid "Cherry pick onto %s"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-create-branch.vala:48
+#, fuzzy
+msgid "Create branch"
+msgstr "Lag gren"
+
+#: ../gitg/gitg-commit-action-create-branch.vala:53
+msgid "Create a new branch at the selected commit"
+msgstr ""
+
+#: ../gitg/gitg-commit-action-create-branch.vala:75
+msgid "Failed to create branch"
+msgstr "Klarte ikke å lage gren"
+
+#: ../gitg/gitg-commit-action-create-patch.vala:63
+#, fuzzy
+msgid "Create patch"
 msgstr "Opprett"
 
-#: ../gitg/gitg-repository-dialog.c:173 ../gitg/gitg-repository.ui.h:4
-msgid "Fetch"
+#: ../gitg/gitg-commit-action-create-patch.vala:68
+msgid "Create a patch from the selected commit"
 msgstr ""
 
-#: ../gitg/gitg-repository-dialog.c:178
-msgid "Cancel"
-msgstr ""
-
-#: ../gitg/gitg-repository-dialog.c:441 ../gitg/gitg-repository.ui.h:7
-#: ../gitg/gitg-tag.ui.h:5
+#: ../gitg/gitg-commit-action-create-patch.vala:143
 #, fuzzy
-msgid "Properties"
-msgstr "Egenskaper for %s"
+msgid "Save Patch File"
+msgstr "Lagre alle filer"
 
-#: ../gitg/gitg-window.ui.h:1
-msgid "Add signed-off-by"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:2
-msgid "Amend"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:3
-msgid "Author:"
-msgstr "Forfatter:"
-
-#: ../gitg/gitg-window.ui.h:4
+#: ../gitg/gitg-commit-action-create-patch.vala:147
 #, fuzzy
-msgid "Branch:"
-msgstr "Gren"
+msgid "_Save Patch"
+msgstr "_Lagre endringsfil"
 
-#: ../gitg/gitg-window.ui.h:5
+#: ../gitg/gitg-commit-action-create-patch.vala:172
 #, fuzzy
-msgid "Co_mmit message"
-msgstr "Sjekk inn endringer"
+msgid "Failed to create patch"
+msgstr "Velg kataloger"
 
-#: ../gitg/gitg-window.ui.h:6 ../gitg/gitg-preferences.ui.h:6
-msgid "Commit"
-msgstr "Sjekk inn"
-
-#: ../gitg/gitg-window.ui.h:7
-msgid "Context:"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:8
-msgid "Date:"
-msgstr "Dato:"
-
-#: ../gitg/gitg-window.ui.h:9
-msgid "Details"
-msgstr "Detaljer"
-
-#: ../gitg/gitg-window.ui.h:10
-#, fuzzy
-msgid "History"
-msgstr "_Historikk"
-
-#: ../gitg/gitg-window.ui.h:11
-msgid "Parent:"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:12
-msgid "SHA:"
-msgstr "SHA:"
-
-#: ../gitg/gitg-window.ui.h:13
-msgid "Subject:"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:14
-msgid "Tree"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:15
-msgid "_Changes"
-msgstr "_Endringer"
-
-#: ../gitg/gitg-window.ui.h:16
-msgid "_Staged"
-msgstr ""
-
-#: ../gitg/gitg-window.ui.h:17
-#, fuzzy
-msgid "_Unstaged"
-msgstr "Lastet ut"
-
-#: ../gitg/gitg-commit-menu.ui.h:1 ../gitg/gitg-ui.xml.h:1
-msgid "Ignore"
-msgstr ""
-
-#: ../gitg/gitg-commit-menu.ui.h:2 ../gitg/gitg-ui.xml.h:3
-msgid "Revert"
-msgstr ""
-
-#: ../gitg/gitg-commit-menu.ui.h:3 ../gitg/gitg-ui.xml.h:4
-msgid "Stage"
-msgstr ""
-
-#: ../gitg/gitg-commit-menu.ui.h:4 ../gitg/gitg-ui.xml.h:5
-msgid "Unstage"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:1
-#, fuzzy
-msgid "<b>Commit Message</b>"
-msgstr "<b>Ekstern:</b> %s"
-
-#: ../gitg/gitg-preferences.ui.h:2
-#, fuzzy
-msgid "<b>History</b>"
-msgstr "_Historikk"
-
-#: ../gitg/gitg-preferences.ui.h:3
-#, fuzzy
-msgid "<b>Main</b>"
-msgstr "<b>Grener</b>"
-
-#: ../gitg/gitg-preferences.ui.h:4 ../gitg/gitg-repository.ui.h:1
-#, fuzzy
-msgid "<b>User</b>"
-msgstr "<b>Grener</b>"
-
-#: ../gitg/gitg-preferences.ui.h:5
-msgid "Collapse inactive lanes"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:7 ../gitg/gitg-repository.ui.h:2
-msgid "Configuration"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:8
-msgid ""
-"Configure global git settings. This corresponds to the settings as stored in "
-"~/.gitconfig. Repository specific settings can be configured at the "
-"repository properties."
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:9
-msgid "Display right _margin"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:10 ../gitg/gitg-repository.ui.h:3
-#, fuzzy
-msgid "E-mail:"
-msgstr "_E-post:"
-
-#: ../gitg/gitg-preferences.ui.h:11
-msgid "Early"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:12
-#, fuzzy
-msgid "Late"
-msgstr "Dato"
-
-#: ../gitg/gitg-preferences.ui.h:14
-msgid "Preferences"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:15
-msgid "Preferences that apply to the commit view"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:16
-msgid "Preferences that apply to the revision view"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:17
-msgid "Search filters revisions in the history view"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:18
-msgid "Show history in topological order"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:19
-#, fuzzy
-msgid "Show staged changes in history"
-msgstr "Gå tilbake i angrehistorikken"
-
-#: ../gitg/gitg-preferences.ui.h:20
-#, fuzzy
-msgid "Show stash in history"
-msgstr "Gå fremover i angrehistorikken"
-
-#: ../gitg/gitg-preferences.ui.h:21
-msgid "Show unstaged changes in history"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:22
-msgid "Use vertical layout"
-msgstr ""
-
-#: ../gitg/gitg-preferences.ui.h:23
-#, fuzzy
-msgid "View"
-msgstr "_Visning"
-
-#: ../gitg/gitg-preferences.ui.h:24
-msgid "_Right margin at column:"
-msgstr ""
-
-#: ../gitg/gitg-repository.ui.h:5
-msgid "Name"
-msgstr "Navn"
-
-#: ../gitg/gitg-repository.ui.h:8
-#, fuzzy
-msgid "Remotes"
-msgstr "Ekstern"
-
-#: ../gitg/gitg-repository.ui.h:9
-msgid "URL"
-msgstr "URL"
-
-#: ../gitg/gitg-tag.ui.h:1
-msgid "Create signed tag object"
-msgstr ""
-
-#: ../gitg/gitg-tag.ui.h:2 ../gitg/gitg-menus.xml.h:4
+#: ../gitg/gitg-commit-action-create-tag.vala:48
 #, fuzzy
 msgid "Create tag"
 msgstr "Opprett"
 
-#: ../gitg/gitg-tag.ui.h:3
-msgid "Message:"
+#: ../gitg/gitg-commit-action-create-tag.vala:53
+msgid "Create a new tag at the selected commit"
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:1
-msgid "Apply stash to..."
+#: ../gitg/gitg-commit-action-create-tag.vala:92
+#, fuzzy
+msgid "Failed to create tag"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-commit-action-create-tag.vala:109
+#, fuzzy
+msgid "Failed to lookup tag"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-create-tag-dialog.vala:110
+msgid "Provide a message to create an annotated tag"
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:2
-#, fuzzy
-msgid "Checkout branch"
-msgstr "Opprett"
+#: ../gitg/gitg-dash-view.vala:87
+msgid "Select and manage projects"
+msgstr "Velg og håndter prosjekter"
 
-#: ../gitg/gitg-menus.xml.h:3
-msgid "Cherry-pick on..."
+#: ../gitg/gitg-dash-view.vala:176
+msgid "_Remove"
+msgstr "Fje_rn"
+
+#. Translators: the two %s will be replaced to create a link to perform the scanning action.
+#: ../gitg/gitg-dash-view.vala:232
+#, c-format
+msgid "We can also %sscan your home directory%s for git repositories."
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:7
-msgid "Merge branch with..."
+#. Translators: the two %s will be used to create a link to the author dialog.
+#: ../gitg/gitg-dash-view.vala:235
+#, c-format
+msgid "In the mean time, you may want to %sset up your git profile%s."
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:8
-msgid "Push branch to..."
+#: ../gitg/gitg-dash-view.vala:389
+msgid "Failed to clone repository"
+msgstr "Klarte ikke å klone lager"
+
+#: ../gitg/gitg-dash-view.vala:420
+msgid "Failed to add repository"
+msgstr "Klarte ikke å legge til lager"
+
+#: ../gitg/gitg-dash-view.vala:436
+msgid "Create new repository"
+msgstr "Lag nytt lager"
+
+#. Translators: %s is a file name
+#: ../gitg/gitg-dash-view.vala:439
+#, c-format
+msgid ""
+"The location <i>%s</i> does not appear to be a valid git repository. Would "
+"you like to initialize a new git repository at this location?"
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:10
-msgid "Rebase branch onto..."
+#: ../gitg/gitg-dash-view.vala:445
+msgid "Create repository"
+msgstr "Lag lager"
+
+#: ../gitg/gitg-dash-view.vala:461
+#, fuzzy
+msgid "Failed to create repository"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-dash-view.vala:531
+#, c-format
+msgid "Scanning for repositories in %s"
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:12
+#: ../gitg/gitg-ref-action-checkout.vala:53
 #, fuzzy
-msgid "Rename branch"
-msgstr "Opprett"
+msgid "Checkout the selected reference"
+msgstr "Slett valgt referanse"
 
-#: ../gitg/gitg-menus.xml.h:13
-#, fuzzy
-msgid "_Author"
-msgstr "Forf_attere"
+#: ../gitg/gitg-ref-action-checkout.vala:72
+#, c-format
+msgid "Checkout %s"
+msgstr "Sjekk ut %s"
 
-#: ../gitg/gitg-menus.xml.h:14
-#, fuzzy
-msgid "_Date"
-msgstr "Dato"
+#: ../gitg/gitg-ref-action-checkout.vala:101
+#, fuzzy, c-format
+msgid "Failed to checkout branch: %s"
+msgstr "Velg kataloger"
 
-#: ../gitg/gitg-menus.xml.h:15
-msgid "_Hash"
+#: ../gitg/gitg-ref-action-checkout.vala:111
+#, fuzzy, c-format
+msgid "Failed to update HEAD: %s"
+msgstr "Klarte ikke å slette merking %s"
+
+#: ../gitg/gitg-ref-action-checkout.vala:121
+msgid "Successfully checked out branch to working directory"
 msgstr ""
 
-#: ../gitg/gitg-menus.xml.h:16
-#, fuzzy
-msgid "_Subject"
-msgstr "_Prosjekt"
+#: ../gitg/gitg-ref-action-copy-name.vala:48
+msgid "Copy name"
+msgstr "Kopier navn"
 
-#: ../gitg/gitg-ui.xml.h:2
-msgid "R_ecently Opened"
+#: ../gitg/gitg-ref-action-copy-name.vala:53
+msgid "Copy the name of the reference to the clipboard"
 msgstr ""
 
-#: ../gitg/gitg-ui.xml.h:6
-msgid "_Edit"
-msgstr "R_ediger"
+#: ../gitg/gitg-ref-action-delete.vala:48
+#: ../gitg/gitg-ref-action-delete.vala:89
+msgid "Delete"
+msgstr "Slett"
 
-#: ../gitg/gitg-ui.xml.h:7
+#: ../gitg/gitg-ref-action-delete.vala:53
+msgid "Delete the selected reference"
+msgstr "Slett valgt referanse"
+
+#: ../gitg/gitg-ref-action-delete.vala:73
+#, c-format
+msgid "Delete branch %s"
+msgstr "Slett gren %s"
+
+#: ../gitg/gitg-ref-action-delete.vala:74
+#, c-format
+msgid "Are you sure that you want to permanently delete the branch %s?"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-delete.vala:78
+#, c-format
+msgid "Delete tag %s"
+msgstr "Slett merking %s"
+
+#: ../gitg/gitg-ref-action-delete.vala:79
+#, c-format
+msgid "Are you sure that you want to permanently delete the tag %s?"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-delete.vala:83
+#, c-format
+msgid "Delete remote branch %s"
+msgstr "Slett ekstern gren %s"
+
+#: ../gitg/gitg-ref-action-delete.vala:84
+#, c-format
+msgid "Are you sure that you want to permanently delete the remote branch %s?"
+msgstr ""
+
+#. Translators: %s is the name of the tag
+#: ../gitg/gitg-ref-action-delete.vala:119
+#, c-format
+msgid "Failed to delete tag %s"
+msgstr "Klarte ikke å slette merking %s"
+
+#. Translators: the first %s is the name of the tag, the second is an error message
+#: ../gitg/gitg-ref-action-delete.vala:122
+#, c-format
+msgid "The tag %s could not be deleted: %s"
+msgstr ""
+
+#. Translators: %s is the name of the branch
+#: ../gitg/gitg-ref-action-delete.vala:127
+#, c-format
+msgid "Failed to delete branch %s"
+msgstr "Klarte ikke å slette gren %s"
+
+#. Translators: the first %s is the name of the branch, the second is an error message
+#: ../gitg/gitg-ref-action-delete.vala:130
+#, c-format
+msgid "The branch %s could not be deleted: %s"
+msgstr "Gren %s kunne ikke slettes: %s"
+
+#: ../gitg/gitg-ref-action-fetch.vala:74
+#, c-format
+msgid "Fetch from %s"
+msgstr "Hent fra %s"
+
+#: ../gitg/gitg-ref-action-fetch.vala:85
+#, c-format
+msgid "Fetch remote objects from %s"
+msgstr "Hent eksterne objekter fra %s"
+
+#: ../gitg/gitg-ref-action-fetch.vala:98
+#, c-format
+msgid "Fetching from %s"
+msgstr "Henter fra %s"
+
+#. Translators: new refers to a new remote reference having been fetched,
+#: ../gitg/gitg-ref-action-fetch.vala:106
+msgid "new"
+msgstr "ny"
+
+#. Translators: updated refers to a remote reference having been updated,
+#: ../gitg/gitg-ref-action-fetch.vala:111
+msgid "updated"
+msgstr "oppdatert"
+
+#: ../gitg/gitg-ref-action-fetch.vala:121
+#, c-format
+msgid "Failed to fetch from %s: %s"
+msgstr "Klarte ikke å hente fra %s: %s"
+
+#. Translators: the %s will get replaced with the remote url,
+#: ../gitg/gitg-ref-action-fetch.vala:134
+#, c-format
+msgid "Fetched from %s: everything is up to date"
+msgstr "Hentet fra %s: alt er oppdatert"
+
+#. Translators: the first %s is the remote url to fetch from,
+#. * the second is a list of references that got updated.
+#: ../gitg/gitg-ref-action-fetch.vala:140
+#, c-format
+msgid "Fetched from %s: %s"
+msgstr "Hentet fra %s: %s"
+
+#: ../gitg/gitg-ref-action-merge.vala:63
+#, c-format
+msgid "Merge into %s"
+msgstr "Flett inn i %s"
+
+#. TODO
+#: ../gitg/gitg-ref-action-merge.vala:69
+#, c-format
+msgid "Merge another branch into branch %s"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:106
+#, fuzzy, c-format
+msgid "Failed to merge commits: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-ref-action-merge.vala:175
+#: ../gitg/gitg-ref-action-merge.vala:191
+msgid "Merge has conflicts"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:184
+#, c-format
+msgid ""
+"The merge of %s into %s has caused conflicts, would you like to checkout "
+"branch %s with the merge to your working directory to resolve the conflicts?"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:188
+#, c-format
+msgid ""
+"The merge of %s into %s has caused conflicts, would you like to checkout the "
+"merge to your working directory to resolve the conflicts?"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:199
+msgid "Merge failed with conflicts"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:210
+msgid "Finished merge with conflicts in working directory"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:222
+#, c-format
+msgid "Merge %s into %s"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:231
+#, fuzzy, c-format
+msgid "Failed to lookup our commit: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-ref-action-merge.vala:241
+#, fuzzy, c-format
+msgid "Failed to lookup their commit: %s"
+msgstr "Velg kataloger"
+
+#: ../gitg/gitg-ref-action-merge.vala:278
+#, c-format
+msgid "Successfully merged %s into %s"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-merge.vala:320
+#, fuzzy, c-format
+msgid "Merge %s into branch %s"
+msgstr "Slett gren %s"
+
+#: ../gitg/gitg-ref-action-merge.vala:482
+#: ../gitg/history/gitg-history-refs-list.vala:1176
+msgid "Tags"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-rename.vala:48
+msgid "Rename"
+msgstr "Endre navn"
+
+#: ../gitg/gitg-ref-action-rename.vala:53
+msgid "Rename the selected reference"
+msgstr "Endre navn på valgt referanse"
+
+#: ../gitg/gitg-ref-action-rename.vala:100
+#, c-format
+msgid "The specified name ‘%s’ contains invalid characters"
+msgstr ""
+
+#: ../gitg/gitg-ref-action-rename.vala:102
+msgid "Invalid name"
+msgstr "Ugyldig navn"
+
+#: ../gitg/gitg-ref-action-rename.vala:131
+msgid "Failed to rename"
+msgstr "Klarte ikke å endre navn"
+
+#: ../gitg/gitg-remote-notification.vala:90
+#: ../gitg/gitg-simple-notification.vala:99
+#: ../gitg/resources/ui/gitg-window.ui.h:10
+msgid "Close"
+msgstr "Lukk"
+
+#: ../gitg/gitg-window.vala:187
+msgid "Add Repository"
+msgstr "Legg til lager"
+
+#: ../gitg/gitg-window.vala:191
+msgid "_Add"
+msgstr "_Legg til"
+
+#: ../gitg/gitg-window.vala:193
+msgid "_Scan for all git repositories from this directory"
+msgstr ""
+
+#: ../gitg/gitg-window.vala:501
+msgid "Projects"
+msgstr "Prosjekter"
+
+#: ../gitg/gitg-window.vala:751
+msgid "Select items"
+msgstr ""
+
+#: ../gitg/gitg-window.vala:958
+#, c-format
+msgid "'%s' is not a Git repository."
+msgstr "«%s» er ikke et Git-lager."
+
+#: ../gitg/gitg-window.vala:1107
+msgid ""
+"Your user name and email are not configured yet. Please go to the user "
+"configuration and provide your name and email."
+msgstr ""
+
+#: ../gitg/gitg-window.vala:1111
+msgid ""
+"Your user name is not configured yet. Please go to the user configuration "
+"and provide your name."
+msgstr ""
+
+#: ../gitg/gitg-window.vala:1115
+msgid ""
+"Your email is not configured yet. Please go to the user configuration and "
+"provide your email."
+msgstr ""
+
+#: ../gitg/gitg-window.vala:1118
+msgid "Missing author details"
+msgstr "Mangler detaljer om forfatter"
+
+#: ../gitg/history/gitg-history-command-line.vala:42
+msgid "Select all commits by default in the history activity"
+msgstr ""
+
+#: ../gitg/history/gitg-history-command-line.vala:44
+msgid "Select all branches by default in the history activity"
+msgstr ""
+
+#: ../gitg/history/gitg-history-command-line.vala:46
+msgid "Select all remotes by default in the history activity"
+msgstr ""
+
+#: ../gitg/history/gitg-history-command-line.vala:48
+msgid "Select all tags by default in the history activity"
+msgstr ""
+
+#: ../gitg/history/gitg-history-command-line.vala:50
+msgid "Select the specified reference by default in the history activity"
+msgstr ""
+
+#: ../gitg/history/gitg-history-command-line.vala:50
+msgid "REFERENCE"
+msgstr "REFERANSE"
+
+#: ../gitg/history/gitg-history-refs-list.vala:165
+#, c-format
+msgid "%zu ahead, %zu behind"
+msgstr "%zu foran, %zu etter"
+
+#: ../gitg/history/gitg-history-refs-list.vala:169
+#, c-format
+msgid "%zu ahead"
+msgstr "%zu foran"
+
+#: ../gitg/history/gitg-history-refs-list.vala:173
+#, c-format
+msgid "%zu behind"
+msgstr "%zu etter"
+
+#: ../gitg/history/gitg-history-refs-list.vala:207
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:4
+msgid "All commits"
+msgstr "Alle innsjekkinger"
+
+#: ../gitg/history/gitg-history-refs-list.vala:1174
+msgid "Branches"
+msgstr "Grener"
+
+#: ../gitg/history/gitg-history-refs-list.vala:1175
+msgid "Remotes"
+msgstr "Eksterne"
+
+#: ../gitg/history/gitg-history.vala:342
+#: ../gitg/preferences/gitg-preferences-history.vala:218
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:3
+msgid "History"
+msgstr "Historikk"
+
+#: ../gitg/history/gitg-history.vala:347
+msgid "Examine the history of the repository"
+msgstr ""
+
+#: ../gitg/history/gitg-history.vala:843
+msgid "Mainline"
+msgstr ""
+
+#: ../gitg/preferences/gitg-preferences-commit.vala:119
+msgctxt "Preferences"
+msgid "Commit"
+msgstr "Sjekk inn"
+
+#: ../gitg/preferences/gitg-preferences-interface.vala:120
+msgid "Interface"
+msgstr "Grensesnitt"
+
+#. Translators: %s will be replaced with a URL indicating the resource
+#. for which the authentication is required.
+#: ../libgitg/gitg-authentication-dialog.vala:69
+#, c-format
+msgid "Password required for %s"
+msgstr "Passord kreves for %s"
+
+#: ../libgitg/gitg-date.vala:346
+msgid "Now"
+msgstr "Nå"
+
+#: ../libgitg/gitg-date.vala:350
+#, c-format
+msgid "A minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d et minutt siden"
+msgstr[1] "%d minutter siden"
+
+#: ../libgitg/gitg-date.vala:355
+msgid "Half an hour ago"
+msgstr "En halv time siden"
+
+#: ../libgitg/gitg-date.vala:360
+#, c-format
+msgid "An hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "En time siden"
+msgstr[1] "%d timer siden"
+
+#: ../libgitg/gitg-date.vala:365
+#, c-format
+msgid "A day ago"
+msgid_plural "%d days ago"
+msgstr[0] "En dag siden"
+msgstr[1] "%d dager siden"
+
+#. Translators: this is a strftime type date format which is
+#. used when the date is in the current year and uses a 24 hour
+#. clock.
+#: ../libgitg/gitg-date.vala:374
+msgid "%b %e, %H:%M"
+msgstr "%e %b, %H.%M"
+
+#. Translators: this is a strftime type date format which is
+#. used when the date is in the current year and uses a 12 hour
+#. clock.
+#: ../libgitg/gitg-date.vala:381
+msgid "%b %e, %I:%M %p"
+msgstr "%e %b, %H.%M"
+
+#. Translators: this is a strftime type date format which is
+#. used when the date is not in the current year and uses a 24
+#. hour clock.
+#: ../libgitg/gitg-date.vala:391
+msgid "%b %e %Y, %H:%M"
+msgstr "%e %b %Y, %H.%M"
+
+#. Translators: this is a strftime type date format which is
+#. used when the date is not in the current year and uses a 12
+#. hour clock.
+#: ../libgitg/gitg-date.vala:398
+msgid "%b %e %Y, %I:%M %p"
+msgstr "%e %b %Y, %H.%M"
+
+#. Translators: this label is displayed below the image diff, %s
+#. is substituted with the size of the image
+#: ../libgitg/gitg-diff-image-side-by-side.vala:39
+#, c-format
+msgid "before (%s)"
+msgstr "før (%s)"
+
+#. Translators: this label is displayed below the image diff, %s
+#. is substituted with the size of the image
+#: ../libgitg/gitg-diff-image-side-by-side.vala:45
+#, c-format
+msgid "removed (%s)"
+msgstr "fjernet (%s)"
+
+#. Translators: this label is displayed below the image diff, %s
+#. is substituted with the size of the image
+#: ../libgitg/gitg-diff-image-side-by-side.vala:67
+#, c-format
+msgid "after (%s)"
+msgstr "etter (%s)"
+
+#. Translators: this label is displayed below the image diff, %s
+#. is substituted with the size of the image
+#: ../libgitg/gitg-diff-image-side-by-side.vala:73
+#, c-format
+msgid "added (%s)"
+msgstr "lagt til (%s)"
+
+#: ../libgitg/gitg-diff-view-commit-details.vala:145
+msgid "Collapse all"
+msgstr "Slå sammen alle"
+
+#: ../libgitg/gitg-diff-view-commit-details.vala:149
+#: ../libgitg/resources/ui/gitg-diff-view-commit-details.ui.h:2
+msgid "Expand all"
+msgstr "Utvid alle"
+
+#: ../libgitg/gitg-diff-view-commit-details.vala:202
+#, fuzzy, c-format
+msgid "Committed by %s"
+msgstr "Sjekk inn"
+
+#: ../libgitg/gitg-diff-view-file.vala:177
+msgid "_Open file"
+msgstr "_Åpne fil"
+
+#: ../libgitg/gitg-diff-view-file.vala:209
+msgid "Open containing _folder"
+msgstr ""
+
+#: ../libgitg/gitg-diff-view-file.vala:229
+msgid "_Copy file path"
+msgstr ""
+
+#. Translators: this is used to construct: "at <directory>", to indicate where the repository is at.
+#: ../libgitg/gitg-repository-list-box.vala:154
+#, c-format
+msgid "at %s"
+msgstr ""
+
+#. Translators: this is used to construct: "<branch-name> at <directory>"
+#: ../libgitg/gitg-repository-list-box.vala:163
+#, c-format
+msgid "%s at %s"
+msgstr ""
+
+#: ../libgitg/gitg-repository-list-box.vala:541
+msgid "Cloning…"
+msgstr ""
+
+#: ../libgitg/gitg-stage.vala:334
+#, c-format
+msgid "Could not read commit message after running commit-msg hook: %s"
+msgstr ""
+
+#: ../plugins/diff/gitg-diff.vala:115
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:11
+msgid "Diff"
+msgstr ""
+
+#: ../plugins/diff/gitg-diff.vala:120
+msgid "Show the changes introduced by the selected commit"
+msgstr ""
+
+#: ../plugins/files/gitg-files.vala:63
+msgid "Files"
+msgstr "Filer"
+
+#: ../plugins/files/gitg-files.vala:68
+msgid "Show the files in the tree of the selected commit"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:3
+msgid "_Save"
+msgstr "_Lagre"
+
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:4
+msgid "Default details used for all repositories"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:5
+msgid "E-mail:"
+msgstr "E-post:"
+
+#: ../gitg/resources/ui/gitg-author-details-dialog.ui.h:6
+msgid "Name:"
+msgstr "Navn:"
+
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:1
 #, fuzzy
-msgid "_File"
-msgstr "_Visning"
-
-#: ../gitg/gitg-ui.xml.h:8
-msgid "_Help"
-msgstr "_Hjelp"
-
-#: ../gitg/gitg-ui.xml.h:9
-#, fuzzy
-msgid "_Open..."
-msgstr "_Søk..."
-
-#: ../gitg/gitg-ui.xml.h:10
-#, fuzzy
-msgid "_Repository"
+msgid "Clone Repository"
 msgstr "_Historikk"
 
-#: ../gitg/gitg-ui.xml.h:11
-msgid "_View"
-msgstr "_Visning"
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:3
+msgid "Cl_one"
+msgstr "Kl_on"
 
-#~ msgid "Giggle"
-#~ msgstr "Giggle"
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:4
+msgid "Remote _URL:"
+msgstr "Ekstern _URL:"
 
-#~ msgid "URL:"
-#~ msgstr "URL:"
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:5
+msgid "_Local Folder:"
+msgstr "_Lokal mappe:"
 
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:6
+msgid "Select location…"
+msgstr "Velg lokasjon …"
+
+#: ../gitg/resources/ui/gitg-clone-dialog.ui.h:7
+msgid "Bare repository"
+msgstr "Kun lager"
+
+#: ../gitg/resources/ui/gitg-commit-dialog.ui.h:1
+msgctxt "Create Dialog"
+msgid "Commit"
+msgstr "Sjekk inn"
+
+#: ../gitg/resources/ui/gitg-commit-dialog.ui.h:3
+#: ../gitg/resources/ui/gitg-commit-paned.ui.h:2
+msgid "C_ommit"
+msgstr "S_jekk inn"
+
+#: ../gitg/resources/ui/gitg-commit-dialog.ui.h:4
+msgid "Add _signed-off-by signature"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-commit-dialog.ui.h:5
 #, fuzzy
-#~ msgid "There was an error setting the configuration"
-#~ msgstr "Velg aktiv konfigurasjon"
+msgid "_Amend previous commit"
+msgstr "Finn f_orrige"
 
+#: ../gitg/resources/ui/gitg-commit-paned.ui.h:1
+msgid "Skip commit _hooks"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-commit-paned.ui.h:3
+msgid "S_tage selection"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-commit-paned.ui.h:4
+msgid "D_iscard selection"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-commit-submodule-diff-view.ui.h:1
+msgid ""
+"The submodule is in a dirty state and has staged and/or unstaged changes "
+"that are not yet committed as shown below."
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-commit-submodule-diff-view.ui.h:2
 #, fuzzy
-#~ msgid "There was an error getting the configuration"
-#~ msgstr "Velg aktiv konfigurasjon"
+msgid "Staged:"
+msgstr "Lastet ut"
 
-#~ msgid "_Name:"
-#~ msgstr "_Navn:"
-
-#~ msgid "Personal Details"
-#~ msgstr "Personlige detaljer"
-
-#~ msgid "_Terminal"
-#~ msgstr "_Terminal"
-
-#~ msgid "Create _Terminal"
-#~ msgstr "Opprett _terminal"
-
-#~ msgid "Terminal window"
-#~ msgstr "Terminalvindu"
-
-#~ msgid "Find:"
-#~ msgstr "Finn:"
-
-#~ msgid "Find Previous"
-#~ msgstr "Finn forrige"
-
-#~ msgid "Find Next"
-#~ msgstr "Finn neste"
-
+#: ../gitg/resources/ui/gitg-commit-submodule-diff-view.ui.h:3
 #, fuzzy
-#~ msgid "C_ase Sensitive"
-#~ msgstr "Følsom"
+msgid "Unstaged:"
+msgstr "Lastet ut"
 
-#~ msgid "Authors:"
-#~ msgstr "Forfattere:"
+#: ../gitg/resources/ui/gitg-commit-submodule-history-view.ui.h:1
+#: ../gitg/resources/ui/gitg-history-paned.ui.h:1
+msgid "Subject"
+msgstr "Emne"
 
-#~ msgid "Branches:"
-#~ msgstr "Grener:"
+#: ../gitg/resources/ui/gitg-commit-submodule-history-view.ui.h:2
+#: ../gitg/resources/ui/gitg-history-paned.ui.h:2
+msgid "Author"
+msgstr "Forfatter"
 
-#~ msgid "Changed files"
-#~ msgstr "Endrede filer"
+#: ../gitg/resources/ui/gitg-commit-submodule-history-view.ui.h:3
+#: ../gitg/resources/ui/gitg-history-paned.ui.h:3
+msgid "Date"
+msgstr "Dato"
 
-#~ msgid "Revision log:"
-#~ msgstr "Revisjonslogg:"
+#: ../gitg/resources/ui/gitg-commit-submodule-info.ui.h:1
+msgid "Open"
+msgstr "Åpne"
 
-#~ msgid "Co_mmit"
-#~ msgstr "_Sjekk inn"
+#: ../gitg/resources/ui/gitg-create-branch-dialog.ui.h:1
+msgid "Create Branch"
+msgstr "Lag gren"
 
+#: ../gitg/resources/ui/gitg-create-branch-dialog.ui.h:3
+#: ../gitg/resources/ui/gitg-create-tag-dialog.ui.h:3
+msgid "C_reate"
+msgstr "_Lag"
+
+#: ../gitg/resources/ui/gitg-create-branch-dialog.ui.h:4
+msgid "Branch _name:"
+msgstr "_Navn på gren:"
+
+#: ../gitg/resources/ui/gitg-create-tag-dialog.ui.h:1
 #, fuzzy
-#~ msgid "Could not save the patch as %s"
-#~ msgstr "Kunne ikke lagre %s: %s"
+msgid "Create Tag"
+msgstr "Opprett"
 
+#: ../gitg/resources/ui/gitg-create-tag-dialog.ui.h:4
 #, fuzzy
-#~ msgid "Created in project directory"
-#~ msgstr "Rotkatalog for prosjektet:"
+msgid "Tag _name:"
+msgstr "Navn på mål:"
 
+#: ../gitg/resources/ui/gitg-dash-view.ui.h:1
+msgid ""
+"No repositories have been added yet. To get started, you can add an existing "
+"repository or clone a new one."
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:1
+msgid "_New Window"
+msgstr "_Nytt vindu"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:2
+msgid "_Author Details"
+msgstr "_Detaljer om forfatter"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:3
+msgid "_Preferences"
+msgstr "_Brukervalg"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:4
+msgid "_Keyboard Shortcuts"
+msgstr "Tastat_ursnarveier"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:5
+msgid "_About"
+msgstr "_Om"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:6
+msgid "_Quit"
+msgstr "A_vslutt"
+
+#: ../gitg/resources/ui/gitg-menus.ui.h:7
+msgid "_Reload"
+msgstr "_Last på nytt"
+
+#: ../gitg/resources/ui/gitg-preferences-commit.ui.h:1
+msgid "Show markup"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-commit.ui.h:2
+msgid "Display _subject margin at column:"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-commit.ui.h:3
+msgid "Display right _margin at column:"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-commit.ui.h:4
+msgid "Enable spell checking"
+msgstr "Slå på stavekontroll"
+
+#: ../gitg/resources/ui/gitg-preferences-commit.ui.h:5
+msgid "Commit Message"
+msgstr "Innsjekkingsmelding"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:1
+msgid "Default selection"
+msgstr "Forvalgt utvalg"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:2
+msgid "Current branch"
+msgstr "Aktiv gren"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:3
+msgid "All branches"
+msgstr "Alle grener"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:5
+msgid "References"
+msgstr "Referanser"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:6
+msgid "Sort references in the sidebar by latest activity"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:7
+msgid "Show upstream (remote) branch when selecting a local branch"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:8
+msgid "Commits"
+msgstr "Innsjekkinger"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:9
+msgid "Collapse inactive lanes"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:10
+msgid "Early"
+msgstr "Tidlig"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:11
+msgid "Late"
+msgstr "Sent"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:12
+msgid "Show history in topological order"
+msgstr "Vis historikk i topologisk rekkefølge"
+
+#: ../gitg/resources/ui/gitg-preferences-history.ui.h:13
+msgid "Preserve mainline for currently checked out branch"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:1
+msgid "Startup"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:2
+msgid "Start with activity:"
+msgstr "Start med aktivitet:"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:4
+msgid "Commit"
+msgstr "Sjekk inn"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:5
+msgid "Layout"
+msgstr "Utforming"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:6
+msgid "Use horizontal layout"
+msgstr "Bruk horisontal utforming"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:7
+msgid "Avatars"
+msgstr "Avatarer"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:8
+msgid "Use gravatar service to provide user avatars"
+msgstr "Bruk gravatar-tjenesten for å gi brukere avatarer"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:9
+msgid "Monitoring"
+msgstr "Overvåking"
+
+#: ../gitg/resources/ui/gitg-preferences-interface.ui.h:12
+msgid "Enable syntax highlighting of source code in diff views"
+msgstr "Slå på syntaksutheving av kildekoden i forskjellsvisninger"
+
+#: ../gitg/resources/ui/gitg-preferences.ui.h:1
+msgid "Preferences"
+msgstr "Brukervalg"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:1
+msgctxt "shortcut window"
+msgid "Windows"
+msgstr "Vinduer"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:2
+msgctxt "shortcut window"
+msgid "Open a new window"
+msgstr "Åpne et nytt vindu"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:3
+msgctxt "shortcut window"
+msgid "Open the window menu"
+msgstr "Åpne vindusmenyen"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:4
+msgctxt "shortcut window"
+msgid "Open a repository"
+msgstr "Åpne et lager"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:5
+msgctxt "shortcut window"
+msgid "Open the help"
+msgstr "Åpne hjelp"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:6
+msgctxt "shortcut window"
+msgid "Find"
+msgstr "Finn"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:7
+msgctxt "shortcut window"
+msgid "Close the active window"
+msgstr "Lukk det aktive vinduet"
+
+#: ../gitg/resources/ui/gitg-shortcuts.ui.h:8
+msgctxt "shortcut window"
+msgid "Quit the application"
+msgstr "Avslutt programmet"
+
+#: ../gitg/resources/ui/gitg-window.ui.h:2
+msgid "Show the list of recently used repositories"
+msgstr "Vis liste med nylig brukte lagre"
+
+#: ../gitg/resources/ui/gitg-window.ui.h:3
+msgid "Clone"
+msgstr "Klon"
+
+#: ../gitg/resources/ui/gitg-window.ui.h:4
+msgid "Clone repository"
+msgstr ""
+
+#: ../gitg/resources/ui/gitg-window.ui.h:5
+msgid "Add"
+msgstr "Legg til"
+
+#: ../gitg/resources/ui/gitg-window.ui.h:6
 #, fuzzy
-#~ msgid "Created in directory %s"
-#~ msgstr "Opprett nye kataloger"
+msgid "Add repository"
+msgstr "Kun lager"
 
-#, fuzzy
-#~ msgid "_Commit Changes"
-#~ msgstr "Sjekk inn endringer"
+#: ../gitg/resources/ui/gitg-window.ui.h:7
+msgid "Find a word or phrase"
+msgstr "Finn et ord eller en frase"
 
-#, fuzzy
-#~ msgid "A_dd file to repository"
-#~ msgstr "Legg til filer i lageret"
+#: ../gitg/resources/ui/gitg-window.ui.h:8
+msgid "General settings and options"
+msgstr "Generelle innstillinger og valg"
 
-#, fuzzy
-#~ msgid "Create _Patch"
-#~ msgstr "Opprett"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:2
+msgid "_Authenticate"
+msgstr "_Autentiser"
 
-#, fuzzy
-#~ msgid "_Add to .gitignore"
-#~ msgstr "Legg til pakkelager"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:3
+msgid ""
+"The previous attempt to authenticate has failed, please provide your user "
+"name and password and try again."
+msgstr ""
 
-#, fuzzy
-#~ msgid "_Remove from .gitignore"
-#~ msgstr "Fjern fra prosjekt"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:4
+msgid "_Username:"
+msgstr "Br_ukernavn:"
 
-#, fuzzy
-#~ msgid "_Show all files"
-#~ msgstr "Lagre alle filer"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:5
+msgid "_Password:"
+msgstr "_Passord:"
 
-#~ msgid "Project"
-#~ msgstr "Prosjekt"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:6
+msgid "Forget password _immediately"
+msgstr "Glem passord med det _samme"
 
-#, fuzzy
-#~ msgid "Show the diff window"
-#~ msgstr "Vis i hovedvinduet"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:7
+msgid "Remember password until you _logout"
+msgstr "Husk passord til du _logger ut"
 
-#~ msgid "Icon"
-#~ msgstr "Ikon"
+#: ../libgitg/resources/ui/gitg-authentication-dialog.ui.h:8
+msgid "Remember _forever"
+msgstr "Husk _for alltid"
 
-#, fuzzy
-#~ msgid "Committer:"
-#~ msgstr "<b>Alternativer for utskrift</b>"
+#: ../libgitg/resources/ui/gitg-diff-view-commit-details.ui.h:1
+msgid "Parents"
+msgstr "Opphav"
 
-#, fuzzy
-#~ msgid "Change Log:"
-#~ msgstr "Endringer:"
+#: ../libgitg/resources/ui/gitg-diff-view-file-renderer-binary.ui.h:1
+msgid "Unable to display changes for binary file"
+msgstr ""
 
-#~ msgid "_Details"
-#~ msgstr "_Detaljer"
+#: ../libgitg/resources/ui/gitg-diff-view-file-renderer-image.ui.h:1
+msgid "Side by side"
+msgstr "Side ved side"
 
-#, fuzzy
-#~ msgid "Delete tag \"%s\""
-#~ msgstr "Slett data"
+#: ../libgitg/resources/ui/gitg-diff-view-file-renderer-image.ui.h:2
+msgid "Slider"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Tag"
-#~ msgstr "Oppgaver"
+#: ../libgitg/resources/ui/gitg-diff-view-file-renderer-image.ui.h:3
+msgid "Overlay"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Enter branch name:"
-#~ msgstr "Navn på gren:"
+#: ../libgitg/resources/ui/gitg-diff-view-file-renderer-image.ui.h:4
+msgid "Difference"
+msgstr "Forskjell"
 
-#, fuzzy
-#~ msgid "Enter tag name:"
-#~ msgstr "Navn på mål:"
+#: ../libgitg/resources/ui/gitg-diff-view-options-spacing.ui.h:1
+msgid "Tab width:"
+msgstr ""
 
-#~ msgid "Graph"
-#~ msgstr "Graf"
+#: ../libgitg/resources/ui/gitg-diff-view-options-spacing.ui.h:2
+msgid "Wrap lines:"
+msgstr ""
 
-#~ msgid "Short Log"
-#~ msgstr "Kort logg"
+#: ../libgitg/resources/ui/gitg-diff-view-options-spacing.ui.h:3
+msgid "Ignore whitespace:"
+msgstr ""
 
-#~ msgid "Author"
-#~ msgstr "Forfatter"
+#: ../libgitg/resources/ui/gitg-diff-view-options.ui.h:1
+msgid "Context:"
+msgstr "Kontekst:"
 
-#~ msgid "_Previous Change"
-#~ msgstr "_Forrige endring"
+#: ../libgitg/resources/ui/gitg-diff-view-options.ui.h:2
+msgid "Spacing"
+msgstr "Mellomrom"
 
-#~ msgid "View previous change"
-#~ msgstr "Vis forrige endring"
-
-#~ msgid "_Next Change"
-#~ msgstr "_Neste endring"
-
-#, fuzzy
-#~ msgid "View next change"
-#~ msgstr "Vis neste endring"
-
-#~ msgid "_Goto Line Number"
-#~ msgstr "_Gå til linjenummer"
-
-#, fuzzy
-#~ msgid "Highlight specified line number"
-#~ msgstr "Merk denne filen"
-
-#, fuzzy
-#~ msgid "Show changes for selected revision"
-#~ msgstr "_Vis valgt revisjon"
-
-#, fuzzy
-#~ msgid "Select _Revision"
-#~ msgstr "Vis valgt revisjon"
-
-#~ msgid "Line Number:"
-#~ msgstr "Linjenummer:"
-
-#~ msgid "_Browse"
-#~ msgstr "_Bla gjennom"
-
-#, fuzzy
-#~ msgid "Browse the files of this project"
-#~ msgstr "Ingen kjørbare filer i dette prosjektet!"
-
-#~ msgid "<b>Description:</b>"
-#~ msgstr "<b>Beskrivelse:</b>"
-
-#~ msgid "_Summary"
-#~ msgstr "_Sammendrag"
-
-#~ msgid "_Branches"
-#~ msgstr "_Grener"
-
-#~ msgid "About Giggle"
-#~ msgstr "Om Giggle"
-
-#, fuzzy
-#~ msgid "Find..."
-#~ msgstr "Finn:"
-
-#, fuzzy
-#~ msgid "Find Ne_xt"
-#~ msgstr "Finn _neste"
-
-#, fuzzy
-#~ msgid "Find next match"
-#~ msgstr "Valgt neste treff"
-
-#, fuzzy
-#~ msgid "Find Pre_vious"
-#~ msgstr "Finn f_orrige"
-
-#, fuzzy
-#~ msgid "Find previous match"
-#~ msgstr "Finn f_orrige"
-
-#, fuzzy
-#~ msgid "_Go"
-#~ msgstr "_God"
-
-#, fuzzy
-#~ msgid "_Diff current changes"
-#~ msgstr "_Forkast endringer"
-
-#, fuzzy
-#~ msgid "Diff current changes"
-#~ msgstr "_Forkast endringer"
-
-#, fuzzy
-#~ msgid "About this application"
-#~ msgstr "Klipp ut utvalget"
-
-#, fuzzy
-#~ msgid "Show revision tree"
-#~ msgstr "<b>Skrift:</b>"
-
-#, fuzzy
-#~ msgid "Show and edit project properties"
-#~ msgstr "Egenskaper for prosjekt"
-
-#, fuzzy
-#~ msgid "Refresh current view"
-#~ msgstr "Lagre denne filen"
-
-#, fuzzy
-#~ msgid "Search Inside _Patches"
-#~ msgstr "Søk og erstatt"
-
-#, fuzzy
-#~ msgid "Save patch file"
-#~ msgstr "Lagre alle filer"
+#: ../libgitg/resources/ui/gitg-repository-list-box-row.ui.h:1
+msgid ""
+"Remove the repository from the list (does not delete the repository from "
+"disk)"
+msgstr ""

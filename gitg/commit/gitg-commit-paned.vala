@@ -24,10 +24,16 @@ namespace GitgCommit
 class Paned : Gtk.Paned
 {
 	[GtkChild (name = "tree_view_files")]
-	private Gitg.Sidebar d_tree_view_files;
+	private Sidebar d_tree_view_files;
 
 	[GtkChild (name = "diff_view")]
 	private Gitg.DiffView d_diff_view;
+
+	[GtkChild (name = "submodule_history_view")]
+	private SubmoduleHistoryView d_submodule_history_view;
+
+	[GtkChild (name = "submodule_diff_view")]
+	private SubmoduleDiffView d_submodule_diff_view;
 
 	[GtkChild (name = "check_button_skip_hooks")]
 	private Gtk.CheckButton d_check_button_skip_hooks;
@@ -38,7 +44,10 @@ class Paned : Gtk.Paned
 	[GtkChild (name = "button_stage")]
 	private Gtk.Button d_button_stage;
 
-	public Gitg.Sidebar sidebar
+	[GtkChild (name = "button_discard")]
+	private Gtk.Button d_button_discard;
+
+	public Sidebar sidebar
 	{
 		get { return d_tree_view_files; }
 	}
@@ -46,6 +55,16 @@ class Paned : Gtk.Paned
 	public Gitg.DiffView diff_view
 	{
 		get { return d_diff_view; }
+	}
+
+	public SubmoduleHistoryView submodule_history_view
+	{
+		get { return d_submodule_history_view; }
+	}
+
+	public SubmoduleDiffView submodule_diff_view
+	{
+		get { return d_submodule_diff_view; }
 	}
 
 	public bool skip_hooks
@@ -61,6 +80,11 @@ class Paned : Gtk.Paned
 	public Gtk.Button button_stage
 	{
 		get { return d_button_stage; }
+	}
+
+	public Gtk.Button button_discard
+	{
+		get { return d_button_discard; }
 	}
 
 	construct

@@ -26,15 +26,28 @@ public class PreferencesInterface : Gtk.Grid, GitgExt.Preferences
 	// Do this to pull in config.h before glib.h (for gettext...)
 	private const string version = Gitg.Config.VERSION;
 	private bool d_block;
+	private Settings? d_settings;
 
 	[GtkChild (name = "horizontal_layout_enabled")]
 	private Gtk.CheckButton d_horizontal_layout_enabled;
 
+	[GtkChild (name = "default_activity")]
+	private Gtk.ComboBox d_default_activity;
+
+	[GtkChild (name = "gravatar_enabled")]
+	private Gtk.CheckButton d_gravatar_enabled;
+
+	[GtkChild (name = "monitoring_enabled" )]
+	private Gtk.CheckButton d_monitoring_enabled;
+
+	[GtkChild (name = "diff_highlighting_enabled")]
+	private Gtk.CheckButton d_diff_highlighting_enabled;
+
 	construct
 	{
-		var settings = new Settings("org.gnome.gitg.preferences.interface");
+		d_settings = new Settings("org.gnome.gitg.preferences.interface");
 
-		d_horizontal_layout_enabled.active = settings.get_enum("orientation") == 0;
+		d_horizontal_layout_enabled.active = d_settings.get_enum("orientation") == 0;
 
 		d_horizontal_layout_enabled.notify["active"].connect((obj, spec)=> {
 			if (d_block)
@@ -42,17 +55,51 @@ public class PreferencesInterface : Gtk.Grid, GitgExt.Preferences
 				return;
 			}
 
-			if (!settings.set_enum("orientation", d_horizontal_layout_enabled.active ? 0 : 1))
+			if (!d_settings.set_enum("orientation", d_horizontal_layout_enabled.active ? 0 : 1))
 			{
-				d_horizontal_layout_enabled.active = settings.get_enum("orientation") == 0;
+				d_horizontal_layout_enabled.active = d_settings.get_enum("orientation") == 0;
 			}
 		});
 
-		settings.changed["orientation"].connect((s, k) => {
-			d_block = true;
-			d_horizontal_layout_enabled.active = settings.get_enum("orientation") == 0;
-			d_block = false;
-		});
+		d_settings.changed["orientation"].connect(orientation_changed);
+
+		d_settings.bind("default-activity",
+		                d_default_activity,
+		                "active-id",
+		              	SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+		d_settings.bind("use-gravatar",
+		                d_gravatar_enabled,
+		                "active",
+		                SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+		d_settings.bind("enable-monitoring",
+		                d_monitoring_enabled,
+		                "active",
+		                SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+		d_settings.bind("enable-diff-highlighting",
+		                d_diff_highlighting_enabled,
+		                "active",
+		                SettingsBindFlags.GET | SettingsBindFlags.SET);
+	}
+
+	public override void dispose()
+	{
+		if (d_settings != null)
+		{
+			d_settings.changed["orientation"].disconnect(orientation_changed);
+			d_settings = null;
+		}
+
+		base.dispose();
+	}
+
+	private void orientation_changed(Settings settings, string key)
+	{
+		d_block = true;
+		d_horizontal_layout_enabled.active = settings.get_enum(key) == 0;
+		d_block = false;
 	}
 
 	public Gtk.Widget widget

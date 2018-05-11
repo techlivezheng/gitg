@@ -29,12 +29,11 @@ public class Color : Object
 		ushort b;
 	}
 
-	private static const Rgb[] palette = {
+	private const Rgb[] palette = {
 		{196, 160, 0},
 		{78, 154, 6},
 		{206, 92, 0},
 		{32, 74, 135},
-		{46, 52, 54},
 		{108, 53, 102},
 		{164, 0, 0},
 

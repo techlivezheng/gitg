@@ -17,9 +17,10 @@
  * along with gitg. If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Gitg.Test;
 using Gitg.Test.Assert;
 
-class Gitg.Test.Stage : Gitg.Test.Repository
+class LibGitg.Test.Stage : Gitg.Test.Repository
 {
 	/**
 	 * Create basic repository with files in a variety of states.
@@ -52,13 +53,15 @@ class Gitg.Test.Stage : Gitg.Test.Repository
 		var stage = d_repository.stage;
 		var e = stage.file_status(null);
 
-		e.next_files.begin(-1, (obj, res) => {
-			var files = e.next_files.end(res);
+		e.next_items.begin(-1, (obj, res) => {
+			var items = e.next_items.end(res);
 
-			assert(files.length == cfiles.size);
+			assert(items.length == cfiles.size);
 
-			foreach (var f in files)
+			foreach (var item in items)
 			{
+				var f = item as Gitg.StageStatusFile;
+
 				assert(cfiles.has_key(f.path));
 				assert_inteq(cfiles[f.path], f.flags);
 
@@ -101,7 +104,7 @@ class Gitg.Test.Stage : Gitg.Test.Repository
 			try
 			{
 				stage.stage.end(res);
-			} catch (Error e) { assert_no_error(e); }
+			} catch (Error e) { Assert.assert_no_error(e); }
 
 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
 
@@ -128,7 +131,7 @@ class Gitg.Test.Stage : Gitg.Test.Repository
 			try
 			{
 				stage.unstage.end(res);
-			} catch (Error e) { assert_no_error(e); }
+			} catch (Error e) { Assert.assert_no_error(e); }
 
 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
 
@@ -155,7 +158,7 @@ class Gitg.Test.Stage : Gitg.Test.Repository
 			try
 			{
 				stage.revert.end(res);
-			} catch (Error e) { assert_no_error(e); }
+			} catch (Error e) { Assert.assert_no_error(e); }
 
 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
 
@@ -181,7 +184,7 @@ class Gitg.Test.Stage : Gitg.Test.Repository
 			try
 			{
 				stage.delete.end(res);
-			} catch (Error e) { assert_no_error(e); }
+			} catch (Error e) { Assert.assert_no_error(e); }
 
 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
 

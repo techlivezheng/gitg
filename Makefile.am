@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I m4 -I libgd ${ACLOCAL_FLAGS}
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-SUBDIRS = libgd po
+SUBDIRS = po
 
 DISTCLEANFILES = \
 	intltool-extract \
@@ -83,6 +83,7 @@ GITIGNOREFILES    =
 CLEANFILES        =
 bin_PROGRAMS      =
 noinst_PROGRAMS   =
+noinst_LTLIBRARIES =
 SCALABLE_ICONS    =
 gsettings_SCHEMAS =
 TESTS             =
@@ -91,12 +92,16 @@ GITG_PLUGIN_VAPISOURCES =			\
 	libgitg-ext/libgitg-ext-1.0.vapi	\
 	libgitg/libgitg-1.0.vapi
 
+include contrib/xml/Makefile.am
+include contrib/ide/Makefile.am
 include libgitg/Makefile.am
 include libgitg-ext/Makefile.am
 include plugins/Makefile.am
 include gitg/Makefile.am
 include data/Makefile.am
 include tests/Makefile.am
+include win32/Makefile.am
+include vapi/Makefile.am
 
 include icons.mk
 
@@ -105,18 +110,6 @@ include icons.mk
 @GSETTINGS_RULES@
 
 GITIGNOREFILES += $(gsettings_SCHEMAS)
-
-EXTRA_DIST +=				\
-	vapi/config.vapi		\
-	vapi/gitg-js-utils.vapi		\
-	vapi/gobject-introspection.vapi	\
-	vapi/gtksourceview-3.0.deps	\
-	vapi/gtksourceview-3.0.vapi	\
-	vapi/libpeas-1.0.vapi		\
-	vapi/libsoup-2.4.deps		\
-	vapi/libsoup-2.4.vapi		\
-	vapi/webkit2gtk-3.0.deps	\
-	vapi/webkit2gtk-3.0.vapi
 
 %.typelib: %.gir
 	$(INTROSPECTION_COMPILER) $(INTROSPECTION_COMPILER_ARGS) --includedir=$(top_srcdir) -o $@ $<

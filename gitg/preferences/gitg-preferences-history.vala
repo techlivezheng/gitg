@@ -38,14 +38,26 @@ public class PreferencesHistory : Gtk.Grid, GitgExt.Preferences
 	[GtkChild (name = "topological_order")]
 	private Gtk.CheckButton d_topological_order;
 
-	[GtkChild (name = "show_stash")]
-	private Gtk.CheckButton d_show_stash;
+	[GtkChild (name = "mainline_head")]
+	private Gtk.CheckButton d_mainline_head;
 
-	[GtkChild (name = "show_staged")]
-	private Gtk.CheckButton d_show_staged;
+	[GtkChild (name = "select_current_branch" )]
+	private Gtk.RadioButton d_select_current_branch;
 
-	[GtkChild (name = "show_unstaged")]
-	private Gtk.CheckButton d_show_unstaged;
+	[GtkChild (name = "select_all_branches" )]
+	private Gtk.RadioButton d_select_all_branches;
+
+	[GtkChild (name = "select_all_commits" )]
+	private Gtk.RadioButton d_select_all_commits;
+
+	[GtkChild (name = "sort_references_by_activity")]
+	private Gtk.CheckButton d_sort_references_by_activity;
+
+	[GtkChild (name = "show_upstream_with_branch")]
+	private Gtk.CheckButton d_show_upstream_with_branch;
+
+	private Gtk.RadioButton[] d_select_buttons;
+	private string[] d_select_names;
 
 	private static int round_val(double val)
 	{
@@ -68,18 +80,8 @@ public class PreferencesHistory : Gtk.Grid, GitgExt.Preferences
 		              "active",
 		              SettingsBindFlags.GET | SettingsBindFlags.SET);
 
-		settings.bind("show-stash",
-		              d_show_stash,
-		              "active",
-		              SettingsBindFlags.GET | SettingsBindFlags.SET);
-
-		settings.bind("show-staged",
-		              d_show_staged,
-		              "active",
-		              SettingsBindFlags.GET | SettingsBindFlags.SET);
-
-		settings.bind("show-unstaged",
-		              d_show_unstaged,
+		settings.bind("mainline-head",
+		              d_mainline_head,
 		              "active",
 		              SettingsBindFlags.GET | SettingsBindFlags.SET);
 
@@ -113,6 +115,78 @@ public class PreferencesHistory : Gtk.Grid, GitgExt.Preferences
 		});
 
 		update_collapse_inactive_lanes(settings);
+
+		d_select_buttons = new Gtk.RadioButton[] {
+			d_select_current_branch,
+			d_select_all_branches,
+			d_select_all_commits
+		};
+
+		d_select_names = new string[] {
+			"current-branch",
+			"all-branches",
+			"all-commits"
+		};
+
+		settings.bind("default-selection",
+		              this,
+		              "default-selection",
+		              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+		for (var i = 0; i < d_select_buttons.length; i++) {
+			d_select_buttons[i].notify["active"].connect(() => {
+				notify_property("default-selection");
+			});
+		}
+
+		settings.bind_with_mapping("reference-sort-order",
+		                           d_sort_references_by_activity,
+		                           "active",
+		                           SettingsBindFlags.GET | SettingsBindFlags.SET,
+			(value, variant) => {
+				value.set_boolean(variant.get_string() == "last-activity");
+				return true;
+			},
+
+		    (value, expected_type) => {
+		    	return new Variant.string(value.get_boolean() ? "last-activity" : "name");
+		    },
+
+		    null, null
+		);
+
+		settings.bind("show-upstream-with-branch",
+		              d_show_upstream_with_branch,
+		              "active",
+		              SettingsBindFlags.GET | SettingsBindFlags.SET);
+	}
+
+	public string default_selection
+	{
+		get
+		{
+			for (var i = 0; i < d_select_buttons.length; i++)
+			{
+				if (d_select_buttons[i].active)
+				{
+					return d_select_names[i];
+				}
+			}
+
+			return d_select_names[0];
+		}
+
+		set
+		{
+			for (var i = 0; i < d_select_buttons.length; i++)
+			{
+				if (d_select_names[i] == value)
+				{
+					d_select_buttons[i].active = true;
+					return;
+				}
+			}
+		}
 	}
 
 	private void update_collapse_inactive_lanes(Settings settings)

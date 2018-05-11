@@ -54,80 +54,13 @@ public class Gitg.DiffStat : Gtk.DrawingArea
 		                                        5,
 		                                        ParamFlags.READWRITE |
 		                                        ParamFlags.STATIC_STRINGS));
+
+		set_css_name("gitg-diffstat");
 	}
 
 	construct
 	{
 		make_layout();
-
-		var css = new Gtk.CssProvider();
-
-		var fb = @"
-			GitgDiffStat {
-				border: 1px inset shade(@borders, 1.2);
-				border-radius: 5px;
-				background-color: shade(@theme_bg_color, 1.2);
-				-GitgDiffStat-bar-height: 5px;
-			}
-
-			GitgDiffStat added,
-			GitgDiffStat removed {
-				border: 0;
-			}
-
-			GitgDiffStat added {
-				background-color: #33cc33;
-				border-radius: 3px 0px 0px 3px;
-			}
-
-			GitgDiffStat added:dir(rtl) {
-				border-radius: 0px 3px 3px 0px;
-			}
-
-			GitgDiffStat removed {
-				background-color: #cc3333;
-				border-radius: 0px 3px 3px 0px;
-			}
-
-			GitgDiffStat removed:dir(rtl) {
-				border-radius: 3px 0px 0px 3px;
-			}
-
-			GitgDiffStat removed:only-child,
-			GitgDiffStat added:only-child {
-				border-radius: 3px;
-			}
-		";
-
-		try
-		{
-			css.load_from_data(fb, fb.length);
-		}
-		catch (Error e)
-		{
-			warning("Failed to load diff-stat style: %s", e.message);
-		}
-
-		get_style_context().add_provider(css, Gtk.STYLE_PROVIDER_PRIORITY_FALLBACK);
-
-		css = new Gtk.CssProvider();
-
-		var us = @"
-			GitgDiffStat {
-				padding: 1px 5px 1px 3px;
-			}
-		";
-
-		try
-		{
-			css.load_from_data(us, us.length);
-		}
-		catch (Error e)
-		{
-			warning("Failed to load diff-stat style: %s", e.message);
-		}
-
-		get_style_context().add_provider(css, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 	}
 
 	private void make_layout()
@@ -151,6 +84,20 @@ public class Gitg.DiffStat : Gtk.DrawingArea
 		base.style_updated();
 
 		d_layout = null;
+
+		var settings = Gtk.Settings.get_default();
+		var theme = Environment.get_variable("GTK_THEME");
+
+		var dark = settings.gtk_application_prefer_dark_theme || (theme != null && theme.has_suffix(":dark"));
+
+		if (dark)
+		{
+			get_style_context().add_class("dark");
+		}
+		else
+		{
+			get_style_context().remove_class("dark");
+		}
 
 		make_layout();
 	}
@@ -213,29 +160,36 @@ public class Gitg.DiffStat : Gtk.DrawingArea
 			x -= padding.right + wbar;
 		}
 
-		sctx.save();
-		sctx.add_region("added",
-		                Gtk.RegionFlags.FIRST |
-		                (removed == 0 ? Gtk.RegionFlags.ONLY : 0));
+		if (added == 0 && removed == 0)
+		{
+			sctx.save();
+			sctx.render_background(context, x, ybar, wrest, hbar);
+			sctx.restore();
+		}
+		else if (added == 0 || removed == 0)
+		{
+			sctx.save();
+			sctx.add_class(added == 0 ? "removed-only" : "added-only");
+			sctx.render_background(context, x, ybar, wrest, hbar);
+			sctx.restore();
+		}
+		else
+		{
+			sctx.save();
+			sctx.add_class("added");
+			sctx.render_background(context, x, ybar, wbar, hbar);
+			sctx.restore();
 
-		sctx.render_background(context, x, ybar, wbar, hbar);
-
-		sctx.restore();
-		sctx.save();
-
-		x += rtl ? (wbar - wrest) : wbar;
-
-		sctx.add_region("removed",
-		                Gtk.RegionFlags.LAST |
-		                (added == 0 ? Gtk.RegionFlags.ONLY : 0));
-
-		sctx.render_background(context,
-		                       x,
-		                       ybar,
-		                       wrest - wbar,
-		                       hbar);
-
-		sctx.restore();
+			sctx.save();
+			sctx.add_class("removed");
+			x += rtl ? (wbar - wrest) : wbar;
+			sctx.render_background(context,
+			                       x,
+			                       ybar,
+			                       wrest - wbar,
+			                       hbar);
+			sctx.restore();
+		}
 
 		return false;
 	}

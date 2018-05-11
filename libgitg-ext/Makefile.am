@@ -13,11 +13,10 @@ libgitg_ext_libgitg_ext_1_0_la_CFLAGS =		\
 	-w
 
 libgitg_ext_libgitg_ext_1_0_la_VALAPKGS =	\
-	--pkg Ggit-1.0 				\
+	--pkg ggit-1.0 				\
 	--pkg gio-2.0				\
 	--pkg gtk+-3.0				\
 	--pkg libsoup-2.4			\
-	--pkg webkit2gtk-3.0			\
 	--pkg gee-0.8
 
 libgitg_ext_libgitg_ext_1_0_la_VALAFLAGS =		\
@@ -35,25 +34,36 @@ libgitg_ext_libgitg_ext_1_0_la_VALAFLAGS =		\
 libgitg_ext_libgitg_ext_1_0_la_LDFLAGS = 	\
 	-export-dynamic				\
 	-no-undefined				\
-	-export-symbols-regex "^[^_].*"		\
-	$(LIBGITG_EXT_LIBS)
+	-export-symbols-regex "^[^_].*"
 
 libgitg_ext_libgitg_ext_1_0_la_LIBADD = 	\
-	libgitg/libgitg-1.0.la
+	libgitg/libgitg-1.0.la			\
+	$(LIBGITG_EXT_LIBS)
 
 libgitg_ext_libgitg_ext_1_0_la_VALASOURCES =		\
-	libgitg-ext/gitg-ext-assembly-info.vala		\
-	libgitg-ext/gitg-ext-application.vala		\
-	libgitg-ext/gitg-ext-ui-element.vala		\
+	libgitg-ext/gitg-ext-action.vala		\
 	libgitg-ext/gitg-ext-activity.vala		\
+	libgitg-ext/gitg-ext-application.vala		\
+	libgitg-ext/gitg-ext-assembly-info.vala		\
+	libgitg-ext/gitg-ext-command-line.vala		\
+	libgitg-ext/gitg-ext-command-lines.vala		\
+	libgitg-ext/gitg-ext-commit-action.vala		\
+	libgitg-ext/gitg-ext-history-panel.vala		\
+	libgitg-ext/gitg-ext-history.vala		\
+	libgitg-ext/gitg-ext-message-bus.vala		\
 	libgitg-ext/gitg-ext-message-id.vala		\
 	libgitg-ext/gitg-ext-message.vala		\
-	libgitg-ext/gitg-ext-message-bus.vala		\
-	libgitg-ext/gitg-ext-history.vala		\
-	libgitg-ext/gitg-ext-history-panel.vala		\
-	libgitg-ext/gitg-ext-command-line.vala		\
+	libgitg-ext/gitg-ext-notification.vala		\
+	libgitg-ext/gitg-ext-notifications.vala		\
 	libgitg-ext/gitg-ext-preferences.vala		\
+	libgitg-ext/gitg-ext-ref-action-interface.vala	\
+	libgitg-ext/gitg-ext-ref-action.vala		\
+	libgitg-ext/gitg-ext-remote-lookup.vala		\
+	libgitg-ext/gitg-ext-searchable.vala		\
+	libgitg-ext/gitg-ext-selectable.vala		\
+	libgitg-ext/gitg-ext-ui-element.vala		\
 	libgitg-ext/gitg-ext-ui.vala			\
+	libgitg-ext/gitg-ext-user-query.vala		\
 	libgitg/libgitg-1.0.vapi
 
 libgitg_ext_libgitg_ext_1_0_la_SOURCES =		\
@@ -80,10 +90,10 @@ libgitg-ext-docs: $(libgitg_ext_libgitg_ext_1_0_la_VALASOURCES)
 docs: libgitg-ext-docs
 endif
 
-libgitg_ext_libgitg_ext_1_0_la_girdir = $(INTROSPECTION_GIRDIR)
+libgitg_ext_libgitg_ext_1_0_la_girdir = $(datadir)/gir-1.0
 libgitg_ext_libgitg_ext_1_0_la_gir_DATA = GitgExt-1.0.gir
 
-libgitg_ext_libgitg_ext_1_0_la_typelibdir = $(INTROSPECTION_TYPELIBDIR)
+libgitg_ext_libgitg_ext_1_0_la_typelibdir = $(libdir)/girepository-1.0
 libgitg_ext_libgitg_ext_1_0_la_typelib_DATA = GitgExt-1.0.typelib
 
 if ENABLE_PYTHON

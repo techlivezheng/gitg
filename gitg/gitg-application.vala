@@ -45,12 +45,13 @@ public class Application : Gtk.Application
 
 		public static ApplicationCommandLine command_line;
 
-		private static void commit_activity()
+		private static bool commit_activity()
 		{
 			activity = "commit";
+			return true;
 		}
 
-		public static const OptionEntry[] entries = {
+		public const OptionEntry[] entries = {
 			{"version", 'v', OptionFlags.NO_ARG, OptionArg.CALLBACK,
 			 (void *)show_version_and_quit, N_("Show the application's version"), null},
 
@@ -60,7 +61,7 @@ public class Application : Gtk.Application
 			{"commit", 'c', OptionFlags.NO_ARG, OptionArg.CALLBACK,
 			 (void *)commit_activity, N_("Start gitg with the commit activity (shorthand for --activity commit)"), null},
 
-			 {"no-wd", 0, 0, OptionArg.NONE,
+			{"no-wd", 0, 0, OptionArg.NONE,
 			 ref no_wd, N_("Do not try to load a repository from the current working directory"), null},
 
 			{null}
@@ -69,26 +70,38 @@ public class Application : Gtk.Application
 
 	private PreferencesDialog d_preferences;
 
+#if GTK_SHORTCUTS_WINDOW
+	private Gtk.ShortcutsWindow d_shortcuts;
+#endif
+
 	static construct
 	{
 		Options.activity = "";
 	}
 
-	private static void show_version_and_quit()
+	private static bool show_version_and_quit()
 	{
 		stdout.printf("%s %s\n",
 		              Environment.get_application_name(),
 		              Config.VERSION);
 
 		Options.quit = true;
+		return true;
 	}
 
-	private void parse_command_line(ref unowned string[] argv) throws OptionError
+	private GitgExt.CommandLines parse_command_line(ref unowned string[] argv) throws OptionError
 	{
 		var ctx = new OptionContext(_("- Git repository viewer"));
 
 		ctx.add_main_entries(Options.entries, Config.GETTEXT_PACKAGE);
 		ctx.add_group(Gtk.get_option_group(true));
+
+		var cmdexts = new GitgExt.CommandLine[0];
+
+		var historycmd = new GitgHistory.CommandLine();
+		cmdexts += historycmd;
+
+		ctx.add_group(historycmd.get_option_group());
 
 		// Add any option groups from plugins
 		var engine = PluginsEngine.get_default();
@@ -101,12 +114,18 @@ public class Application : Gtk.Application
 
 				if (ext != null)
 				{
+					cmdexts += ext;
 					ctx.add_group(ext.get_option_group());
 				}
 			}
 		}
 
 		ctx.parse(ref argv);
+
+		var ret = new GitgExt.CommandLines(cmdexts);
+		ret.parse_finished();
+
+		return ret;
 	}
 
 	protected override bool local_command_line ([CCode (array_length = false, array_null_terminated = true)] ref unowned string[] arguments, out int exit_status)
@@ -124,6 +143,7 @@ public class Application : Gtk.Application
 		}
 		catch (Error e)
 		{
+			stderr.printf("Failed to parse options: %s\n", e.message);
 			exit_status = 1;
 			return true;
 		}
@@ -141,10 +161,11 @@ public class Application : Gtk.Application
 	{
 		string[] arguments = cmd.get_arguments();
 		unowned string[] argv = arguments;
+		GitgExt.CommandLines command_lines;
 
 		try
 		{
-			parse_command_line(ref argv);
+			command_lines = parse_command_line(ref argv);
 		}
 		catch (Error e)
 		{
@@ -175,25 +196,20 @@ public class Application : Gtk.Application
 				files += File.new_for_commandline_arg(arg);
 			}
 
-			open(files, Options.activity);
+			open_command_line(files, Options.activity, command_lines);
 		}
 		else
 		{
-			activate();
+			activate_command_line(command_lines);
 		}
 
 		Options.command_line = tmpcmd;
-
 		return 1;
 	}
 
 	private void on_app_new_window_activated()
 	{
 		new_window();
-	}
-
-	private void on_app_help_activated()
-	{
 	}
 
 	private void on_app_about_activated()
@@ -222,7 +238,9 @@ public class Application : Gtk.Application
 
 	private void on_app_quit_activated()
 	{
-		foreach (var window in get_windows())
+		var wnds = get_windows().copy();
+
+		foreach (var window in wnds)
 		{
 			window.destroy();
 		}
@@ -235,7 +253,7 @@ public class Application : Gtk.Application
 		// Create preferences dialog if needed
 		if (d_preferences == null)
 		{
-			d_preferences = Resource.load_object<PreferencesDialog>("ui/gitg-preferences.ui", "preferences");
+			d_preferences = Builder.load_object<PreferencesDialog>("ui/gitg-preferences.ui", "preferences");
 
 			d_preferences.destroy.connect((w) => {
 				d_preferences = null;
@@ -250,13 +268,57 @@ public class Application : Gtk.Application
 		d_preferences.present();
 	}
 
-	private static const ActionEntry[] app_entries = {
+	private void on_shortcuts_activated()
+	{
+#if GTK_SHORTCUTS_WINDOW
+
+		unowned List<Gtk.Window> wnds = get_windows();
+
+		// Create shortcuts window if needed
+		if (d_shortcuts == null)
+		{
+			d_shortcuts = Builder.load_object<Gtk.ShortcutsWindow>("ui/gitg-shortcuts.ui", "shortcuts-gitg");
+
+			d_shortcuts.destroy.connect((w) => {
+				d_shortcuts = null;
+			});
+		}
+
+		if (wnds != null)
+		{
+			d_shortcuts.set_transient_for(wnds.data);
+		}
+
+		d_shortcuts.present();
+#endif
+	}
+
+	private void on_app_author_details_global_activated()
+	{
+		unowned List<Gtk.Window> wnds = get_windows();
+		Window? window = null;
+
+		if (wnds != null)
+		{
+			window = wnds.data as Window;
+		}
+
+		AuthorDetailsDialog.show_global(window);
+	}
+
+	private const ActionEntry[] app_entries = {
 		{"new", on_app_new_window_activated},
-		{"help", on_app_help_activated},
 		{"about", on_app_about_activated},
 		{"quit", on_app_quit_activated},
+		{"author-details-global", on_app_author_details_global_activated},
 		{"preferences", on_preferences_activated}
 	};
+
+#if GTK_SHORTCUTS_WINDOW
+	private const ActionEntry[] shortcut_window_entries = {
+		{"shortcuts", on_shortcuts_activated}
+	};
+#endif
 
 	struct Accel
 	{
@@ -264,9 +326,49 @@ public class Application : Gtk.Application
 		string accel;
 	}
 
+	struct MultiAccel
+	{
+		string name;
+		string[] accels;
+	}
+
+	private void init_error(string msg)
+	{
+		var dlg = new Gtk.MessageDialog(null,
+		                                0,
+		                                Gtk.MessageType.ERROR,
+		                                Gtk.ButtonsType.CLOSE,
+		                                "%s",
+		                                msg);
+
+		dlg.window_position = Gtk.WindowPosition.CENTER;
+
+		dlg.response.connect(() => { Gtk.main_quit(); });
+		dlg.show();
+	}
+
 	protected override void startup()
 	{
 		base.startup();
+
+		PlatformSupport.application_support_prepare_startup();
+
+		try
+		{
+			Gitg.init();
+		}
+		catch (Error e)
+		{
+			if (e is Gitg.InitError.THREADS_UNSAFE)
+			{
+				var errmsg = _("We are terribly sorry, but gitg requires libgit2 (a library on which gitg depends) to be compiled with threading support.\n\nIf you manually compiled libgit2, then please configure libgit2 with -DTHREADSAFE:BOOL=ON.\n\nOtherwise, report a bug in your distributions' bug reporting system for providing libgit2 without threading support.");
+
+				init_error(errmsg);
+				error("%s", errmsg);
+			}
+
+			return;
+		}
 
 		// Handle the state setting in the application
 		d_state_settings = new Settings("org.gnome.gitg.state.window");
@@ -275,26 +377,41 @@ public class Application : Gtk.Application
 		// Application menu entries
 		add_action_entries(app_entries, this);
 
-		const Accel[] accels = {
-			{"app.new", "<Primary>N"},
+#if GTK_SHORTCUTS_WINDOW
+		add_action_entries(shortcut_window_entries, this);
+#endif
+
+		const Accel[] single_accels = {
+			{"app.new", "<Primary>N",},
 			{"app.quit", "<Primary>Q"},
 			{"app.help", "F1"},
 
 			{"win.search", "<Primary>F"},
-			{"win.close", "<Primary>Q"},
-			{"win.reload", "<Primary>R"},
 			{"win.gear-menu", "F10"},
-			{"win.open-repository", "<Primary>O"}
+			{"win.open-repository", "<Primary>O"},
+			{"win.close", "<Primary>W"}
 		};
 
-		foreach (var accel in accels)
+		var multi_accels = new MultiAccel[] {
+			MultiAccel() {
+				name = "win.reload",
+				accels = new string[] {"<Primary>R", "F5"}
+			}
+		};
+
+		foreach (var accel in single_accels)
 		{
-			add_accelerator(accel.accel, accel.name, null);
+			set_accels_for_action(accel.name, new string[] {accel.accel});
+		}
+
+		foreach (var accel in multi_accels)
+		{
+			set_accels_for_action(accel.name, accel.accels);
 		}
 
 		if (Gtk.Settings.get_default().gtk_shell_shows_app_menu)
 		{
-			MenuModel? menu = Resource.load_object<MenuModel>("ui/gitg-menus.ui", "app-menu");
+			MenuModel? menu = Builder.load_object<MenuModel>("ui/gitg-menus.ui", "app-menu");
 
 			if (menu != null)
 			{
@@ -302,8 +419,16 @@ public class Application : Gtk.Application
 			}
 		}
 
-		// Use our own css provider
-		Gtk.CssProvider? provider = Resource.load_css("style.css");
+		add_css("style.css");
+		add_css(@"style-$(Config.PLATFORM_NAME).css");;
+
+		var theme = Gtk.IconTheme.get_default();
+		theme.prepend_search_path(Path.build_filename(PlatformSupport.get_data_dir(), "icons"));
+	}
+
+	private void add_css(string path)
+	{
+		Gtk.CssProvider? provider = Resource.load_css(path);
 
 		if (provider != null)
 		{
@@ -311,9 +436,6 @@ public class Application : Gtk.Application
 			                                         provider,
 			                                         600);
 		}
-
-		var theme = Gtk.IconTheme.get_default();
-		theme.prepend_search_path(Path.build_filename(Config.GITG_DATADIR, "icons"));
 	}
 
 	protected override void shutdown()
@@ -322,22 +444,11 @@ public class Application : Gtk.Application
 		base.shutdown();
 	}
 
-	protected override void activate()
+	private void activate_command_line(GitgExt.CommandLines command_lines)
 	{
-		/* Application gets activated when no command line arguments have
-		 * been provided. However, gitg does something special in the case
-		 * that it has been launched from the terminal. It will try to open
-		 * the cwd as a repository. However, when not launched from the terminal
-		 * this is undesired, and a --no-wd allows gitg to be launched without
-		 * the implicit working directory opening of the repository. In the
-		 * end, the following happens:
-		 *
-		 * 1) --no-wd: present the window
-		 * 2) Get cwd from the commandline: open
-		 */
 		if (Options.no_wd)
 		{
-			present_window();
+			present_window(Options.activity, command_lines);
 		}
 		else
 		{
@@ -345,12 +456,13 @@ public class Application : Gtk.Application
 			string? wd = Options.command_line.get_cwd();
 
 			open(new File[] { File.new_for_path(wd) }, Options.activity);
-
-			// Forcing present here covers the case where no window was opened
-			// because wd is not an actual git repository
-			present_window();
+			present_window(Options.activity, command_lines);
 		}
+	}
 
+	protected override void activate()
+	{
+		present_window();
 		base.activate();
 	}
 
@@ -376,6 +488,12 @@ public class Application : Gtk.Application
 
 	protected override void open(File[] files, string hint)
 	{
+		open_command_line(files, hint);
+	}
+
+
+	private void open_command_line(File[] files, string? hint = null, GitgExt.CommandLines? command_lines = null)
+	{
 		if (files.length == 0)
 		{
 			return;
@@ -400,7 +518,7 @@ public class Application : Gtk.Application
 			{
 				// Present the window with this repository open
 				window.set_environment(Options.command_line.get_environ());
-				window.present();
+				window.present(hint, command_lines);
 				continue;
 			}
 
@@ -414,11 +532,11 @@ public class Application : Gtk.Application
 			catch { continue; }
 
 			// Finally, create a window for the repository
-			new_window(repo, hint);
+			new_window(repo, hint, command_lines);
 		}
 	}
 
-	private void new_window(Repository? repo = null, string? hint = null)
+	private void new_window(Repository? repo = null, string? hint = null, GitgExt.CommandLines? command_lines = null)
 	{
 		var window = Window.create_new(this, repo, hint);
 
@@ -427,10 +545,10 @@ public class Application : Gtk.Application
 			window.set_environment(Options.command_line.get_environ());
 		}
 
-		present_window();
+		present_window(hint, command_lines);
 	}
 
-	private void present_window()
+	private void present_window(string? activity = null, GitgExt.CommandLines? command_lines = null)
 	{
 		/* Present the last window in the windows registered on the
 		 * application. If there are no windows, then create a new empty
@@ -447,7 +565,7 @@ public class Application : Gtk.Application
 		var w = (Gitg.Window)windows.first().data;
 
 		w.set_environment(Options.command_line.get_environ());
-		w.present();
+		w.present(activity, command_lines);
 	}
 }
 

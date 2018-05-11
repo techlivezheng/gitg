@@ -3,7 +3,7 @@
   <!-- interface-requires gtk+ 3.3 -->
   <!-- interface-requires gitg 0.0 -->
   <!-- interface-requires gd 1.0 -->
-  <template class="GitgHistoryPaned" parent="GtkPaned">
+  <template class="GitgHistoryPaned" parent="GitgAnimatedPaned">
     <property name="visible">True</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
@@ -32,11 +32,12 @@
               <class name="sidebar"/>
             </style>
             <child>
-              <object class="GitgHistoryNavigationView" id="d_navigation_view">
+              <object class="GitgHistoryRefsList" id="d_refs_list">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="headers_visible">False</property>
-                <property name="name">tree_view_navigation</property>
+                <style>
+                  <class name="sidebar"/>
+                </style>
               </object>
             </child>
           </object>
@@ -49,7 +50,7 @@
           <object class="GtkStackSwitcher" id="d_stack_switcher_panels">
             <property name="visible">True</property>
             <property name="halign">center</property>
-            <property name="margin-bottom">6</property>
+            <property name="margin_bottom">6</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -63,7 +64,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkPaned" id="d_paned_panels">
+      <object class="GitgAnimatedPaned" id="d_paned_panels">
         <property name="visible">True</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
@@ -84,7 +85,7 @@
               <object class="GitgCommitListView" id="d_commit_list_view">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="rules_hint">True</property>
+                <property name="has_focus">True</property>
                 <property name="fixed-height-mode">True</property>
                 <property name="headers-visible">False</property>
                 <child>
@@ -93,7 +94,7 @@
                     <property name="sizing">fixed</property>
                     <property name="resizable">True</property>
                     <property name="expand">True</property>
-                    <property name="fixed-width">50</property>
+                    <property name="fixed-width">400</property>
                     <child>
                       <object class="GitgCellRendererLanes" id="renderer_commit_list_subject">
                         <property name="ellipsize">end</property>
@@ -109,9 +110,9 @@
                     <property name="title" translatable="yes">Author</property>
                     <property name="sizing">fixed</property>
                     <property name="resizable">True</property>
-                    <property name="fixed-width">150</property>
+                    <property name="fixed-width">180</property>
                     <child>
-                      <object class="GdStyledTextRenderer" id="d_renderer_commit_list_author">
+                      <object class="GtkCellRendererText" id="renderer_commit_list_author">
                         <property name="ellipsize">end</property>
                       </object>
                       <attributes>
@@ -125,9 +126,9 @@
                     <property name="title" translatable="yes">Date</property>
                     <property name="sizing">fixed</property>
                     <property name="resizable">True</property>
-                    <property name="fixed-width">100</property>
+                    <property name="fixed-width">150</property>
                     <child>
-                      <object class="GdStyledTextRenderer" id="d_renderer_commit_list_author_date">
+                      <object class="GtkCellRendererText" id="renderer_commit_list_author_date">
                         <property name="ellipsize">end</property>
                       </object>
                       <attributes>

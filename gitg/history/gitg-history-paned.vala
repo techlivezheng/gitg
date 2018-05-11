@@ -21,36 +21,29 @@ namespace GitgHistory
 {
 
 [GtkTemplate (ui = "/org/gnome/gitg/ui/gitg-history-paned.ui")]
-class Paned : Gtk.Paned
+class Paned : Gitg.AnimatedPaned
 {
 	[GtkChild]
 	private Gtk.Box d_box_sidebar;
 
 	[GtkChild]
-	private Gtk.Paned d_paned_panels;
+	private Gitg.AnimatedPaned d_paned_panels;
 
 	[GtkChild]
 	private Gtk.StackSwitcher d_stack_switcher_panels;
 
 	[GtkChild]
-	private NavigationView d_navigation_view;
+	private RefsList d_refs_list;
 
 	[GtkChild]
-	private Gtk.TreeView d_commit_list_view;
+	private Gitg.CommitListView d_commit_list_view;
 
 	[GtkChild]
 	private Gtk.Stack d_stack_panel;
 
 	[GtkChild]
-	private Gd.StyledTextRenderer d_renderer_commit_list_author;
-
-	[GtkChild]
-	private Gd.StyledTextRenderer d_renderer_commit_list_author_date;
-
-	[GtkChild]
 	private Gtk.ScrolledWindow d_scrolled_window_commit_list;
 
-	[Notify]
 	public Gtk.Orientation inner_orientation
 	{
 		get { return d_paned_panels.orientation; }
@@ -85,19 +78,71 @@ class Paned : Gtk.Paned
 		}
 	}
 
+	// private void slide_in()
+	// {
+	// 	slide(Gitg.SlidePanedChild.FIRST, Gitg.SlideDirection.IN);
+
+	// 	Gitg.SlidePanedChild child;
+
+	// 	if (inner_orientation == Gtk.Orientation.HORIZONTAL)
+	// 	{
+	// 		child = Gitg.SlidePanedChild.FIRST;
+	// 	}
+	// 	else
+	// 	{
+	// 		child = Gitg.SlidePanedChild.SECOND;
+	// 	}
+
+	// 	d_paned_panels.slide(child, Gitg.SlideDirection.IN);
+	// }
+
+	// private void slide_out()
+	// {
+	// 	slide(Gitg.SlidePanedChild.FIRST, Gitg.SlideDirection.OUT);
+
+	// 	Gitg.SlidePanedChild child;
+
+	// 	if (inner_orientation == Gtk.Orientation.HORIZONTAL)
+	// 	{
+	// 		child = Gitg.SlidePanedChild.FIRST;
+	// 	}
+	// 	else
+	// 	{
+	// 		child = Gitg.SlidePanedChild.SECOND;
+	// 	}
+
+	// 	d_paned_panels.slide(child, Gitg.SlideDirection.OUT);
+	// }
+
+	private void store_paned_position(Gitg.AnimatedPaned paned, Settings settings, string key)
+	{
+		if (paned.is_animating)
+		{
+			return;
+		}
+
+		if (!paned.get_child1().visible || !paned.get_child2().visible)
+		{
+			return;
+		}
+
+		settings.set_int(key, paned.get_position());
+	}
+
 	construct
 	{
 		var state_settings = new Settings("org.gnome.gitg.state.history");
 
-		state_settings.bind("paned-sidebar-position",
-		                    this,
-		                    "position",
-		                    SettingsBindFlags.GET | SettingsBindFlags.SET);
+		position = state_settings.get_int("paned-sidebar-position");
+		d_paned_panels.position = state_settings.get_int("paned-panels-position");
 
-		state_settings.bind("paned-panels-position",
-		                    d_paned_panels,
-		                    "position",
-		                    SettingsBindFlags.GET | SettingsBindFlags.SET);
+		notify["position"].connect(() => {
+			store_paned_position(this, state_settings, "paned-sidebar-position");
+		});
+
+		d_paned_panels.notify["position"].connect(() => {
+			store_paned_position(d_paned_panels, state_settings, "paned-panels-position");
+		});
 
 		var interface_settings = new Settings("org.gnome.gitg.preferences.interface");
 
@@ -105,9 +150,6 @@ class Paned : Gtk.Paned
 		                        this,
 		                        "inner_orientation",
 		                        SettingsBindFlags.GET);
-
-		d_renderer_commit_list_author.add_class("dim-label");
-		d_renderer_commit_list_author_date.add_class("dim-label");
 
 		d_stack_switcher_panels.set_stack(d_stack_panel);
 	}
@@ -117,12 +159,12 @@ class Paned : Gtk.Paned
 		Object(orientation: Gtk.Orientation.HORIZONTAL);
 	}
 
-	public NavigationView navigation_view
+	public RefsList refs_list
 	{
-		get { return d_navigation_view; }
+		get { return d_refs_list; }
 	}
 
-	public Gtk.TreeView commit_list_view
+	public Gitg.CommitListView commit_list_view
 	{
 		get { return d_commit_list_view; }
 	}
@@ -141,6 +183,11 @@ class Paned : Gtk.Paned
 	{
 		var ret = base.draw(context);
 
+		if (!get_child1().visible || !get_child2().visible)
+		{
+			return ret;
+		}
+
 		var window = d_box_sidebar.get_window();
 		var handlewin = get_handle_window();
 
@@ -153,19 +200,24 @@ class Paned : Gtk.Paned
 		d_stack_switcher_panels.get_allocation(out alloc);
 
 		var y = alloc.y - d_box_sidebar.spacing;
-		var hw = handlewin.get_width();
+		var hw = 1;
 		var w = position + hw;
 		var h = alloc.height + d_box_sidebar.spacing + d_stack_switcher_panels.margin_bottom;
 
-		int wx;
-		window.get_position(out wx, null);
+		if (window != null)
+		{
+			int wx;
+			window.get_position(out wx, null);
+			c.render_frame(context, wx, y, w, h);
+		}
 
-		c.render_frame(context, wx, y, w, h);
+		if (handlewin != null)
+		{
+			int hx;
+			handlewin.get_position(out hx, null);
 
-		int hx;
-		handlewin.get_position(out hx, null);
-
-		c.render_background(context, hx, y, hw, h);
+			c.render_background(context, hx, y, hw, h);
+		}
 
 		c.restore();
 

@@ -22,6 +22,8 @@ namespace GitgExt
 	public interface CommandLine : Object
 	{
 		public abstract OptionGroup get_option_group();
+		public abstract void parse_finished();
+		public abstract void apply(GitgExt.Application application);
 	}
 }
 

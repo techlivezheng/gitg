@@ -26,6 +26,22 @@ namespace GitgCommit
 		private Paned? d_main;
 		private bool d_reloading;
 		private bool d_has_staged;
+		private ulong d_externally_changed_id;
+		private bool d_ignore_external_changes;
+		private Gitg.WhenMapped? d_reload_when_mapped;
+
+		private enum UiType
+		{
+			DIFF,
+			SUBMODULE_HISTORY,
+			SUBMODULE_DIFF
+		}
+
+		private enum IndexType
+		{
+			STAGED,
+			UNSTAGED
+		}
 
 		public GitgExt.Application? application { owned get; construct set; }
 
@@ -39,12 +55,12 @@ namespace GitgCommit
 			owned get { return "/org/gnome/gitg/Activities/Commit"; }
 		}
 
-		[Notify]
 		public Gitg.Repository repository
 		{
 			set
 			{
 				reload();
+				notify_property("enabled");
 			}
 		}
 
@@ -52,11 +68,54 @@ namespace GitgCommit
 		{
 			application.bind_property("repository", this,
 			                          "repository", BindingFlags.DEFAULT);
+
+			d_externally_changed_id = application.repository_changed_externally.connect(repository_changed_externally);
+		}
+
+		public bool enabled
+		{
+			get
+			{
+				return application.repository != null && !application.repository.is_bare;
+			}
+		}
+
+		public override void dispose()
+		{
+			if (d_externally_changed_id != 0)
+			{
+				application.disconnect(d_externally_changed_id);
+				d_externally_changed_id = 0;
+			}
+
+			base.dispose();
+		}
+
+		private void repository_changed_externally(GitgExt.ExternalChangeHint hint)
+		{
+			if (!d_ignore_external_changes)
+			{
+				if (d_main != null && (hint & GitgExt.ExternalChangeHint.INDEX) != 0)
+				{
+					d_reload_when_mapped = new Gitg.WhenMapped(d_main);
+
+					d_reload_when_mapped.update(() => {
+						reload();
+					}, this);
+				}
+			}
+
+			d_ignore_external_changes = false;
 		}
 
 		public string display_name
 		{
-			owned get { return _("Commit"); }
+			owned get { return C_("Activity", "Commit"); }
+		}
+
+		public string description
+		{
+			owned get { return _("Create new commits and manage the staging area"); }
 		}
 
 		public string? icon
@@ -82,211 +141,617 @@ namespace GitgCommit
 			return action == "commit";
 		}
 
-		private string? icon_for_status(Ggit.StatusFlags status)
-		{
-			if ((status & (Ggit.StatusFlags.INDEX_NEW |
-			               Ggit.StatusFlags.WORKING_TREE_NEW)) != 0)
-			{
-				return "list-add-symbolic";
-			}
-			else if ((status & (Ggit.StatusFlags.INDEX_MODIFIED |
-			                    Ggit.StatusFlags.INDEX_RENAMED |
-			                    Ggit.StatusFlags.INDEX_TYPECHANGE |
-			                    Ggit.StatusFlags.WORKING_TREE_MODIFIED |
-			                    Ggit.StatusFlags.WORKING_TREE_TYPECHANGE)) != 0)
-			{
-				return "text-editor-symbolic";
-			}
-			else if ((status & (Ggit.StatusFlags.INDEX_DELETED |
-			                    Ggit.StatusFlags.WORKING_TREE_DELETED)) != 0)
-			{
-				return "edit-delete-symbolic";
-			}
+		private delegate void StageUnstageCallback(Sidebar.Item item);
+		private delegate void StageUnstageSubmoduleCommitCallback(Gitg.Commit commit);
 
-			return null;
+		private delegate void UpdateDiffCallback();
+		private UpdateDiffCallback? d_update_diff_callback;
+
+		private bool d_submodule_history_select_first;
+		private Gitg.StageStatusSubmodule? d_current_submodule;
+		private Gitg.Repository? d_current_submodule_repository;
+		private StageUnstageSubmoduleCommitCallback d_stage_unstage_submodule_commit_callback;
+
+		private void show_unstaged_diff(Gitg.StageStatusItem[] items)
+		{
+			if (items.length == 1 && items[0] is Gitg.StageStatusSubmodule)
+			{
+				show_submodule_history((Gitg.StageStatusSubmodule)items[0], IndexType.UNSTAGED);
+			}
+			else
+			{
+				show_ui(UiType.DIFF);
+				show_unstaged_diff_intern(application.repository, d_main.diff_view, items, true);
+			}
 		}
 
-		private delegate void StageUnstageCallback(Gitg.StageStatusFile f, int numclick);
-
-		private void show_unstaged_diff(Gitg.StageStatusFile f)
+		private void set_unstaged_diff_update_callback(Gitg.Repository               repository,
+		                                               Gitg.DiffView                 view,
+		                                               owned Gitg.StageStatusItem[]? items,
+		                                               bool                          patchable)
 		{
-			var stage = application.repository.stage;
+			d_update_diff_callback = () => {
+				show_unstaged_diff_intern(repository, view, items, patchable);
+			};
+		}
 
-			stage.diff_workdir.begin(f, (obj, res) => {
+		private void show_unstaged_diff_intern(Gitg.Repository         repository,
+		                                       Gitg.DiffView           view,
+		                                       Gitg.StageStatusItem[]? items,
+		                                       bool                    patchable)
+		{
+			var stage = repository.stage;
+
+			stage.diff_workdir_all.begin(items, view.options, (obj, res) => {
 				try
 				{
-					var d = stage.diff_workdir.end(res);
+					var d = stage.diff_workdir_all.end(res);
 
-					d_main.diff_view.unstaged = true;
-					d_main.diff_view.staged = false;
+					view.unstaged = patchable;
+					view.staged = false;
 
 					d_main.button_stage.label = _("_Stage selection");
+					d_main.button_stage.visible = patchable;
+					d_main.button_discard.visible = true;
 
-					d_main.diff_view.diff = d;
+					view.new_is_workdir = true;
+					view.diff = d;
 				}
 				catch
 				{
 					// TODO: show error in diff
-					d_main.diff_view.diff = null;
+					view.diff = null;
 				}
 			});
+
+			set_unstaged_diff_update_callback(repository, view, items, patchable);
 		}
 
-		private void stage_file(Gitg.StageStatusFile f)
+		private void stage_submodule_at(Gitg.Commit commit)
 		{
-			var stage = application.repository.stage;
+			stage_submodule.begin(d_current_submodule, commit, (obj, res) => {
+				stage_submodule.end(res);
 
-			stage.stage_path.begin(f.path, (obj, res) => {
-				try
-				{
-					stage.stage_path.end(res);
-				}
-				catch (Error e)
-				{
-					var msg = _("Failed to stage the file `%s'").printf(f.path);
-					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
-				}
-
+				d_ignore_external_changes = true;
 				reload();
 			});
 		}
 
-		private void delete_file(Gitg.StageStatusFile f)
+		private async bool stage_submodule(Gitg.StageStatusSubmodule sub, Gitg.Commit? commit)
 		{
 			var stage = application.repository.stage;
 
-			stage.delete_path.begin(f.path, (obj, res) => {
-				try
-				{
-					stage.delete_path.end(res);
-				}
-				catch (Error e)
-				{
-					var msg = _("Failed to stage the removal of file `%s'").printf(f.path);
-					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
-				}
-
-				reload();
-			});
-		}
-
-		private void on_unstaged_activated(Gitg.StageStatusFile f, int numclick)
-		{
-			if (numclick == 1)
+			if ((sub.flags & Ggit.SubmoduleStatus.WD_DELETED) != 0)
 			{
-				show_unstaged_diff(f);
+				try
+				{
+					yield stage.delete_path(sub.path);
+				}
+				catch (Error e)
+				{
+					var msg = _("Failed to stage the removal of submodule `%s'").printf(sub.path);
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+
+					return false;
+				}
 			}
 			else
 			{
-				if ((f.flags & Ggit.StatusFlags.WORKING_TREE_DELETED) != 0)
+				Gitg.Repository repo;
+
+				try
 				{
-					delete_file(f);
+					repo = sub.submodule.open() as Gitg.Repository;
 				}
-				else
+				catch (Error e)
 				{
-					stage_file(f);
+					var msg = _("Failed to open the repository of submodule `%s' while trying to stage").printf(sub.path);
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+
+					return false;
+				}
+
+				Ggit.Commit sub_commit = commit;
+				if (sub_commit == null)
+				{
+					try
+					{
+						sub_commit = repo.lookup<Gitg.Commit>(sub.submodule.get_workdir_id());
+					}
+					catch (Error e)
+					{
+						var msg = _("Failed to lookup the working directory commit of submodule `%s' while trying to stage").printf(sub.path);
+						application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+
+						return false;
+					}
+				}
+
+				try
+				{
+					yield stage.stage_commit(sub.path, sub_commit);
+				}
+				catch (Error e)
+				{
+					var msg = _("Failed to stage the submodule `%s'").printf(sub.path);
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+
+					return false;
 				}
 			}
+
+			return true;
 		}
 
-		private void show_staged_diff(Gitg.StageStatusFile f)
+		private async bool stage_file(Gitg.StageStatusFile file)
 		{
 			var stage = application.repository.stage;
 
-			stage.diff_index.begin(f, (obj, res) => {
+			if ((file.flags & Ggit.StatusFlags.WORKING_TREE_DELETED) != 0)
+			{
 				try
 				{
-					var d = stage.diff_index.end(res);
+					yield stage.delete_path(file.path);
+				}
+				catch (Error e)
+				{
+					var msg = _("Failed to stage the removal of file `%s'").printf(file.path);
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
 
-					d_main.diff_view.unstaged = false;
-					d_main.diff_view.staged = true;
+					return false;
+				}
+			}
+			else
+			{
+				try
+				{
+					yield stage.stage_path(file.path);
+				}
+				catch (Error e)
+				{
+					var msg = _("Failed to stage the file `%s'").printf(file.path);
+					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
+
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private async void stage_items(owned Gitg.StageStatusItem[] items)
+		{
+			foreach (var item in items)
+			{
+				var ok = true;
+
+				if (item is Gitg.StageStatusFile)
+				{
+					d_ignore_external_changes = true;
+					ok = yield stage_file((Gitg.StageStatusFile)item);
+				}
+				else if (item is Gitg.StageStatusSubmodule)
+				{
+					d_ignore_external_changes = true;
+					ok = yield stage_submodule((Gitg.StageStatusSubmodule)item, null);
+				}
+				else
+				{
+					assert_not_reached();
+				}
+
+				if (!ok)
+				{
+					break;
+				}
+			}
+
+			reload();
+		}
+
+		private void show_ui(UiType type)
+		{
+			d_main.submodule_history_view.set_visible(type == UiType.SUBMODULE_HISTORY);
+			d_main.submodule_diff_view.set_visible(type == UiType.SUBMODULE_DIFF);
+			d_main.diff_view.set_visible(type == UiType.DIFF);
+
+			if (type != UiType.DIFF)
+			{
+				d_main.diff_view.diff = null;
+			}
+
+			if (type != UiType.SUBMODULE_DIFF)
+			{
+				var view = d_main.submodule_diff_view;
+
+				view.info.submodule = null;
+				view.diff_view_staged.diff = null;
+				view.diff_view_unstaged.diff = null;
+			}
+
+			if (type != UiType.SUBMODULE_HISTORY)
+			{
+				var view = d_main.submodule_history_view;
+				var model = ((Gitg.CommitModel)view.commit_list_view.model);
+
+				if (model != null)
+				{
+					model.repository = null;
+				}
+
+				view.diff_view.diff = null;
+				d_current_submodule = null;
+				d_current_submodule_repository = null;
+			}
+		}
+
+		private void on_unstaged_activated(Gitg.StageStatusItem[] items)
+		{
+			stage_items.begin(items, (obj, res) => {
+				stage_items.end(res);
+			});
+		}
+
+		private void show_submodule_diff(Gitg.StageStatusSubmodule sub)
+		{
+			show_ui(UiType.SUBMODULE_DIFF);
+
+			var view = d_main.submodule_diff_view;
+
+			view.info.submodule = sub.submodule;
+
+			Gitg.Repository repo;
+
+			try
+			{
+				repo = sub.submodule.open() as Gitg.Repository;
+			}
+			catch (Error e)
+			{
+				view.diff_view_staged.diff = null;
+				view.diff_view_unstaged.diff = null;
+
+				return;
+			}
+
+			show_staged_diff_intern(repo, view.diff_view_staged, null, false);
+			show_unstaged_diff_intern(repo, view.diff_view_unstaged, null, false);
+		}
+
+		private void submodule_history_selection_changed(Gitg.Commit? commit)
+		{
+			var view = d_main.submodule_history_view;
+
+			if (commit == null)
+			{
+				view.diff_view.diff = null;
+				return;
+			}
+
+			if (d_current_submodule_repository == null)
+			{
+				return;
+			}
+
+			var repo = d_current_submodule_repository;
+
+			var commit_tree = commit.get_tree();
+
+			var head = d_current_submodule.submodule.get_head_id();
+			Ggit.Tree? head_tree = null;
+
+			if (head != null)
+			{
+				Ggit.Commit head_commit;
+
+				try
+				{
+					head_commit = repo.lookup<Gitg.Commit>(head);
+				}
+				catch (Error e)
+				{
+					// TODO: show error to user
+					stderr.printf("Failed to get head commit: %s\n", e.message);
+					return;
+				}
+
+				head_tree = head_commit.get_tree();
+			}
+
+			Ggit.Diff diff;
+
+			try
+			{
+				diff = new Ggit.Diff.tree_to_tree(repo, head_tree, commit_tree, view.diff_view.options);
+			}
+			catch (Error e)
+			{
+				// TODO: show error to user
+				stderr.printf("Failed to get diff: %s\n", e.message);
+				return;
+			}
+
+			view.diff_view.new_is_workdir = false;
+			view.diff_view.diff = diff;
+		}
+
+		private void show_submodule_history(Gitg.StageStatusSubmodule sub,
+		                                    IndexType                 type)
+		{
+			show_ui(UiType.SUBMODULE_HISTORY);
+
+			d_current_submodule = null;
+			d_current_submodule_repository = null;
+
+			Gitg.Repository repo;
+			var submodule = sub.submodule;
+
+			try
+			{
+				repo = submodule.open() as Gitg.Repository;
+			}
+			catch (Error e)
+			{
+				// TODO: show to user
+				stderr.printf("Failed to open submodule repository: %s\n", e.message);
+				return;
+			}
+
+			d_current_submodule = sub;
+			d_current_submodule_repository = repo;
+
+			var view = d_main.submodule_history_view;
+			var model = (Gitg.CommitModel)view.commit_list_view.model;
+
+			if (model == null)
+			{
+				model = new Gitg.CommitModel(repo);
+				view.commit_list_view.model = model;
+			}
+			else
+			{
+				model.repository = repo;
+			}
+
+			if (type == IndexType.STAGED)
+			{
+				model.set_include(new Ggit.OId[] { submodule.get_index_id() });
+
+				var head_id = submodule.get_head_id();
+
+				if (head_id != null)
+				{
+					model.set_exclude(new Ggit.OId[] { head_id });
+				}
+				else
+				{
+					model.set_exclude(new Ggit.OId[0]);
+				}
+
+				d_stage_unstage_submodule_commit_callback = (commit) => {
+					unstage_submodule_at(commit);
+				};
+			}
+			else
+			{
+				var index_id = submodule.get_index_id();
+
+				model.set_include(new Ggit.OId[] { submodule.get_workdir_id() });
+
+				if (index_id != null)
+				{
+					model.set_exclude(new Ggit.OId[] { index_id });
+				}
+				else
+				{
+					model.set_exclude(new Ggit.OId[0]);
+				}
+
+				d_stage_unstage_submodule_commit_callback = (commit) => {
+					stage_submodule_at(commit);
+				};
+			}
+
+			d_submodule_history_select_first = true;
+			model.reload();
+		}
+
+		private void set_staged_diff_update_callback(Gitg.Repository               repository,
+		                                             Gitg.DiffView                 view,
+		                                             owned Gitg.StageStatusItem[]? items,
+		                                             bool                          patchable)
+		{
+			d_update_diff_callback = () => {
+				show_staged_diff_intern(repository, view, items, patchable);
+			};
+		}
+
+		private void show_staged_diff_intern(Gitg.Repository         repository,
+		                                     Gitg.DiffView           view,
+		                                     Gitg.StageStatusItem[]? items,
+		                                     bool                    patchable)
+		{
+			var stage = repository.stage;
+
+			stage.diff_index_all.begin(items, view.options, (obj, res) => {
+				try
+				{
+					var d = stage.diff_index_all.end(res);
+
+					view.unstaged = false;
+					view.staged = patchable;
 
 					d_main.button_stage.label = _("_Unstage selection");
+					d_main.button_stage.visible = patchable;
+					d_main.button_discard.visible = false;
 
-					d_main.diff_view.diff = d;
+					view.new_is_workdir = false;
+					view.diff = d;
 				}
 				catch
 				{
 					// TODO: error reporting
-					d_main.diff_view.diff = null;
+					view.diff = null;
 				}
 			});
+
+			set_staged_diff_update_callback(repository, view, items, patchable);
 		}
 
-		private void delete_index_file(Gitg.StageStatusFile f)
+		private void show_staged_diff(Gitg.StageStatusItem[] items)
 		{
-			var stage = application.repository.stage;
-
-			stage.delete_path.begin(f.path, (obj, res) => {
-				try
-				{
-					stage.delete_path.end(res);
-				}
-				catch (Error e)
-				{
-					var msg = _("Failed to unstage the removal of file `%s'").printf(f.path);
-					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
-				}
-
-				reload();
-			});
-		}
-
-		private void unstage_file(Gitg.StageStatusFile f)
-		{
-			var stage = application.repository.stage;
-
-			stage.unstage_path.begin(f.path, (obj, res) => {
-				try
-				{
-					stage.unstage_path.end(res);
-				}
-				catch (Error e)
-				{
-					var msg = _("Failed to unstage the file `%s'").printf(f.path);
-					application.show_infobar(msg, e.message, Gtk.MessageType.ERROR);
-				}
-
-				reload();
-			});
-		}
-
-		private void on_staged_activated(Gitg.StageStatusFile f, int numclick)
-		{
-			if (numclick == 1)
+			if (items.length == 1 && items[0] is Gitg.StageStatusSubmodule)
 			{
-				show_staged_diff(f);
+				show_submodule_history((Gitg.StageStatusSubmodule)items[0], IndexType.STAGED);
 			}
 			else
 			{
-				if ((f.flags & Ggit.StatusFlags.INDEX_NEW) != 0)
-				{
-					delete_index_file(f);
-				}
-				else
-				{
-					unstage_file(f);
-				}
+				show_ui(UiType.DIFF);
+				show_staged_diff_intern(application.repository, d_main.diff_view, items, true);
 			}
 		}
 
-		private void append_files(Gitg.SidebarStore      model,
-		                          Gitg.StageStatusFile[] files,
-		                          StageUnstageCallback?  callback)
+		private async bool unstage_item(Gitg.StageStatusItem item, bool isnew, string removal_msg, string unstage_msg)
 		{
-			foreach (var f in files)
+			var stage = application.repository.stage;
+
+			if (isnew)
 			{
-				model.append_normal(f.path, null, icon_for_status(f.flags), (numclick) => {
-					if (callback != null)
-					{
-						callback(f, numclick);
-					}
+				try
+				{
+					yield stage.delete_path(item.path);
+				}
+				catch (Error e)
+				{
+					application.show_infobar(removal_msg, e.message, Gtk.MessageType.ERROR);
+					return false;
+				}
+			}
+			else
+			{
+				try
+				{
+					yield stage.unstage_path(item.path);
+				}
+				catch (Error e)
+				{
+					application.show_infobar(unstage_msg, e.message, Gtk.MessageType.ERROR);
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private async bool unstage_file(Gitg.StageStatusFile file)
+		{
+			return yield unstage_item(file,
+			                          (file.flags & Ggit.StatusFlags.INDEX_NEW) != 0,
+			                          _("Failed to unstage the removal of file `%s'").printf(file.path),
+			                          _("Failed to unstage the file `%s'").printf(file.path));
+		}
+
+		private async bool unstage_submodule(Gitg.StageStatusSubmodule sub)
+		{
+			return yield unstage_item(sub,
+			                          (sub.flags & Ggit.SubmoduleStatus.INDEX_ADDED) != 0,
+			                          _("Failed to unstage the removal of submodule `%s'").printf(sub.path),
+			                          _("Failed to unstage the submodule `%s'").printf(sub.path));
+		}
+
+		private void unstage_submodule_at(Gitg.Commit commit)
+		{
+			var parents = commit.get_parents();
+
+			if (parents.size != 0)
+			{
+				d_ignore_external_changes = true;
+				stage_submodule_at(parents[0] as Gitg.Commit);
+			}
+			else
+			{
+				d_ignore_external_changes = true;
+				unstage_submodule.begin(d_current_submodule, (obj, res) => {
+					unstage_submodule.end(res);
+					reload();
 				});
 			}
 		}
 
-		public void reload()
+		private async void unstage_items(owned Gitg.StageStatusItem[] items)
 		{
+			foreach (var item in items)
+			{
+				var ok = true;
+
+				if (item is Gitg.StageStatusFile)
+				{
+					d_ignore_external_changes = true;
+					ok = yield unstage_file((Gitg.StageStatusFile)item);
+				}
+				else if (item is Gitg.StageStatusSubmodule)
+				{
+					d_ignore_external_changes = true;
+					ok = yield unstage_submodule((Gitg.StageStatusSubmodule)item);
+				}
+				else
+				{
+					assert_not_reached();
+				}
+
+				if (!ok)
+				{
+					break;
+				}
+			}
+
+			reload();
+		}
+
+		private void on_staged_activated(Gitg.StageStatusItem[] items)
+		{
+			unstage_items.begin(items, (obj, res) => {
+				unstage_items.end(res);
+			});
+		}
+
+		private Sidebar.Item[] append_items(Gitg.SidebarStore      model,
+		                                    Gitg.StageStatusItem[] items,
+		                                    Sidebar.Item.Type      type,
+		                                    Gee.HashSet<string>?   selected_paths,
+		                                    StageUnstageCallback?  callback)
+		{
+			var ret = new Sidebar.Item[0];
+
+			var sorted = new Gee.ArrayList<Gitg.StageStatusItem>.wrap(items);
+
+			sorted.sort((a, b) => {
+				return a.path.casefold().collate(b.path.casefold());
+			});
+
+			foreach (var item in sorted)
+			{
+				var sitem = new Sidebar.Item(item, type);
+
+				if (selected_paths != null && selected_paths.contains(item.path))
+				{
+					ret += sitem;
+				}
+
+				sitem.activated.connect((numclick) => {
+					callback(sitem);
+				});
+
+				model.append(sitem);
+			}
+
+			return ret;
+		}
+
+		private void reload()
+		{
+			d_reload_when_mapped = null;
+
 			var repository = application.repository;
 
 			if (repository == null || d_reloading)
@@ -296,18 +761,35 @@ namespace GitgCommit
 
 			d_reloading = true;
 
-			// Preload author avatar
-			try
+			var sb = d_main.sidebar;
+			var model = sb.model;
+
+			Sidebar.Item.Type selected_type;
+			Gitg.StageStatusItem[] selected_items;
+
+			selected_items = items_for_items(sb.get_selected_items<Gitg.SidebarItem>(),
+			                                 out selected_type);
+
+			var selected_paths = new Gee.HashSet<string>();
+
+			foreach (var item in selected_items)
 			{
-				var author = get_signature("AUTHOR");
-				var ac = Gitg.AvatarCache.default();
+				selected_paths.add(item.path);
+			}
 
-				ac.load.begin(author.get_email(), null, (obj, res) => {
-					ac.load.end(res);
-				});
-			} catch {}
+			if (d_main.diff_view.use_gravatar)
+			{
+				// Preload author avatar
+				try
+				{
+					var author = get_signature("AUTHOR");
+					var ac = Gitg.AvatarCache.default();
 
-			var model = d_main.sidebar.model;
+					ac.load.begin(author.get_email(), 50, null, (obj, res) => {
+						ac.load.end(res);
+					});
+				} catch {}
+			}
 
 			var stage = repository.stage;
 
@@ -322,52 +804,67 @@ namespace GitgCommit
 			var options = new Ggit.StatusOptions(opts, show, null);
 			var enumerator = stage.file_status(options);
 
-			var indexflags = Ggit.StatusFlags.INDEX_NEW |
-			                 Ggit.StatusFlags.INDEX_MODIFIED |
-			                 Ggit.StatusFlags.INDEX_DELETED |
-			                 Ggit.StatusFlags.INDEX_RENAMED |
-			                 Ggit.StatusFlags.INDEX_TYPECHANGE;
+			enumerator.next_items.begin(-1, (obj, res) => {
+				var items = enumerator.next_items.end(res);
 
-			var workflags = Ggit.StatusFlags.WORKING_TREE_MODIFIED |
-			                Ggit.StatusFlags.WORKING_TREE_DELETED |
-			                Ggit.StatusFlags.WORKING_TREE_TYPECHANGE;
-
-			var untrackedflags = Ggit.StatusFlags.WORKING_TREE_NEW;
-
-			enumerator.next_files.begin(-1, (obj, res) => {
-				var files = enumerator.next_files.end(res);
-
-				var staged = new Gitg.StageStatusFile[files.length];
+				var staged = new Gitg.StageStatusItem[items.length];
 				staged.length = 0;
 
-				var unstaged = new Gitg.StageStatusFile[files.length];
+				var unstaged = new Gitg.StageStatusItem[items.length];
 				unstaged.length = 0;
 
-				var untracked = new Gitg.StageStatusFile[files.length];
+				var untracked = new Gitg.StageStatusItem[items.length];
 				untracked.length = 0;
 
-				foreach (var f in files)
+				var dirty = new Gitg.StageStatusItem[items.length];
+				dirty.length = 0;
+
+				bool hassub = false;
+
+				foreach (var item in items)
 				{
-					if ((f.flags & indexflags) != 0)
+					if (item.is_staged)
 					{
-						staged += f;
+						staged += item;
 					}
 
-					if ((f.flags & workflags) != 0)
+					if (item.is_unstaged)
 					{
-						unstaged += f;
+						unstaged += item;
 					}
 
-					if ((f.flags & untrackedflags) != 0)
+					if (item.is_untracked)
 					{
-						untracked += f;
+						untracked += item;
+					}
+
+					var sub = item as Gitg.StageStatusSubmodule;
+
+					if (sub != null)
+					{
+						hassub = true;
+
+						if (sub.is_dirty)
+						{
+							dirty += item;
+						}
 					}
 				}
 
 				model.clear();
 				d_main.diff_view.diff = null;
 
-				model.begin_header(_("Staged"));
+				var current_staged = new Sidebar.Item[0];
+				var current_unstaged = new Sidebar.Item[0];
+				var current_untracked = new Sidebar.Item[0];
+				var current_submodules = new Sidebar.Item[0];
+
+				// Populate staged items
+				var staged_header = model.begin_header(_("Staged"), (uint)Sidebar.Item.Type.STAGED);
+
+				staged_header.activated.connect((numclick) => {
+					on_unstage_selected_items();
+				});
 
 				if (staged.length == 0)
 				{
@@ -375,12 +872,30 @@ namespace GitgCommit
 				}
 				else
 				{
-					append_files(model, staged, on_staged_activated);
+					current_staged = append_items(model,
+					                              staged,
+					                              Sidebar.Item.Type.STAGED,
+					                              selected_paths,
+					                              (item) => {
+						if (d_main.sidebar.is_selected(item))
+						{
+							on_unstage_selected_items();
+						}
+						else
+						{
+							on_staged_activated(new Gitg.StageStatusItem[] {item.item});
+						}
+					});
 				}
 
 				model.end_header();
 
-				model.begin_header(_("Unstaged"));
+				// Populate unstaged items
+				var unstaged_header = model.begin_header(_("Unstaged"), (uint)Sidebar.Item.Type.UNSTAGED);
+
+				unstaged_header.activated.connect((numclick) => {
+					on_stage_selected_items();
+				});
 
 				if (unstaged.length == 0)
 				{
@@ -388,12 +903,26 @@ namespace GitgCommit
 				}
 				else
 				{
-					append_files(model, unstaged, on_unstaged_activated);
+					current_unstaged = append_items(model,
+					                                unstaged,
+					                                Sidebar.Item.Type.UNSTAGED,
+					                                selected_paths,
+					                                (item) => {
+						if (d_main.sidebar.is_selected(item))
+						{
+							on_stage_selected_items();
+						}
+						else
+						{
+							on_unstaged_activated(new Gitg.StageStatusItem[] {item.item});
+						}
+					});
 				}
 
 				model.end_header();
 
-				model.begin_header(_("Untracked"));
+				// Populate untracked items
+				model.begin_header(_("Untracked"), (uint)Sidebar.Item.Type.UNTRACKED);
 
 				if (untracked.length == 0)
 				{
@@ -401,15 +930,127 @@ namespace GitgCommit
 				}
 				else
 				{
-					append_files(model, untracked, on_unstaged_activated);
+					current_untracked = append_items(model,
+					                                 untracked,
+					                                 Sidebar.Item.Type.UNTRACKED,
+					                                 selected_paths,
+					                                 (item) => {
+						if (d_main.sidebar.is_selected(item))
+						{
+							on_stage_selected_items();
+						}
+						else
+						{
+							on_unstaged_activated(new Gitg.StageStatusItem[] {item.item});
+						}
+					});
 				}
 
 				model.end_header();
+
+				// Populate submodule items
+				if (hassub)
+				{
+					model.begin_header(_("Submodule"), (uint)Sidebar.Item.Type.SUBMODULE);
+
+					if (dirty.length == 0)
+					{
+						model.append_dummy(_("No dirty submodules"));
+					}
+					else
+					{
+						current_submodules = append_items(model,
+						                                  dirty,
+						                                  Sidebar.Item.Type.SUBMODULE,
+						                                  selected_paths,
+						                                  (item) => {
+						    if (d_main.sidebar.is_selected(item))
+						    {
+						    	on_stage_selected_items();
+						    }
+						    else
+						    {
+								on_unstaged_activated(new Gitg.StageStatusItem[] {item.item});
+							}
+						});
+					}
+
+					model.end_header();
+				}
 
 				d_main.sidebar.expand_all();
 				d_has_staged = staged.length != 0;
 
 				d_reloading = false;
+
+				if (selected_paths.size != 0)
+				{
+					Sidebar.Item[] sel = null;
+
+					switch (selected_type)
+					{
+					case Sidebar.Item.Type.STAGED:
+						sel = current_staged;
+						break;
+					case Sidebar.Item.Type.UNSTAGED:
+						sel = current_unstaged;
+						break;
+					case Sidebar.Item.Type.UNTRACKED:
+						sel = current_untracked;
+						break;
+					case Sidebar.Item.Type.SUBMODULE:
+						sel = current_submodules;
+						break;
+					}
+
+					if (sel == null || sel.length == 0)
+					{
+						sel = current_staged;
+					}
+
+					if (sel == null || sel.length == 0)
+					{
+						sel = current_unstaged;
+					}
+
+					if (sel == null || sel.length == 0)
+					{
+						sel = current_untracked;
+					}
+
+					if (sel == null || sel.length == 0)
+					{
+						sel = current_submodules;
+					}
+
+					if (sel != null && sel.length != 0)
+					{
+						foreach (var item in sel)
+						{
+							d_main.sidebar.select(item);
+						}
+					}
+					else if (selected_type == Sidebar.Item.Type.STAGED)
+					{
+						d_main.sidebar.select(staged_header);
+					}
+					else
+					{
+						d_main.sidebar.select(unstaged_header);
+					}
+				}
+				else
+				{
+					// Select staged/unstaged header
+					if (unstaged.length == 0)
+					{
+						d_main.sidebar.select(staged_header);
+					}
+					else
+					{
+						d_main.sidebar.select(unstaged_header);
+					}
+				}
 			});
 		}
 
@@ -435,7 +1076,7 @@ namespace GitgCommit
 			{
 				dlg.show_infobar(_("There are no changes to be committed"),
 				                 _("Use amend to change the commit message of the previous commit"),
-				                 Gtk.MessageType.INFO);
+				                 Gtk.MessageType.WARNING);
 				return;
 			}
 
@@ -449,6 +1090,7 @@ namespace GitgCommit
 				opts |= Gitg.StageCommitOptions.SKIP_HOOKS;
 			}
 
+			d_ignore_external_changes = true;
 			stage.commit.begin(dlg.pretty_message,
 			                   author,
 			                   committer,
@@ -457,6 +1099,8 @@ namespace GitgCommit
 				{
 					stage.commit.end(res);
 					reload();
+
+					application.repository_commits_changed();
 				}
 				catch (Error e)
 				{
@@ -508,22 +1152,27 @@ namespace GitgCommit
 
 		private async Ggit.Diff? index_diff()
 		{
-			var opts = new Ggit.DiffOptions(Ggit.DiffOption.INCLUDE_UNTRACKED |
-			                                Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
-			                                Ggit.DiffOption.RECURSE_UNTRACKED_DIRS,
-			                                3,
-			                                3,
-			                                null,
-			                                null,
-			                                null);
+			var opts = new Ggit.DiffOptions();
 
-			var stage = application.repository.stage;
+			opts.flags = Ggit.DiffOption.INCLUDE_UNTRACKED |
+			             Ggit.DiffOption.DISABLE_PATHSPEC_MATCH |
+			             Ggit.DiffOption.RECURSE_UNTRACKED_DIRS;
 
-			Ggit.Tree tree;
+			opts.n_context_lines = 3;
+			opts.n_interhunk_lines = 3;
+
+			var repository = application.repository;
+
+			var stage = repository.stage;
+
+			Ggit.Tree? tree = null;
 
 			try
 			{
-				tree = yield stage.get_head_tree();
+				if (!repository.is_empty())
+				{
+					tree = yield stage.get_head_tree();
+				}
 			}
 			catch { return null; }
 
@@ -531,10 +1180,10 @@ namespace GitgCommit
 
 			try
 			{
-				var index = application.repository.get_index();
+				var index = repository.get_index();
 
 				yield Gitg.Async.thread(() => {
-					diff = new Ggit.Diff.tree_to_index(application.repository,
+					diff = new Ggit.Diff.tree_to_index(repository,
 					                                   tree,
 					                                   index,
 					                                   opts);
@@ -563,7 +1212,7 @@ namespace GitgCommit
 		                                         Ggit.Signature committer,
 		                                         Ggit.Diff?     diff)
 		{
-			var dlg = new Dialog(author, diff);
+			var dlg = new Dialog(application.repository, author, diff);
 
 			dlg.set_transient_for((Gtk.Window)d_main.get_toplevel());
 			dlg.set_default_response(Gtk.ResponseType.OK);
@@ -591,7 +1240,7 @@ namespace GitgCommit
 
 						if (commit != null)
 						{
-							if (dlg.message.strip() == "")
+							if (dlg.message.strip() == dlg.default_message)
 							{
 								dlg.message = commit.get_message();
 							}
@@ -607,113 +1256,28 @@ namespace GitgCommit
 
 		private Ggit.Signature get_signature(string envname) throws Error
 		{
-			string? user = null;
-			string? email = null;
-			DateTime? date = null;
-
-			var env = application.environment;
-
-			var nameenv = @"GIT_$(envname)_NAME";
-			var emailenv = @"GIT_$(envname)_EMAIL";
-			var dateenv = @"GIT_$(envname)_DATE";
-
-			if (env.has_key(nameenv))
-			{
-				user = env[nameenv];
-			}
-
-			if (env.has_key(emailenv))
-			{
-				email = env[emailenv];
-			}
-
-			if (env.has_key(dateenv))
-			{
-				try
-				{
-					date = Gitg.Date.parse(env[dateenv]);
-				}
-				catch {}
-			}
-
-			if (date == null)
-			{
-				date = new DateTime.now_local();
-			}
-
-			var conf = application.repository.get_config();
-
-			if (user == null)
-			{
-				try
-				{
-					user = conf.get_string("user.name");
-				} catch {}
-			}
-
-			if (email == null)
-			{
-				try
-				{
-					email = conf.get_string("user.email");
-				} catch {}
-			}
-
-			return new Ggit.Signature(user != null ? user : "",
-			                          email != null ? email : "",
-			                          date);
+			return application.repository.get_signature_with_environment(application.environment, envname);
 		}
 
 		private void on_commit_clicked()
 		{
-			string? user = null;
-			string? email = null;
-			Ggit.Signature? committer = null;
-			Ggit.Signature? author = null;
+			Ggit.Signature? committer;
+			Ggit.Signature author;
+
+			committer = application.get_verified_committer();
+
+			if (committer == null)
+			{
+				return;
+			}
 
 			try
 			{
-				committer = get_signature("COMMITTER");
-				author = get_signature("AUTHOR");
-
-				user = committer.get_name();
-				email = committer.get_email();
-
-				if (user == "")
-				{
-					user = null;
-				}
-
-				if (email == "")
-				{
-					email = null;
-				}
+				author = application.repository.get_signature_with_environment(application.environment, "AUTHOR");
 			}
-			catch {}
-
-			if (user == null || email == null)
+			catch
 			{
-				string secmsg;
-
-				if (user == null && email == null)
-				{
-					secmsg = _("Your user name and email are not configured yet. Please go to the user configuration and provide your name and email.");
-				}
-				else if (user == null)
-				{
-					secmsg = _("Your user name is not configured yet. Please go to the user configuration and provide your name.");
-				}
-				else
-				{
-					secmsg = _("Your email is not configured yet. Please go to the user configuration and provide your email.");
-				}
-			
-				// TODO: better to show user info dialog directly or something
-				application.show_infobar(_("Failed to pass pre-commit"),
-				                         secmsg,
-				                         Gtk.MessageType.ERROR);
-
-				return;
+				author = committer;
 			}
 
 			if (d_main.skip_hooks)
@@ -735,7 +1299,7 @@ namespace GitgCommit
 
 		private async void stage_unstage_selection(bool staging) throws Error
 		{
-			var selection = yield d_main.diff_view.get_selection();
+			var selection = d_main.diff_view.selection;
 			var stage = application.repository.stage;
 
 			foreach (var pset in selection)
@@ -751,10 +1315,78 @@ namespace GitgCommit
 			}
 		}
 
+		private async void discard_selection() throws Error
+		{
+			var selection = d_main.diff_view.selection;
+			var stage = application.repository.stage;
+
+			foreach (var pset in selection)
+			{
+				yield stage.revert_patch(pset);
+			}
+		}
+
+		private void on_discard_clicked()
+		{
+			var primary = _("Discard changes");
+			var secondary = _("Are you sure you want to permanently discard the selected changes?");
+
+			var q = new GitgExt.UserQuery();
+
+			q.title = primary;
+			q.message = secondary;
+			q.message_type = Gtk.MessageType.QUESTION;
+
+			q.responses = new GitgExt.UserQueryResponse[] {
+				new GitgExt.UserQueryResponse(_("_Cancel"), Gtk.ResponseType.CANCEL),
+				new GitgExt.UserQueryResponse(_("Discard"), Gtk.ResponseType.OK),
+			};
+
+			q.default_response = Gtk.ResponseType.OK;
+
+			q.response.connect((w, r) => {
+				if (r == Gtk.ResponseType.OK)
+				{
+					return do_discard_selection(q);
+				}
+
+				return true;
+			});
+
+			application.user_query(q);
+		}
+
+		private bool do_discard_selection(GitgExt.UserQuery q)
+		{
+			application.busy = true;
+
+			d_ignore_external_changes = true;
+			discard_selection.begin((obj, res) => {
+				try
+				{
+					discard_selection.end(res);
+				}
+				catch (Error e)
+				{
+					application.show_infobar(_("Failed to discard selection"),
+					                         e.message,
+					                         Gtk.MessageType.ERROR);
+				}
+
+				q.quit();
+				application.busy = false;
+
+				reload();
+			});
+
+			return false;
+		}
+
 		private void on_stage_clicked()
 		{
 			var staging = d_main.diff_view.unstaged;
 
+			d_ignore_external_changes = true;
 			stage_unstage_selection.begin(staging, (obj, res) => {
 				try
 				{
@@ -781,13 +1413,465 @@ namespace GitgCommit
 			});
 		}
 
+		private async void revert_paths(owned string[] paths) throws Error
+		{
+			var stage = application.repository.stage;
+
+			foreach (var path in paths)
+			{
+				yield stage.revert_path(path);
+			}
+		}
+
+		private void do_edit_items(Gitg.StageStatusItem[] items)
+		{
+			var screen = d_main.get_screen();
+			var root = application.repository.get_workdir();
+
+			foreach (var item in items)
+			{
+				var file = root.get_child(item.path);
+
+				try
+				{
+					Gtk.show_uri(screen, file.get_uri(), Gdk.CURRENT_TIME);
+				}
+				catch (Error e)
+				{
+					stderr.printf("Failed to launch application for %s: %s\n", item.path, e.message);
+				}
+			}
+		}
+
+		private bool do_discard_items(GitgExt.UserQuery q, Gitg.StageStatusItem[] items)
+		{
+			application.busy = true;
+
+			var paths = new string[items.length];
+
+			for (var i = 0; i < items.length; i++)
+			{
+				paths[i] = items[i].path;
+			}
+
+			d_ignore_external_changes = true;
+			revert_paths.begin(paths, (o, ret) => {
+				try
+				{
+					revert_paths.end(ret);
+				}
+				catch (Error e)
+				{
+					application.show_infobar(_("Failed to discard changes"),
+					                         e.message,
+					                         Gtk.MessageType.ERROR);
+				}
+
+				application.busy = false;
+				q.quit();
+
+				reload();
+			});
+
+			return false;
+		}
+
+		private void on_discard_menu_activated(Gitg.StageStatusItem[] items)
+		{
+			var primary = _("Discard changes");
+			string secondary;
+
+			if (items.length == 1)
+			{
+				secondary = _("Are you sure you want to permanently discard all changes made to the file `%s'?").printf(items[0].path);
+			}
+			else
+			{
+				var paths = new string[items.length - 1];
+
+				for (var i = 0; i < items.length - 1; i++)
+				{
+					paths[i] = @"`$(items[i].path)'";
+				}
+
+				secondary = _("Are you sure you want to permanently discard all changes made to the files %s and `%s'?").printf(string.joinv(", ", paths), items[items.length - 1].path);
+			}
+
+			var q = new GitgExt.UserQuery();
+
+			q.title = primary;
+			q.message = secondary;
+			q.message_type = Gtk.MessageType.QUESTION;
+
+			q.responses = new GitgExt.UserQueryResponse[] {
+				new GitgExt.UserQueryResponse(_("_Cancel"), Gtk.ResponseType.CANCEL),
+				new GitgExt.UserQueryResponse(_("Discard"), Gtk.ResponseType.OK)
+			};
+
+			q.default_response = Gtk.ResponseType.OK;
+
+			q.response.connect((w, r) => {
+				if (r == Gtk.ResponseType.OK)
+				{
+					return do_discard_items(q, items);
+				}
+
+				return true;
+			});
+
+			application.user_query(q);
+		}
+
+		private async void delete_files(File[] files) throws Error
+		{
+			SourceFunc cb = delete_files.callback;
+			Error? error = null;
+
+			var n = files.length;
+
+			for (var i = 0; i < files.length; i++)
+			{
+				var file = files[i];
+
+				file.delete_async.begin(Priority.DEFAULT, null, (o, res) => {
+					try
+					{
+						file.delete_async.end(res);
+					}
+					catch (Error e)
+					{
+						error = e;
+					}
+
+					if (--n == 0)
+					{
+						cb();
+					}
+				});
+			}
+
+			yield;
+
+			if (error != null)
+			{
+				throw error;
+			}
+		}
+
+		private bool do_delete_items(GitgExt.UserQuery q, Gitg.StageStatusItem[] items)
+		{
+			application.busy = true;
+
+			var files = new File[items.length];
+
+			for (var i = 0; i < items.length; i++)
+			{
+				files[i] = application.repository.get_workdir().get_child(items[i].path);
+			}
+
+			d_ignore_external_changes = true;
+			delete_files.begin(files, (o, ret) => {
+				try
+				{
+					delete_files.end(ret);
+				}
+				catch (Error e)
+				{
+					application.show_infobar(_("Failed to delete files"),
+					                         e.message,
+					                         Gtk.MessageType.ERROR);
+				}
+
+				application.busy = false;
+				q.quit();
+
+				reload();
+			});
+
+			return false;
+		}
+
+		private void on_delete_menu_activated(Gitg.StageStatusItem[] items)
+		{
+			var primary = dngettext(null, "Delete file", "Delete files", items.length);
+			string secondary;
+
+			if (items.length == 1)
+			{
+				secondary = _("Are you sure you want to permanently delete the file `%s'?").printf(items[0].path);
+			}
+			else
+			{
+				var paths = new string[items.length - 1];
+
+				for (var i = 0; i < items.length - 1; i++)
+				{
+					paths[i] = @"`$(items[i].path)'";
+				}
+
+				secondary = _("Are you sure you want to permanently delete the files %s and `%s'?").printf(string.joinv(", ", paths), items[items.length - 1].path);
+			}
+
+			var q = new GitgExt.UserQuery();
+
+			q.title = primary;
+			q.message = secondary;
+			q.message_type = Gtk.MessageType.QUESTION;
+
+			q.responses = new GitgExt.UserQueryResponse[] {
+				new GitgExt.UserQueryResponse(_("_Cancel"), Gtk.ResponseType.CANCEL),
+				new GitgExt.UserQueryResponse(primary, Gtk.ResponseType.OK)
+			};
+
+			q.default_response = Gtk.ResponseType.OK;
+			q.default_is_destructive = true;
+
+			q.response.connect((w, r) => {
+				if (r == Gtk.ResponseType.OK)
+				{
+					return do_delete_items(q, items);
+				}
+
+				return true;
+			});
+
+			application.user_query(q);
+		}
+
+		private void do_populate_menu(Gtk.Menu menu)
+		{
+			var items = d_main.sidebar.get_selected_items<Gitg.SidebarItem>();
+
+			if (items.length == 0)
+			{
+				return;
+			}
+
+			Sidebar.Item.Type type;
+
+			var sitems = items_for_items(items, out type);
+			var hasitems = sitems.length > 0;
+
+			if (type == Sidebar.Item.Type.UNSTAGED ||
+			    type == Sidebar.Item.Type.UNTRACKED)
+			{
+				var stage = new Gtk.MenuItem.with_mnemonic(_("_Stage changes"));
+				stage.sensitive = hasitems;
+
+				menu.append(stage);
+
+				stage.activate.connect(() => {
+					on_unstaged_activated(sitems);
+				});
+			}
+
+			if (type == Sidebar.Item.Type.STAGED)
+			{
+				var stage = new Gtk.MenuItem.with_mnemonic(_("_Unstage changes"));
+				stage.sensitive = hasitems;
+
+				menu.append(stage);
+
+				stage.activate.connect(() => {
+					on_staged_activated(sitems);
+				});
+			}
+
+			if (type == Sidebar.Item.Type.UNSTAGED)
+			{
+				var discard = new Gtk.MenuItem.with_mnemonic(_("_Discard changes"));
+				discard.sensitive = hasitems;
+
+				menu.append(discard);
+
+				discard.activate.connect(() => {
+					on_discard_menu_activated(sitems);
+				});
+			}
+
+			if (type == Sidebar.Item.Type.UNTRACKED)
+			{
+				var del = new Gtk.MenuItem.with_mnemonic(dngettext(null, "D_elete file", "D_elete files", sitems.length));
+				del.sensitive = hasitems;
+
+				menu.append(del);
+
+				del.activate.connect(() => {
+					on_delete_menu_activated(sitems);
+				});
+			}
+
+			bool canedit = false;
+
+			if (hasitems)
+			{
+				canedit = true;
+
+				foreach (var item in sitems)
+				{
+					var file = item as Gitg.StageStatusFile;
+
+					if (file == null || (file.flags & Ggit.StatusFlags.WORKING_TREE_DELETED) != 0)
+					{
+						canedit = false;
+						break;
+					}
+				}
+			}
+
+			if (canedit)
+			{
+				var edit = new Gtk.MenuItem.with_mnemonic(_("_Edit file"));
+				menu.append(edit);
+
+				edit.activate.connect(() => {
+					do_edit_items(sitems);
+				});
+			}
+		}
+
+		private Gitg.StageStatusItem[] items_to_stage_items(Sidebar.Item[] items)
+		{
+			var ret = new Gitg.StageStatusItem[items.length];
+
+			for (var i = 0; i < ret.length; i++)
+			{
+				ret[i] = items[i].item;
+			}
+
+			return ret;
+		}
+
+		private Gitg.StageStatusItem[] stage_status_items_of_type(Sidebar.Item.Type type)
+		{
+			return items_to_stage_items(d_main.sidebar.items_of_type(type));
+		}
+
+		private Gitg.StageStatusItem[] items_for_items(Gitg.SidebarItem[] items, out Sidebar.Item.Type type)
+		{
+			var ret = new Gitg.StageStatusItem[items.length];
+			ret.length = 0;
+
+			type = Sidebar.Item.Type.NONE;
+
+			foreach (var item in items)
+			{
+				var header = item as Gitg.SidebarStore.SidebarHeader;
+
+				if (header != null)
+				{
+					type = (Sidebar.Item.Type)header.id;
+					return stage_status_items_of_type(type);
+				}
+
+				var sitem = item as Sidebar.Item;
+
+				if (sitem != null)
+				{
+					ret += sitem.item;
+					type = sitem.stage_type;
+				}
+			}
+
+			return ret;
+		}
+
+		private void sidebar_selection_changed(Gitg.SidebarItem[] items)
+		{
+			Sidebar.Item.Type type;
+
+			var sitems = items_for_items(items, out type);
+
+			if (sitems.length == 0)
+			{
+				show_ui(UiType.DIFF);
+				d_main.diff_view.diff = null;
+				return;
+			}
+
+			if (type == Sidebar.Item.Type.SUBMODULE)
+			{
+				show_submodule_diff((Gitg.StageStatusSubmodule)sitems[0]);
+			}
+			else if (type == Sidebar.Item.Type.STAGED)
+			{
+				show_staged_diff(sitems);
+			}
+			else
+			{
+				show_unstaged_diff(sitems);
+			}
+		}
+
+		private void on_stage_selected_items()
+		{
+			var sel = d_main.sidebar.get_selected_items<Gitg.SidebarItem>();
+			Sidebar.Item.Type type;
+
+			var sitems = items_for_items(sel, out type);
+
+			if (sitems.length != 0 && (type == Sidebar.Item.Type.UNSTAGED ||
+			                           type == Sidebar.Item.Type.UNTRACKED))
+			{
+				on_unstaged_activated(sitems);
+			}
+		}
+
+		private void on_unstage_selected_items()
+		{
+			var sel = d_main.sidebar.get_selected_items<Gitg.SidebarItem>();
+			Sidebar.Item.Type type;
+
+			var sitems = items_for_items(sel, out type);
+
+			if (sitems.length != 0 && type == Sidebar.Item.Type.STAGED)
+			{
+				on_staged_activated(sitems);
+			}
+		}
+
 		private void build_ui()
 		{
 			d_main = new Paned();
 
+			d_main.diff_view.options_changed.connect(() => {
+				if (d_update_diff_callback != null)
+				{
+					d_update_diff_callback();
+				}
+			});
+
+			d_main.diff_view.repository = application.repository;
+			d_main.diff_view.default_collapse_all = false;
+
 			d_main.sidebar.deselected.connect(() => {
 				d_main.diff_view.diff = null;
 			});
+
+			d_main.sidebar.stage_selection.connect(on_stage_selected_items);
+			d_main.sidebar.unstage_selection.connect(on_unstage_selected_items);
+
+			d_main.sidebar.discard_selection.connect(() => {
+				var sel = d_main.sidebar.get_selected_items<Gitg.SidebarItem>();
+				Sidebar.Item.Type type;
+
+				var sitems = items_for_items(sel, out type);
+
+				if (sitems.length != 0 && type == Sidebar.Item.Type.UNSTAGED)
+				{
+					on_discard_menu_activated(sitems);
+				}
+			});
+
+			d_main.sidebar.edit_selection.connect(() => {
+				var sel = d_main.sidebar.get_selected_items<Gitg.SidebarItem>();
+				Sidebar.Item.Type type;
+
+				var sitems = items_for_items(sel, out type);
+				do_edit_items(sitems);
+			});
+
+			d_main.sidebar.selected_items_changed.connect(sidebar_selection_changed);
 
 			d_main.button_commit.clicked.connect(() => {
 				on_commit_clicked();
@@ -797,10 +1881,97 @@ namespace GitgCommit
 				on_stage_clicked();
 			});
 
+			d_main.button_discard.clicked.connect(() => {
+				on_discard_clicked();
+			});
+
+			d_main.submodule_diff_view.info.request_open_repository.connect((submodule) => {
+				try
+				{
+					var app = application.open_new(submodule.open(), "commit");
+
+					((Gtk.Window)app).delete_event.connect(() => {
+						reload();
+						return false;
+					});
+				}
+				catch (Error e)
+				{
+					// TODO: show error message
+					stderr.printf("Failed to open submodule repository: %s\n", e.message);
+				}
+			});
+
+			d_main.sidebar.populate_popup.connect(do_populate_menu);
+
+			var view = d_main.submodule_history_view.commit_list_view;
+			var model = new Gitg.CommitModel(null);
+			view.model = model;
+
+			model.row_inserted.connect_after((model, path, iter) => {
+				if (d_submodule_history_select_first)
+				{
+					d_submodule_history_select_first = false;
+					view.get_selection().select_path(path);
+				}
+			});
+
+			view.get_selection().changed.connect((selection) => {
+				Gtk.TreeModel m;
+				Gtk.TreeIter iter;
+
+				if (selection.get_selected(out m, out iter))
+				{
+					submodule_history_selection_changed(model.commit_from_iter(iter));
+				}
+				else
+				{
+					submodule_history_selection_changed(null);
+				}
+			});
+
+			view.row_activated.connect((view, path, column) => {
+				d_stage_unstage_submodule_commit_callback(model.commit_from_path(path));
+			});
+
+			var settings = new Settings("org.gnome.gitg.preferences.commit.diff");
+
+			settings.bind("context-lines",
+			              d_main.diff_view,
+			              "context-lines",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("tab-width",
+			              d_main.diff_view,
+			              "tab-width",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings = new Settings("org.gnome.gitg.preferences.interface");
+
+			settings.bind("use-gravatar",
+			              d_main.diff_view,
+			              "use-gravatar",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
+			settings.bind("enable-diff-highlighting",
+			              d_main.diff_view,
+			              "highlight",
+			              SettingsBindFlags.GET | SettingsBindFlags.SET);
+
 			d_main.diff_view.bind_property("has-selection",
 			                               d_main.button_stage,
 			                               "sensitive",
 			                               BindingFlags.DEFAULT);
+
+			d_main.diff_view.bind_property("has-selection",
+			                               d_main.button_discard,
+			                               "sensitive",
+			                               BindingFlags.DEFAULT);
+
+			application.bind_property("repository",
+			                          d_main.diff_view,
+			                          "repository",
+			                          BindingFlags.SYNC_CREATE);
 		}
 	}
 }

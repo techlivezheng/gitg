@@ -30,21 +30,12 @@ namespace GitgExt
 public interface Activity : Object, UIElement
 {
 	/**
-	 * Method called to reload the activity.
-	 *
-	 */
-	public virtual void reload()
-	{
-	}
-
-	/**
 	 * Whether the activity is the default for the specified action.
 	 *
 	 * @param action the action.
 	 *
-	 * Returns %TRUE if the activity is the default activity for @action,
-	 * %FALSE otherwise.
-	 *
+	 * @return true if the activity is the default activity for @action,
+	 *         false otherwise.
 	 */
 	public virtual bool is_default_for(string action)
 	{

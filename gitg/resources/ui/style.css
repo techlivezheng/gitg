@@ -42,9 +42,9 @@ GtkToolbar#toolbar_subnav {
 	border-bottom: 0px;
 }
 
-#navigation_background {
-	background-color: shade(@theme_bg_color, 0.85);
-	background-image: none;
+GitgSidebar:disabled,
+GitgCreateTagDialog GtkTextView:disabled {
+	color: @insensitive_fg_color;
 }
 
 .panels-paned.pane-separator,
@@ -76,8 +76,25 @@ GitgHistoryPaned panel-switcher {
 	background-color: @theme_bg_color;
 }
 
+GitgHistoryPaned GtkEntry.ref_editing_entry {
+	padding: 0;
+	border: 0;
+}
+
+GitgHistoryPaned GtkEntry.ref_editing_entry:selected {
+	background-color: lighter(@theme_selected_bg_color);
+}
+
 .progress-bin {
 	background-color: shade (@theme_bg_color, 0.9);
+}
+
+.list-row .progress-bin {
+	background-color: shade (@theme_base_color, 0.9);
+}
+
+.list-row:selected .progress-bin {
+	background-color: shade (@theme_selected_bg_color, 1.2);
 }
 
 .branch, .remote, .tag, .stash {
@@ -104,5 +121,28 @@ GitgHistoryPaned panel-switcher {
 
 GtkFrame.commit-frame {
 	border: 0px;
+	border-top: 1px solid @borders;
+}
+
+GitgHistoryRefRow {
+	border: 0;
+}
+
+.title-label {
+	font-weight: bold;
+}
+
+.subject-label {
+	font-weight: bold;
+}
+
+.sha1-label {
+	font-size: 0.8em;
+	color: @insensitive_fg_color;
+	font-family: monospace;
+}
+
+.notifications {
+	background-color: @theme_bg_color;
 	border-top: 1px solid @borders;
 }
