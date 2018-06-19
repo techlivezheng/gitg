@@ -587,7 +587,7 @@ namespace GitgHistory
 			d_refs_list_popup = new Gitg.PopupMenu(d_main.refs_list);
 			d_refs_list_popup.populate_menu.connect(on_refs_list_populate_menu);
 
-			d_refs_list_selection_id = d_main.refs_list.notify["selection"].connect(update_walker_idle);
+			d_refs_list_selection_id = d_main.refs_list.selected_rows_changed.connect(update_walker_idle);
 			d_refs_list_changed_id = d_main.refs_list.changed.connect(update_walker_idle);
 
 			d_commit_list_popup = new Gitg.PopupMenu(d_main.commit_list_view);
@@ -970,7 +970,7 @@ namespace GitgHistory
 				d_main.refs_list.select_row(row);
 			}
 
-			var references = d_main.refs_list.selection;
+			var references = d_main.refs_list.selections;
 
 			if (references.is_empty || references.first() != references.last())
 			{
@@ -1052,7 +1052,7 @@ namespace GitgHistory
 
 			var show_upstream_with_branch = d_settings.get_boolean("show-upstream-with-branch");
 
-			foreach (var r in d_main.refs_list.selection)
+			foreach (var r in d_main.refs_list.selections)
 			{
 				var id = id_for_ref(r);
 

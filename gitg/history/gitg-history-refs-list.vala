@@ -525,7 +525,7 @@ public class RefsList : Gtk.ListBox
 
 	private Gitg.Repository? d_repository;
 	private Gee.HashMap<Gitg.Ref, RefRow> d_ref_map;
-	private Gtk.ListBoxRow? d_selected_row;
+	private Gee.List<string>? d_selected_refs;
 	private Gitg.Remote[] d_remotes;
 	private RefRow? d_all_commits;
 	private RefHeader? d_all_branches;
@@ -578,8 +578,10 @@ public class RefsList : Gtk.ListBox
 	{
 		d_header_map = new Gee.HashMap<string, RemoteHeader>();
 		d_ref_map = new Gee.HashMap<Gitg.Ref, RefRow>();
-		selection_mode = Gtk.SelectionMode.BROWSE;
 		d_remotes = new Gitg.Remote[0];
+
+		selection_mode = Gtk.SelectionMode.MULTIPLE;
+		activate_on_single_click = false;
 
 		set_sort_func(sort_rows);
 		set_filter_func(filter_func);
@@ -784,49 +786,31 @@ public class RefsList : Gtk.ListBox
 
 	private void reselect_row(Gtk.ListBoxRow a)
 	{
-		if (d_selected_row == null)
+		if (d_selected_refs == null)
 		{
 			return;
 		}
 
 		var ah = a as RefHeader;
-		var bh = d_selected_row as RefHeader;
-
-		if ((ah != null) != (bh != null))
-		{
-			return;
-		}
-
-		if (ah != null)
-		{
-			if (ah.ref_type == bh.ref_type && ah.ref_name == bh.ref_name)
-			{
-				select_row(a);
-				d_selected_row = null;
+		if (ah != null) {
+			foreach (var d_selected_ref in d_selected_refs) {
+				if (ah.ref_name == d_selected_ref)
+				{
+					select_row(a);
+					return;
+				}
 			}
-
-			return;
 		}
 
 		var ar = a as RefRow;
-		var br = d_selected_row as RefRow;
-
-		if (ar.reference == null && br.reference == null)
-		{
-			select_row(a);
-			d_selected_row = null;
-			return;
-		}
-
-		if (ar.reference == null || br.reference == null)
-		{
-			return;
-		}
-
-		if (ar.reference.get_name() == br.reference.get_name())
-		{
-			select_row(a);
-			d_selected_row = null;
+		if (ar != null && ar.reference != null) {
+			foreach(var d_selected_ref in d_selected_refs) {
+				if (ar.reference.get_name() == d_selected_ref)
+				{
+					select_row(a);
+					return;
+				}
+			}
 		}
 	}
 
@@ -993,9 +977,9 @@ public class RefsList : Gtk.ListBox
 	{
 		bool select = false;
 
-		if (d_ref_map.has_key(old_ref))
+		if (d_ref_map.has_key(old_ref) && d_ref_map[old_ref].is_selected())
 		{
-			select = (get_selected_row() == d_ref_map[old_ref]);
+			select = true;
 		}
 
 		var removed = remove_ref_internal(old_ref, RefAnimation.ANIMATE);
@@ -1158,14 +1142,13 @@ public class RefsList : Gtk.ListBox
 	{
 		freeze_notify();
 
-		d_selected_row = get_selected_row();
 		store_expanded_state();
 
 		clear();
 
 		if (d_repository == null)
 		{
-			d_selected_row = null;
+			d_selected_refs = null;
 			thaw_notify();
 			return;
 		}
@@ -1213,11 +1196,7 @@ public class RefsList : Gtk.ListBox
 			});
 		} catch {}
 
-		d_selected_row = null;
-
-		var sel = get_selected_row();
-
-		if (sel == null)
+		if (d_selected_refs == null)
 		{
 			var settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.history");
 			var default_selection = (DefaultSelection)settings.get_enum("default-selection");
@@ -1296,85 +1275,85 @@ public class RefsList : Gtk.ListBox
 
 	public bool is_header
 	{
-		get { return (get_selected_row() as RefHeader) != null; }
+		get {
+			return false;
+		}
 	}
 
 	public bool is_all
 	{
 		get
 		{
-			var row = get_selected_row();
-
-			if (row == null)
-			{
-				return true;
-			}
-
-			var ref_row = get_ref_row(row);
-
-			return (ref_row != null && ref_row.reference == null);
+			return false;
 		}
 	}
 
-	public Gee.List<Gitg.Ref> selection
+	public Gee.List<Gitg.Ref> selections
 	{
 		owned get
 		{
-			var row = get_selected_row();
+			var rows = get_selected_rows();
 
-			if (row == null)
+			if (rows == null)
 			{
 				return all;
 			}
 
-			var ref_row = get_ref_row(row);
 			var ret = new Gee.LinkedList<Gitg.Ref>();
 
-			if (ref_row != null)
-			{
-				if (ref_row.reference == null)
+			d_selected_refs = new Gee.LinkedList<string>();
+
+			foreach(var row in rows) {
+				var ref_row = get_ref_row(row);
+
+				if (ref_row != null)
 				{
-					return all;
+					if (ref_row.reference == null)
+					{
+						return all;
+					}
+					else
+					{
+						d_selected_refs.add(ref_row.reference.get_name());
+						ret.add(ref_row.reference);
+					}
 				}
 				else
 				{
-					ret.add(ref_row.reference);
-				}
-			}
-			else
-			{
-				var ref_header = get_ref_header(row);
-				bool found = false;
+					var ref_header = get_ref_header(row);
+					bool found = false;
 
-				foreach (var child in get_children())
-				{
-					if (found)
+					d_selected_refs.add(ref_header.ref_name);
+
+					foreach (var child in get_children())
 					{
-						var nrow = child as Gtk.ListBoxRow;
-						var nref_row = get_ref_row(nrow);
-
-						if (nref_row == null)
+						if (found)
 						{
-							var nref_header = get_ref_header(nrow);
+							var nrow = child as Gtk.ListBoxRow;
+							var nref_row = get_ref_row(nrow);
 
-							if (ref_header.is_sub_header_remote ||
-								nref_header.ref_type != ref_header.ref_type)
+							if (nref_row == null)
 							{
-								break;
+								var nref_header = get_ref_header(nrow);
+
+								if (ref_header.is_sub_header_remote ||
+									nref_header.ref_type != ref_header.ref_type)
+								{
+									break;
+								}
+							}
+							else
+							{
+								ret.add(nref_row.reference);
 							}
 						}
-						else
+						else if (child == row)
 						{
-							ret.add(nref_row.reference);
+							found = true;
 						}
-					}
-					else if (child == row)
-					{
-						found = true;
 					}
 				}
 			}
-
 			return ret;
 		}
 	}
@@ -1382,17 +1361,6 @@ public class RefsList : Gtk.ListBox
 	protected override void row_selected(Gtk.ListBoxRow? row)
 	{
 		notify_property("selection");
-	}
-
-	protected override void move_cursor(Gtk.MovementStep step, int n)
-	{
-		var selrow = get_selected_row();
-		base.move_cursor(step, n);
-
-		if (selrow != get_selected_row())
-		{
-			notify_property("selection");
-		}
 	}
 
 	public void edit(Gitg.Ref reference, owned GitgExt.RefNameEditingDone done)
@@ -1405,38 +1373,6 @@ public class RefsList : Gtk.ListBox
 
 		var row = d_ref_map[reference];
 		row.begin_editing((owned)done);
-	}
-
-	private int y_in_window(int y, Gdk.Window origin)
-	{
-		while (origin != get_window())
-		{
-			int wx;
-			int wy;
-
-			origin.get_position(out wx, out wy);
-
-			y += wy;
-
-			origin = origin.get_parent();
-		}
-
-		return y;
-	}
-
-	protected override bool button_press_event(Gdk.EventButton button)
-	{
-		var ret = base.button_press_event(button);
-
-		var y = y_in_window((int)button.y, button.window);
-		var row = get_row_at_y(y);
-
-		if (row != null && row != get_selected_row())
-		{
-			select_row(row);
-		}
-
-		return ret;
 	}
 
 	private void scroll_to_row(Gtk.ListBoxRow row)
