@@ -42,6 +42,7 @@ public class Application : Gtk.Application
 		public static bool quit = false;
 		public static string activity;
 		public static bool no_wd = false;
+		public static bool standalone = false;
 
 		public static ApplicationCommandLine command_line;
 
@@ -53,7 +54,7 @@ public class Application : Gtk.Application
 
 		public const OptionEntry[] entries = {
 			{"version", 'v', OptionFlags.NO_ARG, OptionArg.CALLBACK,
-			 (void *)show_version_and_quit, N_("Show the application's version"), null},
+			 (void *)show_version_and_quit, N_("Show the application’s version"), null},
 
 			{"activity", '\0', 0, OptionArg.STRING,
 			 ref activity, N_("Start gitg with a particular activity"), null},
@@ -63,6 +64,9 @@ public class Application : Gtk.Application
 
 			{"no-wd", 0, 0, OptionArg.NONE,
 			 ref no_wd, N_("Do not try to load a repository from the current working directory"), null},
+
+			{"standalone", 0, 0, OptionArg.NONE,
+			 ref standalone, N_("Run gitg in standalone mode"), null},
 
 			{null}
 		};
@@ -91,7 +95,7 @@ public class Application : Gtk.Application
 
 	private GitgExt.CommandLines parse_command_line(ref unowned string[] argv) throws OptionError
 	{
-		var ctx = new OptionContext(_("- Git repository viewer"));
+		var ctx = new OptionContext(_("— Git repository viewer"));
 
 		ctx.add_main_entries(Options.entries, Config.GETTEXT_PACKAGE);
 		ctx.add_group(Gtk.get_option_group(true));
@@ -146,6 +150,11 @@ public class Application : Gtk.Application
 			stderr.printf("Failed to parse options: %s\n", e.message);
 			exit_status = 1;
 			return true;
+		}
+
+		if (Options.standalone)
+		{
+			set_flags(get_flags() | ApplicationFlags.NON_UNIQUE);
 		}
 
 		if (Options.quit)
@@ -219,7 +228,7 @@ public class Application : Gtk.Application
 		                    "Ignacio Casal Quinteiro <icq@gnome.org>"};
 
 		string copyright = "Copyright \xc2\xa9 2012 Jesse van den Kieboom";
-		string comments = _("gitg is a Git repository viewer for gtk+/GNOME");
+		string comments = _("gitg is a Git repository viewer for GTK+/GNOME");
 
 		unowned List<Gtk.Window> wnds = get_windows();
 
@@ -361,7 +370,7 @@ public class Application : Gtk.Application
 		{
 			if (e is Gitg.InitError.THREADS_UNSAFE)
 			{
-				var errmsg = _("We are terribly sorry, but gitg requires libgit2 (a library on which gitg depends) to be compiled with threading support.\n\nIf you manually compiled libgit2, then please configure libgit2 with -DTHREADSAFE:BOOL=ON.\n\nOtherwise, report a bug in your distributions' bug reporting system for providing libgit2 without threading support.");
+				var errmsg = _("We are terribly sorry, but gitg requires libgit2 (a library on which gitg depends) to be compiled with threading support.\n\nIf you manually compiled libgit2, then please configure libgit2 with -DTHREADSAFE:BOOL=ON.\n\nOtherwise, report a bug in your distributions’ bug reporting system for providing libgit2 without threading support.");
 
 				init_error(errmsg);
 				error("%s", errmsg);

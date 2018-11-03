@@ -2,7 +2,7 @@ gitg_sources = files(
   'gitg-action-support.vala',
   'gitg-commit-action-cherry-pick.vala',
   'gitg-ref-action-checkout.vala',
-  'gitg-ref-action-merge.vala'
+  'gitg-ref-action-merge.vala',
 )
 
 sources = gitg_sources + files(
@@ -49,31 +49,26 @@ sources = gitg_sources + files(
   'gitg-simple-notification.vala',
   'gitg-ui-elements.vala',
   'gitg-window.vala',
-  'gitg.vala'
+  'gitg.vala',
 )
 
 deps = [
   config_dep,
-  gee_dep,
-  gio_dep,
   gitg_platform_support_dep,
-  glib_dep,
-  gtk_dep,
+  gobject_introspection_dep,
   gtksourceview_dep,
-  libgit2_glib_dep,
-  libgitg_dep,
+  gtkspell_dep,
   libgitg_ext_dep,
   libpeas_dep,
-  m_dep,
-  dependency('gobject-introspection-1.0', version: '>= 0.10.1'),
-  dependency('gtkspell3-3.0')
 ]
 
 cflags = warn_flags + [
   '-DDATADIR="@0@"'.format(gitg_datadir),
   '-DGITG_DATADIR="@0@"'.format(gitg_pkgdatadir),
-  '-DGITG_LOCALEDIR="@0@"'.format(gitg_localedir)
+  '-DGITG_LOCALEDIR="@0@"'.format(gitg_localedir),
 ]
+
+ldflags = common_ldflags
 
 resources_conf = configuration_data()
 resources_conf.set('PLATFORM_NAME', platform_name)
@@ -83,7 +78,7 @@ resources = 'gitg-resources.xml'
 resources_in = configure_file(
   input: join_paths('resources', resources + '.in'),
   output: resources,
-  configuration: resources_conf
+  configuration: resources_conf,
 )
 
 resource_data = files(
@@ -110,7 +105,7 @@ resource_data = files(
   'resources/ui//gitg-simple-notification.ui',
   'resources/ui//gitg-window.ui',
   'resources/ui//style.css',
-  'resources/ui//style-@0@.css'.format(platform_name)
+  'resources/ui//style-@0@.css'.format(platform_name),
 )
 
 sources += gnome.compile_resources(
@@ -118,13 +113,17 @@ sources += gnome.compile_resources(
   resources_in,
   source_dir: 'resources',
   dependencies: resource_data,
-  export: true
+  export: true,
 )
 
-vala_flags = '--gresourcesdir=' + join_paths(meson.current_source_dir(), 'resources')
+vala_flags = ['--gresourcesdir=' + join_paths(meson.current_source_dir(), 'resources')]
 
 if gtk_shortcuts_window
-  vala_args += '--define GTK_SHORTCUTS_WINDOW'
+  vala_flags += '--define=GTK_SHORTCUTS_WINDOW'
+endif
+
+if host_system == 'windows'
+  sources += windows.compile_resources('gitg.rc')
 endif
 
 executable(
@@ -135,35 +134,4 @@ executable(
   c_args: cflags,
   vala_args: vala_flags,
   install: true,
-  install_dir: gitg_bindir
-)
-
-ldflags = []
-
-if have_version_script
-  ldflags += '-Wl,--version-script,' + symbol_map
-endif
-
-# FIXME: to be tested on win32
-if platform_name == 'win32'
-  win = import('windows')
-
-  sources += win.compile_resources(
-    'gitg.rc',
-    args: ['-O', 'coff']
-  )
-
-  ldflags += '-mwindows'
-endif
-
-gitg = shared_library(
-  gitg_name,
-  name_prefix: '',
-  sources: sources,
-  include_directories: top_inc,
-  dependencies: deps,
-  c_args: cflags,
-  vala_args: vala_flags,
-  link_args: ldflags,
-  link_depends: symbol_map
 )

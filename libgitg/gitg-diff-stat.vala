@@ -85,10 +85,7 @@ public class Gitg.DiffStat : Gtk.DrawingArea
 
 		d_layout = null;
 
-		var settings = Gtk.Settings.get_default();
-		var theme = Environment.get_variable("GTK_THEME");
-
-		var dark = settings.gtk_application_prefer_dark_theme || (theme != null && theme.has_suffix(":dark"));
+		var dark = new Theme().is_theme_dark();
 
 		if (dark)
 		{

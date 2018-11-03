@@ -1,0 +1,191 @@
+{
+    "app-id" : "org.gnome.gitg",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "master",
+    "branch" : "master",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "gitg",
+    "rename-desktop-file" : "gitg.desktop",
+    "rename-appdata-file" : "gitg.appdata.xml",
+    "rename-icon" : "gitg",
+    "copy-icon" : true,
+    "tags" : [
+        "nightly"
+    ],
+    "desktop-file-name-prefix" : "(Nightly) ",
+    "finish-args" : [
+        "--share=ipc",
+        "--share=network",
+        "--socket=x11",
+        "--socket=wayland",
+        "--filesystem=host",
+        "--filesystem=xdg-run/dconf",
+        "--filesystem=~/.config/dconf:ro",
+        "--talk-name=ca.desrt.dconf",
+        "--talk-name=org.gtk.vfs.*",
+        "--env=DCONF_USER_CONFIG_DIR=.config/dconf",
+        "--talk-name=org.freedesktop.secrets",
+        "--filesystem=xdg-run/keyring"
+    ],
+    "build-options" : {
+        "cflags" : "-O2 -g",
+        "cxxflags" : "-O2 -g",
+        "env" : {
+            "V" : "1"
+        }
+    },
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/share/pkgconfig",
+        "/share/aclocal",
+        "/man",
+        "/share/man",
+        "/share/gtk-doc",
+        "/share/vala",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+        {
+            "name" : "vala",
+            "config-opts" : [
+                "--disable-graphviz"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/vala.git",
+                    "tag" : "0.42.1"
+                },
+                {
+                    "type" : "patch",
+                    "path" : "libvaladoc-Allow-disabling-the-graphviz-dependency.patch"
+                }
+            ]
+        },
+        {
+            "name" : "libssh2",
+            "buildsystem" : "cmake",
+            "config-opts" : [
+                "-DCMAKE_INSTALL_LIBDIR:PATH=/app/lib",
+                "-DBUILD_SHARED_LIBS:BOOL=ON"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://github.com/libssh2/libssh2.git",
+                    "branch" : "libssh2-1.8.0"
+                }
+            ]
+        },
+        {
+            "name" : "libgit2",
+            "buildsystem" : "cmake",
+            "config-opts" : [
+                "-DBUILD_SHARED_LIBS:BOOL=ON",
+                "-DTHREADSAFE=ON"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://github.com/libgit2/libgit2.git",
+                    "branch" : "maint/v0.27"
+                }
+            ]
+        },
+        {
+            "name" : "libgit2-glib",
+            "config-opts" : [
+                "--buildtype=debugoptimized"
+            ],
+            "buildsystem" : "meson",
+            "builddir" : true,
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/libgit2-glib.git"
+                }
+            ]
+        },
+        {
+            "name" : "libpeas",
+            "cleanup" : [
+                "/bin/*",
+                "/lib/peas-demo",
+                "/lib/libpeas-gtk*"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/libpeas.git"
+                }
+            ]
+        },
+        {
+            "name" : "libgee",
+            "build-options" : {
+                "make-install-args" : [
+                    "girdir=/app/share/gir-1.0",
+                    "typelibdir=/app/lib/girepository-1.0"
+                ]
+            },
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/libgee.git"
+                }
+            ]
+        },
+        {
+            "name" : "enchant",
+            "cleanup" : [
+                "/bin"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://github.com/AbiWord/enchant/releases/download/enchant-1-6-1/enchant-1.6.1.tar.gz",
+                    "sha256" : "bef0d9c0fef2e4e8746956b68e4d6c6641f6b85bd2908d91731efb68eba9e3f5"
+                }
+            ]
+        },
+        {
+            "name" : "gtkspell3",
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://sourceforge.net/projects/gtkspell/files/3.0.9/gtkspell3-3.0.9.tar.xz",
+                    "sha256" : "a4f4a4a2789f7499563e26d96b22d8085222ebe278da47d026b2de782b8b4d26"
+                }
+            ]
+        },
+        {
+            "name" : "gtksourceview",
+            "config-opts" : [ "--disable-Werror" ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/gtksourceview.git",
+                    "tag" : "gnome-3-24"
+                }
+            ]
+        },
+        {
+            "name" : "gitg",
+            "buildsystem" : "meson",
+            "builddir" : true,
+            "config-opts" : [
+                "--buildtype=debugoptimized",
+                "-Ddeprecations=true"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/gitg.git",
+                    "branch" : "master"
+                }
+            ]
+        }
+    ]
+}

@@ -3,15 +3,12 @@ sources = support_sources + files(
   'test-commit.vala',
   'test-date.vala',
   'test-encoding.vala',
-  'test-stage.vala'
+  'test-stage.vala',
 )
 
 deps = [
-  gee_dep,
   gitg_assert_dep,
-  gtk_dep,
-  libgit2_glib_dep,
-  libgitg_dep
+  libgitg_dep,
 ]
 
 vala_flags = '--disable-warnings'
@@ -24,7 +21,7 @@ exe = executable(
   include_directories: top_inc,
   dependencies: deps,
   c_args: warn_flags,
-  vala_args: vala_flags
+  vala_args: vala_flags,
 )
 
 test(test_unit, exe)

@@ -1,13 +1,19 @@
-name = gitg_name
-api_name = '@0@-@1@'.format(name, gitg_api_version)
+libgitg_build_dir = meson.current_build_dir()
 
-lib_name = 'lib' + name
-lib_api_name = 'lib' + api_name
+libgitg_api_name = 'libgitg-' + gitg_api_version
+libgitg_gir_api_name = 'Gitg-' + gitg_api_version
 
-gir_ns = 'Gitg'
-gir_api_name = '@0@-@1@'.format(gir_ns, gitg_gir_version)
-gir_name = gir_api_name + '.gir'
-gir_typelib = gir_api_name + '.typelib'
+libgitg_vapi_name = libgitg_api_name + '.vapi'
+libgitg_gir_name = libgitg_gir_api_name + '.gir'
+libgitg_typelib_name = libgitg_gir_api_name + '.typelib'
+
+common_deps = [
+  gee_dep,
+  gio_dep,
+  glib_dep,
+  gtk_dep,
+  libgit2_glib_dep,
+]
 
 sources = files(
   'gitg-assembly-info.vala',
@@ -57,8 +63,9 @@ sources = files(
   'gitg-sidebar.vala',
   'gitg-stage-status-enumerator.vala',
   'gitg-stage.vala',
+  'gitg-theme.vala',
   'gitg-utils.vala',
-  'gitg-when-mapped.vala'
+  'gitg-when-mapped.vala',
 )
 
 resource_data = files(
@@ -73,127 +80,95 @@ resource_data = files(
   'resources/ui/gitg-diff-view.ui',
   'resources/ui/gitg-repository-list-box-row.ui',
   'resources/ui/gitg-sidebar.ui',
-  'resources/ui/libgitg-style.css'
+  'resources/ui/libgitg-style.css',
 )
 
 sources += gnome.compile_resources(
   'libgitg-resources',
   'resources/resources.xml',
   source_dir: 'resources',
-  dependencies: resource_data
+  dependencies: resource_data,
 )
 
-deps = [
-  gee_dep,
+deps = common_deps + [
   gitg_platform_support_dep,
-  glib_dep,
-  gtk_dep,
+  gsettings_desktop_schemas_dep,
   gtksourceview_dep,
-  libgit2_glib_dep,
   libide_dep,
+  libsecret_dep,
   libsoup_dep,
   m_dep,
-  dependency('gsettings-desktop-schemas'),
-  dependency('libsecret-1')
 ]
 
 cflags = warn_flags + [
   '-DDATADIR="@0@"'.format(gitg_datadir),
   '-DLIBDIR="@0@"'.format(gitg_libdir),
-  '-DGETTEXT_PACKAGE="@0@"'.format(gitg_gettext)
+  '-DGETTEXT_PACKAGE="@0@"'.format(gitg_gettext),
 ]
 
-ldflags = []
+ldflags = common_ldflags
 
-if have_version_script
-  ldflags += '-Wl,--version-script,' + symbol_map
-endif
-
-test_ldflags = []
 if gdk_targets.contains('quartz')
   sources += files('gitg-platform-support-osx.c')
-  gio_system_pkg = 'gio-unix-2.0'
   deps += [
-    dependency(gio_system_pkg),
-    find_library('objc')
+    dependency('gio-unix-2.0'),
+    dependency('appleframeworks', modules : ['foundation', 'appkit'])
   ]
   cflags += '-xobjective-c'
-
-  test_ldflags += [
-    '-framework Foundation',
-    '-framework AppKit'
-  ]
 elif gdk_targets.contains('win32')
   sources += files('gitg-platform-support-win32.c')
-  gio_system_pkg = 'gio-windows-2.0'
-  deps += dependency(gio_system_pkg)
+  deps += dependency('gio-windows-2.0')
 else
   sources += files('gitg-platform-support.c')
-  gio_system_pkg = 'gio-unix-2.0'
-  deps += dependency(gio_system_pkg)
+  deps += dependency('gio-unix-2.0')
 endif
 
-foreach test_ldflag: test_ldflags
-  if cc.has_argument(test_ldflag)
-    ldflags += test_ldflag
-  endif
-endforeach
-
 libgitg = shared_library(
-  api_name,
+  'gitg-' + gitg_api_version,
   sources: sources,
   version: libversion,
   soversion: soversion,
   include_directories: top_inc,
   dependencies: deps,
   c_args: cflags,
-  vala_header: lib_name + '.h',
-  vala_vapi: lib_api_name + '.vapi',
-  vala_gir: gir_name,
+  vala_header: 'libgitg.h',
+  vala_vapi: libgitg_vapi_name,
+  vala_gir: libgitg_gir_name,
   link_args: ldflags,
   link_depends: symbol_map,
   install: true,
   install_dir: [
-    get_option('libdir'),
-    join_paths(gitg_includedir, lib_api_name, lib_name),
+    true,
+    true,
     true,
     true
   ]
 )
 
 libgitg_dep = declare_dependency(
+  include_directories: include_directories('.'),
+  dependencies: common_deps + [m_dep],
   link_with: libgitg,
-  include_directories: include_directories('.')
 )
 
+# FIXME: libgitg_dep requires m_dep because math.h and float.h includes are exposed
+#        However, meson is not able to append it
 pkg.generate(
   libraries: libgitg,
   version: gitg_version,
-  name: gitg_name,
-  description: gitg_name + ' library',
-  filebase: lib_api_name,
-  subdirs: lib_api_name,
-  requires: [
-    'gio-2.0',
-    'glib-2.0',
-    'gmodule-2.0',
-    'gobject-2.0',
-    'gthread-2.0',
-    'gtk+-3.0',
-    'libgit2-glib-1.0',
-    gio_system_pkg
-  ],
+  name: 'gitg',
+  description: 'gitg library',
+  filebase: libgitg_api_name,
+  subdirs: libgitg_api_name,
+  requires: common_deps,
   variables: 'exec_prefix=' + gitg_prefix,
-  install_dir: join_paths(gitg_libdir, 'pkgconfig')
 )
 
-libgitg_dir = meson.current_build_dir()
-
 custom_target(
-  gir_typelib,
-  output: gir_typelib,
-  command: [g_ir_compiler, '--shared-library', libgitg.full_path(), '--output', '@OUTPUT@', join_paths(libgitg_dir, gir_name)],
+  libgitg_typelib_name,
+  output: libgitg_typelib_name,
+  command: [g_ir_compiler, '--shared-library', libgitg_api_name, '--output', '@OUTPUT@', join_paths(libgitg_build_dir, libgitg_gir_name)],
   depends: libgitg,
   install: true,
-  install_dir: gitg_girepositorydir
+  install_dir: gitg_girepositorydir,
 )

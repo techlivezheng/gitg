@@ -1,13 +1,9 @@
-name = gitg_name + '-ext'
-api_name = '@0@-@1@'.format(name, gitg_api_version)
+libgitg_ext_api_name = 'libgitg-ext-' + gitg_api_version
+libgitg_ext_gir_api_name = 'GitgExt-' + gitg_api_version
 
-lib_name = 'lib' + name
-lib_api_name = 'lib' + api_name
-
-gir_ns = 'GitgExt'
-gir_api_name = '@0@-@1@'.format(gir_ns, gitg_gir_version)
-gir_name = gir_api_name + '.gir'
-gir_typelib = gir_api_name + '.typelib'
+libgitg_ext_vapi_name = libgitg_ext_api_name + '.vapi'
+libgitg_ext_gir_name = libgitg_ext_gir_api_name + '.gir'
+libgitg_ext_typelib_name = libgitg_ext_gir_api_name + '.typelib'
 
 sources = files(
   'gitg-ext-action.vala',
@@ -32,112 +28,99 @@ sources = files(
   'gitg-ext-selectable.vala',
   'gitg-ext-ui-element.vala',
   'gitg-ext-ui.vala',
-  'gitg-ext-user-query.vala'
+  'gitg-ext-user-query.vala',
 )
-
-deps = [
-  gee_dep,
-  gtk_dep,
-  libgit2_glib_dep,
-  libgitg_dep
-]
 
 cflags = warn_flags + [
   '-DDATADIR="@0@"'.format(gitg_datadir),
-  '-DLIBDIR="@0@"'.format(gitg_libdir)
+  '-DLIBDIR="@0@"'.format(gitg_libdir),
 ]
 
-ldflags = []
-
-if have_version_script
-  ldflags += '-Wl,--version-script,' + symbol_map
-endif
-
 libgitg_ext = shared_library(
-  api_name,
+  'gitg-ext-' + gitg_api_version,
   sources: sources,
   version: libversion,
   soversion: soversion,
   include_directories: top_inc,
-  dependencies: deps,
+  dependencies: libgitg_dep,
   c_args: cflags,
-  vala_header: lib_name + '.h',
-  vala_vapi: lib_api_name + '.vapi',
-  vala_gir: gir_name,
-  link_args: ldflags,
+  vala_header: 'libgitg-ext.h',
+  vala_vapi: libgitg_ext_vapi_name,
+  vala_gir: libgitg_ext_gir_name,
+  link_args: common_ldflags,
   link_depends: symbol_map,
   install: true,
   install_dir: [
-    get_option('libdir'),
-    join_paths(gitg_includedir, lib_api_name, lib_name),
+    true,
+    true,
     true,
     true
   ]
 )
 
+deps = [
+  gee_dep,
+  gio_dep,
+  glib_dep,
+  gtk_dep,
+  libgit2_glib_dep,
+]
+
 libgitg_ext_dep = declare_dependency(
+  include_directories: include_directories('.'),
+  dependencies: deps + [libgitg_dep],
   link_with: libgitg_ext,
-  include_directories: include_directories('.')
 )
 
 pkg.generate(
   libraries: libgitg_ext,
   version: gitg_version,
-  name: lib_name,
-  description: gitg_name + ' extensions library',
-  filebase: lib_api_name,
-  subdirs: lib_api_name,
-  requires: [
-    'gio-2.0',
-    'glib-2.0',
-    'gmodule-2.0',
-    'gobject-2.0',
-    'gtk+-3.0',
-    'gthread-2.0',
-    'libgit2-glib-1.0',
-    'libgitg-1.0',
-    gio_system_pkg
-  ],
+  name: 'libgitg-ext',
+  description: 'gitg extensions library',
+  filebase: libgitg_ext_api_name,
+  subdirs: libgitg_ext_api_name,
+  requires: deps +  [libgitg_api_name],
   variables: 'exec_prefix=' + gitg_prefix,
-  install_dir: join_paths(gitg_libdir, 'pkgconfig')
 )
 
 # FIXME: does not work due to missing proper valadoc support
-if enable_docs
+if get_option('docs')
   vala_pkgs = [
     '--pkg', 'ggit-1.0',
     '--pkg', 'gio-2.0',
     '--pkg', 'gtk+-3.0',
     '--pkg', 'libsoup-2.4',
-    '--pkg', 'gee-0.8'
+    '--pkg', 'gee-0.8',
   ]
 
   valaproc_cmd = [
-    valadoc,
-    '--directory', join_paths(meson.source_root(), 'docs'),
+    find_program('valadoc'),
+    '--directory', join_paths(source_root, 'docs'),
     '--package-name', 'gitgext',
     vala_pkgs,
-    '--basedir', meson.source_root(),
-    '--vapidir', join_paths(meson.build_root(), 'gitg'),
-    sources
+    '--basedir', source_root,
+    '--vapidir', vapi_dir,
+    '--vapidir', libgitg_dir,
+    sources + [join_paths(libgitg_build_dir, libgitg_vapi_name)],
   ]
 
   run_target(
     'libgitg-ext-docs',
-    command: valaproc_cmd
+    command: valaproc_cmd,
+    depends: libgitg,
   )
 endif
 
 custom_target(
-  gir_typelib,
-  output: gir_typelib,
-  command: [g_ir_compiler, '--shared-library', libgitg_ext.full_path(), '--includedir', libgitg_dir, '--output', '@OUTPUT@', join_paths(meson.current_build_dir(), gir_name)],
+  libgitg_ext_typelib_name,
+  output: libgitg_ext_typelib_name,
+  command: [g_ir_compiler, '--shared-library', libgitg_ext_api_name, '--includedir', libgitg_build_dir, '--output', '@OUTPUT@', join_paths(meson.current_build_dir(), libgitg_ext_gir_name)],
   depends: [
     libgitg,
-    libgitg_ext
+    libgitg_ext,
   ],
   install: true,
-  install_dir: gitg_girepositorydir
+  install_dir: gitg_girepositorydir,
 )
 
 enable_python = get_option('python')
@@ -146,6 +129,6 @@ if enable_python
 
   install_data(
     'GitgExt.py',
-    install_dir: join_paths(python.sysconfig_path('purelib'), 'gi', 'overrides')
+    install_dir: join_paths(python.sysconfig_path('purelib'), 'gi', 'overrides'),
   )
 endif
