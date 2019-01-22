@@ -233,16 +233,16 @@ public class Lanes : Object
 
 		for (uint i = 0; i < parents.size; ++i)
 		{
-			int lnpos;
+			int ppos;
 			var poid = parents.get_id(i);
 
-			var parent_lane = find_lane_by_oid(poid, out lnpos);
+			var parent_lane = find_lane_by_oid(poid, out ppos);
 
 			if (parent_lane != null)
 			{
 				// There is already a lane for this parent. 
 				// This means that we add pos as a merge for the lane.
-				if (i == 0 && pos < lnpos)
+				if (i == 0 && pos < ppos)
 				{
 					// we are at the mainline of a merge, and this parent has
 					// already been assigned to an existing lane, if our
@@ -253,7 +253,7 @@ public class Lanes : Object
 
 					if (!parent_lane.is_hidden)
 					{
-						mylane.lane.from.append(lnpos);
+						mylane.lane.from.append(ppos);
 						mylane.is_hidden = false;
 					}
 
