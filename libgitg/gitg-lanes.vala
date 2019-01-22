@@ -236,9 +236,9 @@ public class Lanes : Object
 			int lnpos;
 			var poid = parents.get_id(i);
 
-			var container = find_lane_by_oid(poid, out lnpos);
+			var parent_lane = find_lane_by_oid(poid, out lnpos);
 
-			if (container != null)
+			if (parent_lane != null)
 			{
 				// There is already a lane for this parent. 
 				// This means that we add pos as a merge for the lane.
@@ -251,7 +251,7 @@ public class Lanes : Object
 					mylane.to = poid;
 					mylane.from = myoid;
 
-					if (!container.is_hidden)
+					if (!parent_lane.is_hidden)
 					{
 						mylane.lane.from.append(lnpos);
 						mylane.is_hidden = false;
@@ -264,27 +264,27 @@ public class Lanes : Object
 						mylane.inactive = 0;
 					}
 
-					d_lanes.remove(container);
+					d_lanes.remove(parent_lane);
 				}
 				else
 				{
-					container.from = myoid;
+					parent_lane.from = myoid;
 
 					if (!hidden)
 					{
-						container.lane.from.append(pos);
+						parent_lane.lane.from.append(pos);
 					}
 
-					container.lane.color = container.lane.color.copy();
+					parent_lane.lane.color = parent_lane.lane.color.copy();
 
 					if (!hidden)
 					{
-						container.is_hidden = false;
+						parent_lane.is_hidden = false;
 					}
 
-					if (container.inactive >= 0)
+					if (parent_lane.inactive >= 0)
 					{
-						container.inactive = 0;
+						parent_lane.inactive = 0;
 					}
 				}
 
@@ -563,8 +563,7 @@ public class Lanes : Object
 
 		foreach (var container in d_lanes)
 		{
-			if (container != null &&
-			    id.equal(container.to))
+			if (container != null && id.equal(container.to))
 			{
 				pos = p;
 				return container;
