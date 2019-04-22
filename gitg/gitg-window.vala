@@ -46,6 +46,11 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 
 	private RemoteManager d_remote_manager;
 	private Notifications d_notifications;
+	private PreferencesDialog d_preferences;
+
+#if GTK_SHORTCUTS_WINDOW
+	private Gtk.ShortcutsWindow d_shortcuts;
+#endif
 
 	// Widgets
 	[GtkChild]
@@ -54,6 +59,8 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 	private Gtk.ToggleButton d_search_button;
 	[GtkChild]
 	private Gtk.MenuButton d_gear_menu;
+	[GtkChild]
+	private Gtk.Image gear_image;
 	private MenuModel d_activities_model;
 	private MenuModel? d_dash_model;
 
@@ -155,8 +162,15 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		{"close", on_close_activated},
 		{"reload", on_reload_activated},
 		{"author-details-repo", on_repo_author_details_activated},
+		{"preferences", on_preferences_activated},
 		{"select", on_select_activated, null, "false", null}
 	};
+
+#if GTK_SHORTCUTS_WINDOW
+	private const ActionEntry[] shortcut_window_entries = {
+		{"shortcuts", on_shortcuts_activated}
+	};
+#endif
 
 	[GtkCallback]
 	private void dash_button_clicked(Gtk.Button dash)
@@ -227,7 +241,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 
 		if (button.get_active())
 		{
-			d_search_entry.grab_focus();
+			d_search_entry.grab_focus_without_selecting();
 
 			d_search_entry.text = searchable.search_text;
 			searchable.search_visible = true;
@@ -252,6 +266,15 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		}
 	}
 
+	[GtkCallback]
+	public bool on_key_pressed (Gtk.Widget widget, Gdk.EventKey event) {
+		bool ret = d_search_bar.handle_event(event);
+		if (ret) {
+			d_search_bar.search_mode_enabled = true;
+		}
+		return ret;
+	}
+
 	construct
 	{
 		if (Gitg.PlatformSupport.use_native_window_controls())
@@ -266,6 +289,10 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		}
 
 		add_action_entries(win_entries, this);
+
+#if GTK_SHORTCUTS_WINDOW
+		add_action_entries(shortcut_window_entries, this);
+#endif
 
 		d_notifications = new Notifications(d_overlay);
 
@@ -284,24 +311,13 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 			}
 		});
 
-		d_interface_settings = new Settings("org.gnome.gitg.preferences.interface");
+		d_interface_settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.interface");
 
-		string menuname;
-
-		if (Gtk.Settings.get_default().gtk_shell_shows_app_menu)
-		{
-			menuname = "win-menu";
-			d_dash_model = null;
-		}
-		else
-		{
-			menuname = "app-win-menu";
-			d_dash_model = Builder.load_object<MenuModel>("ui/gitg-menus.ui", menuname + "-dash");
-		}
+		d_dash_model = Builder.load_object<MenuModel>("ui/gitg-menus.ui", "win-menu-dash");
 
 		d_dash_view.application = this;
 
-		d_activities_model = Builder.load_object<MenuModel>("ui/gitg-menus.ui", menuname + "-views");
+		d_activities_model = Builder.load_object<MenuModel>("ui/gitg-menus.ui", "win-menu-views");
 
 		// search bar
 		d_search_bar.connect_entry(d_search_entry);
@@ -529,6 +545,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 			d_dash_view.add_repository(d_repository);
 
 			d_gear_menu.menu_model = d_activities_model;
+			gear_image.set_from_icon_name ("view-more-symbolic", BUTTON);
 			d_gear_menu.show();
 			d_gear_menu.sensitive = true;
 		}
@@ -544,6 +561,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 			d_add_button.show();
 
 			d_gear_menu.menu_model = d_dash_model;
+			gear_image.set_from_icon_name ("open-menu-symbolic", BUTTON);
 			d_gear_menu.visible = d_dash_model != null;
 			d_gear_menu.sensitive = d_dash_model != null;
 		}
@@ -700,6 +718,53 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 
 		var author_details = new AuthorDetailsDialog(this, repo_config, d_repository.name);
 		author_details.show();
+	}
+
+	private void on_preferences_activated()
+	{
+		unowned List<Gtk.Window> wnds = application.get_windows();
+
+		// Create preferences dialog if needed
+		if (d_preferences == null)
+		{
+			d_preferences = Builder.load_object<PreferencesDialog>("ui/gitg-preferences.ui", "preferences");
+
+			d_preferences.destroy.connect((w) => {
+				d_preferences = null;
+			});
+		}
+
+		if (wnds != null)
+		{
+			d_preferences.set_transient_for(wnds.data);
+		}
+
+		d_preferences.present();
+	}
+
+	private void on_shortcuts_activated()
+	{
+#if GTK_SHORTCUTS_WINDOW
+
+		unowned List<Gtk.Window> wnds = application.get_windows();
+
+		// Create shortcuts window if needed
+		if (d_shortcuts == null)
+		{
+			d_shortcuts = Builder.load_object<Gtk.ShortcutsWindow>("ui/gitg-shortcuts.ui", "shortcuts-gitg");
+
+			d_shortcuts.destroy.connect((w) => {
+				d_shortcuts = null;
+			});
+		}
+
+		if (wnds != null)
+		{
+			d_shortcuts.set_transient_for(wnds.data);
+		}
+
+		d_shortcuts.present();
+#endif
 	}
 
 	private void on_current_activity_changed()
@@ -863,6 +928,10 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 
 		d_state_settings.get("size", "(ii)", out width, out height);
 		resize(width, height);
+		if(Gitg.Config.PROFILE == "development")
+		{
+			this.get_style_context().add_class("devel");
+		}
 
 		return true;
 	}

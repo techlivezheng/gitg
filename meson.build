@@ -3,10 +3,15 @@ project(
   version: '3.30.1',
   license: 'GPL2+',
   default_options: 'buildtype=debugoptimized',
-  meson_version: '>= 0.46.0',
+  meson_version: '>= 0.48.0',
 )
-
+application_id = 'org.gnome.gitg'
 gitg_name = meson.project_name()
+
+if get_option('profile') == 'development'
+  application_id = 'org.gnome.gitgDevel'
+  gitg_name = meson.project_name() + 'Devel'
+endif
 
 gitg_version = meson.project_version()
 version_array = gitg_version.split('.')
@@ -54,11 +59,6 @@ libgitg_dir = join_paths(source_root, 'libgitg')
 po_dir = join_paths(source_root, 'po')
 vapi_dir = join_paths(source_root, 'vapi')
 
-intltool_merge = find_program('intltool-merge')
-intltool_cache = join_paths(po_dir, '.intltool-merge-cache')
-intltool_desktop_cmd = [intltool_merge, '-d', '-u', '-c', intltool_cache, po_dir, '@INPUT@', '@OUTPUT@']
-intltool_xml_cmd = [intltool_merge, '-x', '-u', '-c', intltool_cache, po_dir, '@INPUT@', '@OUTPUT@']
-
 top_inc = include_directories('.')
 
 config_h = configuration_data()
@@ -69,6 +69,8 @@ set_defines = [
   ['PACKAGE_NAME', gitg_name],
   ['PACKAGE_URL', 'https://wiki.gnome.org/Apps/Gitg'],
   ['VERSION', gitg_version],
+  ['APPLICATION_ID', application_id],
+  ['PROFILE', get_option('profile')],
   # i18n
   ['GETTEXT_PACKAGE', gitg_gettext],
   # gitg
@@ -130,11 +132,12 @@ gsettings_desktop_schemas_dep = dependency('gsettings-desktop-schemas')
 gtk_dep = dependency('gtk+-3.0', version: '>= 3.20.0')
 gtkspell_dep = dependency('gtkspell3-3.0')
 gtksourceview_dep = dependency('gtksourceview-3.0', version: '>= 3.10')
-libgit2_glib_dep = dependency('libgit2-glib-1.0', version: ['>= 0.25.0', '< 0.27.0'])
+libgit2_glib_dep = dependency('libgit2-glib-1.0', version: ['>= 0.27.8'])
 libpeas_dep = dependency('libpeas-1.0')
 libsecret_dep = dependency('libsecret-1')
 libsoup_dep = dependency('libsoup-2.4')
 libxml_dep = dependency('libxml-2.0', version: '>= 2.9.0')
+libdazzle_dep = dependency('libdazzle-1.0')
 
 config_dep = valac.find_library('config', dirs: vapi_dir)
 gitg_platform_support_dep = valac.find_library('gitg-platform-support', dirs: vapi_dir)
@@ -212,4 +215,5 @@ output += '        Compiler:               ' + cc.get_id() + '\n'
 output += '        Glade catalog:          ' + enable_glade_catalog.to_string() + '\n'
 output += '        Debug enabled:          ' + gitg_debug.to_string() + '\n'
 output += '        Python support:         ' + enable_python.to_string() + '\n'
+output += '        Profile:                ' + get_option('profile') + '\n'
 message(output)

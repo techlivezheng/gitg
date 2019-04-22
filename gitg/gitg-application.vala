@@ -22,7 +22,36 @@ namespace Gitg
 
 public class Application : Gtk.Application
 {
+	// Do this to pull in config.h before glib.h (for gettext...)
+	private const string version = Gitg.Config.VERSION;
+
 	private Settings d_state_settings;
+
+	private static bool app_quit = false;
+	private static string activity;
+	private static bool no_wd = false;
+	private static bool standalone = false;
+	private static ApplicationCommandLine app_command_line;
+
+	private const OptionEntry[] entries = {
+		{"version", 'v', OptionFlags.NO_ARG, OptionArg.CALLBACK,
+		 (void *)show_version_and_quit, N_("Show the application’s version"), null},
+		{"activity", '\0', 0, OptionArg.STRING,
+		 ref activity, N_("Start gitg with a particular activity"), null},
+		{"commit", 'c', OptionFlags.NO_ARG, OptionArg.CALLBACK,
+		 (void *)commit_activity, N_("Start gitg with the commit activity (shorthand for --activity commit)"), null},
+		{"no-wd", 0, 0, OptionArg.NONE,
+		 ref no_wd, N_("Do not try to load a repository from the current working directory"), null},
+		{"standalone", 0, 0, OptionArg.NONE,
+		 ref standalone, N_("Run gitg in standalone mode"), null},
+		{null}
+	};
+
+	private static bool commit_activity()
+	{
+		activity = "commit";
+		return true;
+	}
 
 	public Settings state_settings
 	{
@@ -31,45 +60,10 @@ public class Application : Gtk.Application
 
 	public Application()
 	{
-		Object(application_id: "org.gnome.gitg",
+		Object(application_id:  Gitg.Config.APPLICATION_ID,
 		       flags: ApplicationFlags.HANDLES_OPEN |
 		              ApplicationFlags.HANDLES_COMMAND_LINE |
 		              ApplicationFlags.SEND_ENVIRONMENT);
-	}
-
-	private struct Options
-	{
-		public static bool quit = false;
-		public static string activity;
-		public static bool no_wd = false;
-		public static bool standalone = false;
-
-		public static ApplicationCommandLine command_line;
-
-		private static bool commit_activity()
-		{
-			activity = "commit";
-			return true;
-		}
-
-		public const OptionEntry[] entries = {
-			{"version", 'v', OptionFlags.NO_ARG, OptionArg.CALLBACK,
-			 (void *)show_version_and_quit, N_("Show the application’s version"), null},
-
-			{"activity", '\0', 0, OptionArg.STRING,
-			 ref activity, N_("Start gitg with a particular activity"), null},
-
-			{"commit", 'c', OptionFlags.NO_ARG, OptionArg.CALLBACK,
-			 (void *)commit_activity, N_("Start gitg with the commit activity (shorthand for --activity commit)"), null},
-
-			{"no-wd", 0, 0, OptionArg.NONE,
-			 ref no_wd, N_("Do not try to load a repository from the current working directory"), null},
-
-			{"standalone", 0, 0, OptionArg.NONE,
-			 ref standalone, N_("Run gitg in standalone mode"), null},
-
-			{null}
-		};
 	}
 
 	private PreferencesDialog d_preferences;
@@ -80,7 +74,7 @@ public class Application : Gtk.Application
 
 	static construct
 	{
-		Options.activity = "";
+		activity = "";
 	}
 
 	private static bool show_version_and_quit()
@@ -89,7 +83,7 @@ public class Application : Gtk.Application
 		              Environment.get_application_name(),
 		              Config.VERSION);
 
-		Options.quit = true;
+		app_quit = true;
 		return true;
 	}
 
@@ -97,7 +91,7 @@ public class Application : Gtk.Application
 	{
 		var ctx = new OptionContext(_("— Git repository viewer"));
 
-		ctx.add_main_entries(Options.entries, Config.GETTEXT_PACKAGE);
+		ctx.add_main_entries(entries, Config.GETTEXT_PACKAGE);
 		ctx.add_group(Gtk.get_option_group(true));
 
 		var cmdexts = new GitgExt.CommandLine[0];
@@ -152,12 +146,12 @@ public class Application : Gtk.Application
 			return true;
 		}
 
-		if (Options.standalone)
+		if (standalone)
 		{
 			set_flags(get_flags() | ApplicationFlags.NON_UNIQUE);
 		}
 
-		if (Options.quit)
+		if (app_quit)
 		{
 			exit_status = 0;
 			return true;
@@ -182,18 +176,18 @@ public class Application : Gtk.Application
 			return 1;
 		}
 
-		if (Options.quit)
+		if (app_quit)
 		{
 			return 0;
 		}
 
 		if (!cmd.get_is_remote())
 		{
-			Options.command_line = cmd;
+			app_command_line = cmd;
 		}
 
-		var tmpcmd = Options.command_line;
-		Options.command_line = cmd;
+		var tmpcmd = app_command_line;
+		app_command_line = cmd;
 
 		if (argv.length > 1)
 		{
@@ -205,14 +199,14 @@ public class Application : Gtk.Application
 				files += File.new_for_commandline_arg(arg);
 			}
 
-			open_command_line(files, Options.activity, command_lines);
+			open_command_line(files, activity, command_lines);
 		}
 		else
 		{
 			activate_command_line(command_lines);
 		}
 
-		Options.command_line = tmpcmd;
+		app_command_line = tmpcmd;
 		return 1;
 	}
 
@@ -225,7 +219,8 @@ public class Application : Gtk.Application
 	{
 		string[] artists = {"Jakub Steiner <jimmac@gmail.com>"};
 		string[] authors = {"Jesse van den Kieboom <jessevdk@gnome.org>",
-		                    "Ignacio Casal Quinteiro <icq@gnome.org>"};
+		                    "Ignacio Casal Quinteiro <icq@gnome.org>",
+		                    "Alberto Fanjul <albfan@gnome.org>"};
 
 		string copyright = "Copyright \xc2\xa9 2012 Jesse van den Kieboom";
 		string comments = _("gitg is a Git repository viewer for GTK+/GNOME");
@@ -241,7 +236,7 @@ public class Application : Gtk.Application
 		                      "version", Config.VERSION,
 		                      "website", Config.PACKAGE_URL,
 		                      "website-label", _("gitg homepage"),
-		                      "logo-icon-name", Config.PACKAGE_NAME,
+		                      "logo-icon-name", Gitg.Config.APPLICATION_ID,
 		                      "license-type", Gtk.License.GPL_2_0);
 	}
 
@@ -380,7 +375,7 @@ public class Application : Gtk.Application
 		}
 
 		// Handle the state setting in the application
-		d_state_settings = new Settings("org.gnome.gitg.state.window");
+		d_state_settings = new Settings(Gitg.Config.APPLICATION_ID + ".state.window");
 		d_state_settings.delay();
 
 		// Application menu entries
@@ -393,12 +388,14 @@ public class Application : Gtk.Application
 		const Accel[] single_accels = {
 			{"app.new", "<Primary>N",},
 			{"app.quit", "<Primary>Q"},
+			{"app.shortcuts", "<Shift><Primary>question"},
 			{"app.help", "F1"},
 
 			{"win.search", "<Primary>F"},
 			{"win.gear-menu", "F10"},
 			{"win.open-repository", "<Primary>O"},
-			{"win.close", "<Primary>W"}
+			{"win.close", "<Primary>W"},
+			{"win.preferences", "<Primary>comma"},
 		};
 
 		var multi_accels = new MultiAccel[] {
@@ -416,16 +413,6 @@ public class Application : Gtk.Application
 		foreach (var accel in multi_accels)
 		{
 			set_accels_for_action(accel.name, accel.accels);
-		}
-
-		if (Gtk.Settings.get_default().gtk_shell_shows_app_menu)
-		{
-			MenuModel? menu = Builder.load_object<MenuModel>("ui/gitg-menus.ui", "app-menu");
-
-			if (menu != null)
-			{
-				set_app_menu(menu);
-			}
 		}
 
 		add_css("style.css");
@@ -455,17 +442,24 @@ public class Application : Gtk.Application
 
 	private void activate_command_line(GitgExt.CommandLines command_lines)
 	{
-		if (Options.no_wd)
+		if (no_wd)
 		{
-			present_window(Options.activity, command_lines);
+			present_window(activity, command_lines);
 		}
 		else
 		{
-			// Otherwise open repository from current dir
-			string? wd = Options.command_line.get_cwd();
+			unowned string git_dir_env = app_command_line.getenv("GIT_DIR");
+			if (git_dir_env != null)
+			{
+				File[] files = new File[] {File.new_for_path(git_dir_env)};
+				open_command_line(files, activity, command_lines);
+			} else {
+				// Otherwise open repository from current dir
+				string? wd = app_command_line.get_cwd();
 
-			open(new File[] { File.new_for_path(wd) }, Options.activity);
-			present_window(Options.activity, command_lines);
+				open(new File[] { File.new_for_path(wd) }, activity);
+				present_window(activity, command_lines);
+			}
 		}
 	}
 
@@ -526,7 +520,7 @@ public class Application : Gtk.Application
 			if (window != null)
 			{
 				// Present the window with this repository open
-				window.set_environment(Options.command_line.get_environ());
+				window.set_environment(app_command_line.get_environ());
 				window.present(hint, command_lines);
 				continue;
 			}
@@ -551,7 +545,7 @@ public class Application : Gtk.Application
 
 		if (window != null)
 		{
-			window.set_environment(Options.command_line.get_environ());
+			window.set_environment(app_command_line.get_environ());
 		}
 
 		present_window(hint, command_lines);
@@ -573,7 +567,7 @@ public class Application : Gtk.Application
 
 		var w = (Gitg.Window)windows.first().data;
 
-		w.set_environment(Options.command_line.get_environ());
+		w.set_environment(app_command_line.get_environ());
 		w.present(activity, command_lines);
 	}
 }

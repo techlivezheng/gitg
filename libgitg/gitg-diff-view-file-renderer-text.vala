@@ -54,9 +54,14 @@ class Gitg.DiffViewFileRendererText : Gtk.SourceView, DiffSelectable, DiffViewFi
 	private Gtk.SourceBuffer? d_new_highlight_buffer;
 	private bool d_old_highlight_ready;
 	private bool d_new_highlight_ready;
+	private Gtk.CssProvider css_provider;
 
 	private Region[] d_regions;
 	private bool d_constructed;
+
+	private Settings? d_stylesettings;
+
+	private Settings? d_fontsettings;
 
 	public bool new_is_workdir { get; construct set; }
 
@@ -194,6 +199,9 @@ class Gitg.DiffViewFileRendererText : Gtk.SourceView, DiffSelectable, DiffViewFi
 
 		var settings = Gtk.Settings.get_default();
 		settings.notify["gtk-application-prefer-dark-theme"].connect(update_theme);
+
+		css_provider = new Gtk.CssProvider();
+		get_style_context().add_provider(css_provider,Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
 
 		update_theme();
 
@@ -393,7 +401,26 @@ class Gitg.DiffViewFileRendererText : Gtk.SourceView, DiffSelectable, DiffViewFi
 
 		buffer.language = language;
 		buffer.highlight_syntax = true;
-		buffer.style_scheme = style_scheme_manager.get_scheme("classic");
+		d_fontsettings = try_settings("org.gnome.desktop.interface");
+		if (d_fontsettings != null)
+		{
+			d_fontsettings.changed["monospace-font-name"].connect((s, k) => {
+				update_font();
+			});
+
+			update_font();
+		}
+		d_stylesettings = try_settings(Gitg.Config.APPLICATION_ID + ".preferences.interface");
+		if (d_stylesettings != null)
+		{
+			d_stylesettings.changed["style-scheme"].connect((s, k) => {
+				update_style();
+			});
+
+			update_style();
+		} else {
+			buffer.style_scheme = style_scheme_manager.get_scheme("classic");
+		}
 
 		var sfile = new Gtk.SourceFile();
 		sfile.location = location;
@@ -416,6 +443,50 @@ class Gitg.DiffViewFileRendererText : Gtk.SourceView, DiffSelectable, DiffViewFi
 		}
 
 		return buffer;
+	}
+
+	private void update_style()
+	{
+		var scheme = d_stylesettings.get_string("style-scheme");
+		var manager = Gtk.SourceStyleSchemeManager.get_default();
+		var s = manager.get_scheme(scheme);
+
+		if (s != null)
+		{
+			(buffer as Gtk.SourceBuffer).style_scheme = s;
+		}
+	}
+
+	private void update_font()
+	{
+		var fname = d_fontsettings.get_string("monospace-font-name");
+		var font_desc = Pango.FontDescription.from_string(fname);
+		var css = "textview{%s}".printf(Dazzle.pango_font_description_to_css(font_desc));
+		try
+		{
+			css_provider.load_from_data(css);
+		}
+		catch(Error e)
+		{
+			warning("Error applying font: %s", e.message);
+		}
+	}
+
+	private Settings? try_settings(string schema_id)
+	{
+		var source = SettingsSchemaSource.get_default();
+
+		if (source == null)
+		{
+			return null;
+		}
+
+		if (source.lookup(schema_id, true) != null)
+		{
+			return new Settings(schema_id);
+		}
+
+		return null;
 	}
 
 	private void strip_carriage_returns(Gtk.SourceBuffer buffer)

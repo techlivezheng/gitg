@@ -1,14 +1,10 @@
 {
-    "app-id" : "org.gnome.gitg",
+    "app-id" : "org.gnome.gitgDevel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "branch" : "master",
     "sdk" : "org.gnome.Sdk",
-    "command" : "gitg",
-    "rename-desktop-file" : "gitg.desktop",
-    "rename-appdata-file" : "gitg.appdata.xml",
-    "rename-icon" : "gitg",
-    "copy-icon" : true,
+    "command" : "gitgDevel",
     "tags" : [
         "nightly"
     ],
@@ -27,13 +23,6 @@
         "--talk-name=org.freedesktop.secrets",
         "--filesystem=xdg-run/keyring"
     ],
-    "build-options" : {
-        "cflags" : "-O2 -g",
-        "cxxflags" : "-O2 -g",
-        "env" : {
-            "V" : "1"
-        }
-    },
     "cleanup" : [
         "/include",
         "/lib/pkgconfig",
@@ -47,23 +36,6 @@
         "*.a"
     ],
     "modules" : [
-        {
-            "name" : "vala",
-            "config-opts" : [
-                "--disable-graphviz"
-            ],
-            "sources" : [
-                {
-                    "type" : "git",
-                    "url" : "https://gitlab.gnome.org/GNOME/vala.git",
-                    "tag" : "0.42.1"
-                },
-                {
-                    "type" : "patch",
-                    "path" : "libvaladoc-Allow-disabling-the-graphviz-dependency.patch"
-                }
-            ]
-        },
         {
             "name" : "libssh2",
             "buildsystem" : "cmake",
@@ -172,18 +144,36 @@
             ]
         },
         {
+            "name" : "libdazzle",
+            "config-opts" : [
+                "--libdir=/app/lib",
+                "--buildtype=debugoptimized"
+            ],
+            "buildsystem" : "meson",
+            "builddir" : true,
+            "cleanup" : [
+                "/bin"
+            ],
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/GNOME/libdazzle.git"
+                }
+            ]
+        },
+        {
             "name" : "gitg",
             "buildsystem" : "meson",
             "builddir" : true,
             "config-opts" : [
                 "--buildtype=debugoptimized",
-                "-Ddeprecations=true"
+                "-Ddeprecations=true",
+                "-Dprofile=development"
             ],
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://gitlab.gnome.org/GNOME/gitg.git",
-                    "branch" : "master"
+                    "url" : "https://gitlab.gnome.org/GNOME/gitg.git"
                 }
             ]
         }

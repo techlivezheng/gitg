@@ -114,7 +114,7 @@ public class Lanes : Object
 		d_collapsed = new HashTable<Ggit.OId, CollapsedLane>(Ggit.OId.hash,
 		                                                     Ggit.OId.equal);
 
-		var settings = new Settings("org.gnome.gitg.preferences.history");
+		var settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.history");
 
 		settings.bind("collapse-inactive-lanes-enabled",
 		              this,
@@ -334,7 +334,7 @@ public class Lanes : Object
 			var commit = item.data;
 			unowned SList<Lane> lns = commit.get_lanes();
 
-			if (lns != null)
+			if (lns != null && index <= lns.length())
 			{
 				unowned Lane lane = lns.nth_data(index);
 
@@ -469,7 +469,7 @@ public class Lanes : Object
 		index = next;
 		uint cnt = 0;
 
-		unowned SList<Commit> ptr = d_previous;
+		unowned SList<weak Commit> ptr = d_previous;
 
 		while (ptr != null)
 		{

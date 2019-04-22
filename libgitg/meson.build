@@ -13,6 +13,7 @@ common_deps = [
   glib_dep,
   gtk_dep,
   libgit2_glib_dep,
+  libdazzle_dep,
 ]
 
 sources = files(
@@ -91,6 +92,7 @@ sources += gnome.compile_resources(
 )
 
 deps = common_deps + [
+  config_dep,
   gitg_platform_support_dep,
   gsettings_desktop_schemas_dep,
   gtksourceview_dep,
@@ -139,7 +141,7 @@ libgitg = shared_library(
   install: true,
   install_dir: [
     true,
-    true,
+    join_paths(gitg_includedir, libgitg_api_name, 'libgitg'),
     true,
     true
   ]

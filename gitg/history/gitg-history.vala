@@ -126,7 +126,7 @@ namespace GitgHistory
 
 		construct
 		{
-			d_settings = new Settings("org.gnome.gitg.preferences.history");
+			d_settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.history");
 
 			d_settings.changed["topological-order"].connect((s, k) => {
 				update_sort_mode();
@@ -1134,7 +1134,6 @@ namespace GitgHistory
 			set
 			{
 				d_main.commit_list_view.set_search_entry(value);
-				d_main.commit_list_view.set_enable_search(value != null);
 
 				if (value != null)
 				{

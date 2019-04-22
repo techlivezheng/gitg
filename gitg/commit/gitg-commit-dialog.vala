@@ -81,6 +81,7 @@ class Dialog : Gtk.Dialog
 	private GtkSpell.Checker? d_spell_checker;
 	private Ggit.Diff d_diff;
 	private bool d_infobar_shown;
+	private Gtk.CssProvider css_provider;
 
 	public Ggit.Diff? diff
 	{
@@ -411,6 +412,8 @@ class Dialog : Gtk.Dialog
 	construct
 	{
 		d_font_settings = new Settings("org.gnome.desktop.interface");
+		css_provider = new Gtk.CssProvider();
+		d_source_view_message.get_style_context().add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
 
 		update_font_settings();
 
@@ -434,7 +437,7 @@ class Dialog : Gtk.Dialog
 		                                      BindingFlags.BIDIRECTIONAL |
 		                                      BindingFlags.SYNC_CREATE);
 
-		d_commit_settings = new Settings("org.gnome.gitg.state.commit");
+		d_commit_settings = new Settings(Gitg.Config.APPLICATION_ID + ".state.commit");
 
 		d_commit_settings.bind("sign-off",
 		                     this,
@@ -442,7 +445,7 @@ class Dialog : Gtk.Dialog
 		                     SettingsBindFlags.GET |
 		                     SettingsBindFlags.SET);
 
-		d_message_settings = new Settings("org.gnome.gitg.preferences.commit.message");
+		d_message_settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.commit.message");
 
 		d_message_settings.bind("show-markup",
 		                        this,
@@ -479,7 +482,7 @@ class Dialog : Gtk.Dialog
 		                        "spell-checking-language",
 		                        SettingsBindFlags.GET | SettingsBindFlags.SET);
 
-		var interface_settings = new Settings("org.gnome.gitg.preferences.interface");
+		var interface_settings = new Settings(Gitg.Config.APPLICATION_ID + ".preferences.interface");
 		interface_settings.bind("use-gravatar",
 		                        this,
 		                        "use-gravatar",
@@ -785,10 +788,17 @@ class Dialog : Gtk.Dialog
 
 	private void update_font_settings()
 	{
-		var mfont = d_font_settings.get_string("monospace-font-name");
-		var desc = Pango.FontDescription.from_string(mfont);
-
-		d_source_view_message.override_font(desc);
+		var fname = d_font_settings.get_string("monospace-font-name");
+		var font_desc = Pango.FontDescription.from_string(fname);
+		var css = "textview { %s }".printf(Dazzle.pango_font_description_to_css(font_desc));
+		try
+		{
+			css_provider.load_from_data(css);
+		}
+		catch(Error e)
+		{
+			warning("Error applying font: %s", e.message);
+		}
 	}
 
 	public void show_infobar(string          primary_msg,
