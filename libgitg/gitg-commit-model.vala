@@ -113,7 +113,15 @@ namespace Gitg
 			}
 		}
 
-		public Ggit.OId[] permanent_lanes { get; set; }
+		private Ggit.OId[] _permanent_lanes;
+
+		public Ggit.OId[] get_permanent_lanes() {
+			return _permanent_lanes;
+		}
+
+		public void set_permanent_lanes(Ggit.OId[] value) {
+			_permanent_lanes = value;
+		}
 
 		public signal void started();
 		public signal void update(uint added);
@@ -130,7 +138,7 @@ namespace Gitg
 		construct
 		{
 			d_lanes = new Lanes();
-			d_sortmode = Ggit.SortMode.TIME | Ggit.SortMode.TOPOLOGICAL;
+			d_sortmode = Ggit.SortMode.TOPOLOGICAL | Ggit.SortMode.TIME;
 		}
 
 		public override void dispose()
@@ -173,7 +181,7 @@ namespace Gitg
 		{
 			cancel();
 
-			if (d_repository == null || d_include.length == 0)
+			if (d_repository == null || get_include().length == 0)
 			{
 				return;
 			}
@@ -218,12 +226,17 @@ namespace Gitg
 
 		public void set_include(Ggit.OId[] ids)
 		{
-			d_include = ids;
+			this.d_include = ids;
+		}
+
+		public Ggit.OId[] get_include()
+		{
+			return this.d_include;
 		}
 
 		public void set_exclude(Ggit.OId[] ids)
 		{
-			d_exclude = ids;
+			this.d_exclude = ids;
 		}
 
 		private void notify_batch(owned SourceFunc? finishedcb)
@@ -302,7 +315,7 @@ namespace Gitg
 
 			var wait_elapsed = wait_elapsed_initial;
 
-			var permlanes = permanent_lanes;
+			var permlanes = get_permanent_lanes();
 
 			ThreadFunc<void*> run = () => {
 				if (d_walker == null)
@@ -405,8 +418,10 @@ namespace Gitg
 					int mylane;
 					SList<Lane> lanes;
 
-					if (d_lanes.next(commit, out lanes, out mylane))
+					bool finded = d_lanes.next(commit, out lanes, out mylane, true);
+					if (finded)
 					{
+						debug ("finded parent for %s %s\n", commit.get_subject(), commit.get_id().to_string());
 						commit.update_lanes((owned)lanes, mylane);
 
 						lock(d_id_hash)
@@ -427,7 +442,48 @@ namespace Gitg
 
 						d_ids[d_ids.length++] = commit;
 					}
-					else
+					while (d_lanes.miss_commits.size > 0)
+					{
+						finded = false;
+						var iter = d_lanes.miss_commits.iterator();
+						while (iter.next())
+						{
+							var miss_commit = iter.get();
+							debug ("trying again %s %s", miss_commit.get_subject(), miss_commit.get_id().to_string());
+							bool tmp_finded = d_lanes.next(miss_commit, out lanes, out mylane);
+							if (tmp_finded)
+							{
+								finded = true;
+								debug ("finded parent for miss %s %s\n", miss_commit.get_subject(), miss_commit.get_id().to_string());
+								iter.remove();
+								commit = miss_commit;
+
+								commit.update_lanes((owned)lanes, mylane);
+
+								lock(d_id_hash)
+								{
+									d_id_hash.set(id, d_ids.length);
+								}
+
+								if (needs_resize(d_ids, ref size))
+								{
+									var l = d_ids.length;
+
+									lock(d_ids)
+									{
+										d_ids.resize((int)size);
+										d_ids.length = l;
+									}
+								}
+
+								d_ids[d_ids.length++] = commit;
+							}
+						}
+						if (!finded)
+							break;
+					}
+
+					if (!finded)
 					{
 						if (needs_resize(d_hidden_ids, ref hidden_size))
 						{

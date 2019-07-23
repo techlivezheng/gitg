@@ -231,11 +231,11 @@ namespace GitgHistory
 		{
 			if (d_settings.get_boolean("topological-order"))
 			{
-				d_commit_list_model.sort_mode |= Ggit.SortMode.TOPOLOGICAL;
+				d_commit_list_model.sort_mode = Ggit.SortMode.TOPOLOGICAL;
 			}
 			else
 			{
-				d_commit_list_model.sort_mode &= ~Ggit.SortMode.TOPOLOGICAL;
+				d_commit_list_model.sort_mode = Ggit.SortMode.TIME | Ggit.SortMode.TOPOLOGICAL;
 			}
 		}
 
@@ -852,6 +852,15 @@ namespace GitgHistory
 
 			add_ref_action(actions, fetch);
 
+			var push = new Gitg.RefActionPush(application, af, reference);
+
+			if (push.available)
+			{
+				actions.add(null);
+			}
+
+			add_ref_action(actions, push);
+
 			var merge = new Gitg.RefActionMerge(application, af, reference);
 
 			if (merge.available)
@@ -1078,7 +1087,7 @@ namespace GitgHistory
 				}
 			}
 
-			d_commit_list_model.permanent_lanes = permanent;
+			d_commit_list_model.set_permanent_lanes(permanent);
 			d_commit_list_model.set_include(include.to_array());
 			d_commit_list_model.reload();
 		}

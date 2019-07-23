@@ -14,6 +14,7 @@
         "--share=network",
         "--socket=x11",
         "--socket=wayland",
+        "--socket=ssh-auth",
         "--filesystem=host",
         "--filesystem=xdg-run/dconf",
         "--filesystem=~/.config/dconf:ro",
@@ -139,7 +140,7 @@
                 {
                     "type" : "git",
                     "url" : "https://gitlab.gnome.org/GNOME/gtksourceview.git",
-                    "tag" : "gnome-3-24"
+                    "tag" : "gtksourceview-4-2"
                 }
             ]
         },

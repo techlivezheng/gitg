@@ -309,6 +309,36 @@ public class Remote : Ggit.Remote
 		reset_transfer_progress(true);
 	}
 
+	private async void push_intern(string branch, Ggit.RemoteCallbacks? callbacks) throws Error
+	{
+		state = RemoteState.TRANSFERRING;
+		reset_transfer_progress(false);
+
+		try
+		{
+			yield Async.thread(() => {
+				var options = new Ggit.PushOptions();
+				if (d_callbacks == null) {
+					d_callbacks = new Callbacks(this, callbacks, update_transfer_progress);
+				}
+
+				options.set_remote_callbacks(d_callbacks);
+
+				string [] push_refs = { "refs/heads/%s:refs/heads/%s".printf(branch, branch) };
+
+				if (!base.push(push_refs, options))
+				  throw new Error(0,0,"push");
+			});
+		}
+		catch (Error e)
+		{
+			reset_transfer_progress(true);
+			throw e;
+		}
+
+		reset_transfer_progress(true);
+	}
+
 	private async void download_intern(string? message, Ggit.RemoteCallbacks? callbacks) throws Error
 	{
 		bool dis = false;
@@ -350,6 +380,11 @@ public class Remote : Ggit.Remote
 	public new async void download(Ggit.RemoteCallbacks? callbacks = null) throws Error
 	{
 		yield download_intern(null, callbacks);
+	}
+
+	public new async void push(string branch, Ggit.RemoteCallbacks? callbacks = null) throws Error
+	{
+		yield push_intern(branch, callbacks);
 	}
 
 	public new async void fetch(string? message, Ggit.RemoteCallbacks? callbacks = null) throws Error

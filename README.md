@@ -4,26 +4,24 @@
 
 gitg is a graphical user interface for git. It aims at being a small, fast and convenient tool to visualize the history of git repositories.  Besides visualization, gitg also provides several utilities to manage your repository and commit your work.
 
-The latest version of gitg is 3.30.1.
+The latest version of gitg is 3.32.0.
 
 - Website:      https://wiki.gnome.org/Apps/Gitg
-- Bugs:         https://bugzilla.gnome.org/browse.cgi?product=gitg
+- Issues:       https://gitlab.gnome.org/GNOME/gitg/issues
 - Download:     http://download.gnome.org/sources/gitg/
 - Mailing list: http://mail.gnome.org/mailman/listinfo/gitg-list
 
 ## Installing gitg
 
-To install the latest version of gitg, make sure to download gitg-3.30.1.tar.xz from the download site. After downloading the following procedure installs gitg:
+To install the latest version of gitg, make sure to download gitg-3.32.0.tar.xz from the download site. After downloading the following procedure installs gitg:
 
 ```
-$ tar Jxf gitg-3.30.1.tar.xz
-$ cd gitg-3.30.1
+$ tar Jxf gitg-3.32.0.tar.xz
+$ cd gitg-3.32.0
 $ meson --prefix=/usr build
 $ ninja -C build
-$ sudo ninja -C install
+$ sudo ninja -C build install
 ```
-
-For more information on installing gitg, please see INSTALL.
 
 ## Building gitg from git
 
@@ -37,7 +35,7 @@ $ ninja -C build
 $ sudo ninja -C install
 ```
 
-Alternatively you can build using Flatpak with the org.gnome.Gitg.json manifest.
+Alternatively you can build using Flatpak with the org.gnome.gitgDevel.json manifest.
 
 ## Using gitg
 
