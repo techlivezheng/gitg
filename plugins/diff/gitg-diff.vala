@@ -127,6 +127,9 @@ namespace GitgDiff
 
 		private void on_selection_changed(GitgExt.History history)
 		{
+
+		    // show diff or not
+//			return;
 			var hasset = false;
 
 			history.foreach_selected((commit) => {

@@ -315,6 +315,7 @@ namespace Gitg
 
 			var wait_elapsed = wait_elapsed_initial;
 
+			// should be empty 
 			var permlanes = get_permanent_lanes();
 
 			ThreadFunc<void*> run = () => {
@@ -366,6 +367,7 @@ namespace Gitg
 					} catch {}
 				}
 
+				// incset is the actual root commits
 				d_lanes.reset(permanent, incset);
 
 				uint size;

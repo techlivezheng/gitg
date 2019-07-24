@@ -527,6 +527,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		}
 	}
 
+	// everything initialzed here
 	private void repository_changed()
 	{
 		update_title();
@@ -955,6 +956,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		}
 	}
 
+	// window entry
 	public static Window? create_new(Gtk.Application app,
 	                                 Repository? repository,
 	                                 string? action)
@@ -964,6 +966,7 @@ public class Window : Gtk.ApplicationWindow, GitgExt.Application, Initable
 		if (ret != null)
 		{
 			ret.application = app;
+			// triggers other initiation
 			ret.set_repository_internal(repository);
 			ret.d_action = action;
 		}

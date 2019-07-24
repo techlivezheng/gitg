@@ -143,6 +143,7 @@ public class Lanes : Object
 		{
 			foreach (var r in reserved)
 			{
+//				stdout.printf("reserved %s\n", r.to_string());
 				var ct = new LaneContainer(null, r);
 				ct.inactive = -1;
 				ct.is_hidden = true;
@@ -162,6 +163,8 @@ public class Lanes : Object
 	{
 		var myoid = next.get_id();
 
+//		stdout.printf("%s\n", myoid.to_string());
+
 		if (inactive_enabled)
 		{
 			collapse_lanes();
@@ -170,8 +173,19 @@ public class Lanes : Object
 
 		debug("commit: %s %s", next.get_subject(), next.get_id().to_string());
 		LaneContainer? mylane = find_lane_by_oid(myoid, out nextpos);
+
+//		if (myoid.to_string() == "7ff94c2f75d7329441bc47b5e6eb11680d1512b1") {
+//			stdout.printf("should be here\n");
+//			foreach (var from in mylane.lane.from)
+//			{
+//				stdout.printf("--- %d\n", from);
+//			}
+//		}
+
 		if (mylane == null && d_roots != null && !d_roots.contains(myoid))
 		{
+//			stdout.printf("a \n");
+			// there is no lane for this commit, and we are not the root oid
 			lanes = null;
 			if (save_miss) {
 				debug ("saving miss %s %s", next.get_id().to_string(), next.get_id().to_string());
@@ -183,6 +197,7 @@ public class Lanes : Object
 
 		if (mylane == null)
 		{
+//			stdout.printf("b \n");
 			// there is no lane reserved for this commit, add a new lane
 			mylane = new LaneContainer(myoid, null);
 
@@ -191,6 +206,8 @@ public class Lanes : Object
 		}
 		else
 		{
+//			stdout.printf("c \n");
+			// there is already a lane for this commit
 			// copy the color here because the commit is a new stop
 			mylane.lane.color = mylane.lane.color.copy();
 
@@ -231,27 +248,27 @@ public class Lanes : Object
 
 		for (uint i = 0; i < parents.size; ++i)
 		{
-			int lnpos;
+			int ppos;
 			var poid = parents.get_id(i);
 
-			var container = find_lane_by_oid(poid, out lnpos);
+			var parent_lane = find_lane_by_oid(poid, out ppos);
 
-			if (container != null)
+			if (parent_lane != null)
 			{
-				// there is already a lane for this parent. This means that
-				// we add pos as a merge for the lane.
-				if (i == 0 && pos < lnpos)
+				// There is already a lane for this parent. 
+				// This means that we add pos as a merge for the lane.
+				if (i == 0 && pos < ppos)
 				{
 					// we are at the mainline of a merge, and this parent has
 					// already been assigned to an existing lane, if our
-					// lane's pos is smaller, then the this parent should be in
+					// lane's pos is smaller, then this parent should be in
 					// our lane instead.
 					mylane.to = poid;
 					mylane.from = myoid;
 
-					if (!container.is_hidden)
+					if (!parent_lane.is_hidden)
 					{
-						mylane.lane.from.append(lnpos);
+						mylane.lane.from.append(ppos);
 						mylane.is_hidden = false;
 					}
 
@@ -262,27 +279,46 @@ public class Lanes : Object
 						mylane.inactive = 0;
 					}
 
-					d_lanes.remove(container);
+					d_lanes.remove(parent_lane);
+
+//					if (!parent_lane.is_hidden && !mylane.is_hidden)
+//					{
+//						mylane.to = poid;
+//						mylane.from = myoid;
+//
+//						mylane.lane.from.append(ppos);
+//						mylane.is_hidden = false;
+//
+//						mylane.lane.color = mylane.lane.color.copy();
+//
+//						if (mylane.inactive >= 0)
+//						{
+//							mylane.inactive = 0;
+//						}
+//
+//						d_lanes.remove(parent_lane);
+//					}
+
 				}
 				else
 				{
-					container.from = myoid;
+					parent_lane.from = myoid;
 
 					if (!hidden)
 					{
-						container.lane.from.append(pos);
+						parent_lane.lane.from.append(pos);
 					}
 
-					container.lane.color = container.lane.color.copy();
+					parent_lane.lane.color = parent_lane.lane.color.copy();
 
 					if (!hidden)
 					{
-						container.is_hidden = false;
+						parent_lane.is_hidden = false;
 					}
 
-					if (container.inactive >= 0)
+					if (parent_lane.inactive >= 0)
 					{
-						container.inactive = 0;
+						parent_lane.inactive = 0;
 					}
 				}
 
@@ -561,10 +597,17 @@ public class Lanes : Object
 
 		foreach (var container in d_lanes)
 		{
-			if (container != null &&
-			    id.equal(container.to))
+			if (container != null && id.equal(container.to))
 			{
 				pos = p;
+
+//				if (id.to_string() == "7ff94c2f75d7329441bc47b5e6eb11680d1512b1") {
+//					foreach (var from in container.lane.from)
+//					{
+//						stdout.printf("--->> %d\n", from);
+//					}
+//				}
+
 				return container;
 			}
 
