@@ -143,6 +143,7 @@ public class Lanes : Object
 		{
 			foreach (var r in reserved)
 			{
+//				stdout.printf("reserved %s\n", r.to_string());
 				var ct = new LaneContainer(null, r);
 				ct.inactive = -1;
 				ct.is_hidden = true;
@@ -162,6 +163,8 @@ public class Lanes : Object
 	{
 		var myoid = next.get_id();
 
+//		stdout.printf("%s\n", myoid.to_string());
+
 		if (inactive_enabled)
 		{
 			collapse_lanes();
@@ -170,8 +173,18 @@ public class Lanes : Object
 
 		debug("commit: %s %s", next.get_subject(), next.get_id().to_string());
 		LaneContainer? mylane = find_lane_by_oid(myoid, out nextpos);
+
+//		if (myoid.to_string() == "7ff94c2f75d7329441bc47b5e6eb11680d1512b1") {
+//			stdout.printf("should be here\n");
+//			foreach (var from in mylane.lane.from)
+//			{
+//				stdout.printf("--- %d\n", from);
+//			}
+//		}
+
 		if (mylane == null && d_roots != null && !d_roots.contains(myoid))
 		{
+//			stdout.printf("a \n");
 			// there is no lane for this commit, and we are not the root oid
 			lanes = null;
 			if (save_miss) {
@@ -184,6 +197,7 @@ public class Lanes : Object
 
 		if (mylane == null)
 		{
+//			stdout.printf("b \n");
 			// there is no lane reserved for this commit, add a new lane
 			mylane = new LaneContainer(myoid, null);
 
@@ -192,6 +206,7 @@ public class Lanes : Object
 		}
 		else
 		{
+//			stdout.printf("c \n");
 			// there is already a lane for this commit
 			// copy the color here because the commit is a new stop
 			mylane.lane.color = mylane.lane.color.copy();
@@ -265,6 +280,25 @@ public class Lanes : Object
 					}
 
 					d_lanes.remove(parent_lane);
+
+//					if (!parent_lane.is_hidden && !mylane.is_hidden)
+//					{
+//						mylane.to = poid;
+//						mylane.from = myoid;
+//
+//						mylane.lane.from.append(ppos);
+//						mylane.is_hidden = false;
+//
+//						mylane.lane.color = mylane.lane.color.copy();
+//
+//						if (mylane.inactive >= 0)
+//						{
+//							mylane.inactive = 0;
+//						}
+//
+//						d_lanes.remove(parent_lane);
+//					}
+
 				}
 				else
 				{
@@ -566,6 +600,14 @@ public class Lanes : Object
 			if (container != null && id.equal(container.to))
 			{
 				pos = p;
+
+//				if (id.to_string() == "7ff94c2f75d7329441bc47b5e6eb11680d1512b1") {
+//					foreach (var from in container.lane.from)
+//					{
+//						stdout.printf("--->> %d\n", from);
+//					}
+//				}
+
 				return container;
 			}
 
