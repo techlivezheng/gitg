@@ -558,6 +558,7 @@ public class RefsList : Gtk.ListBox
 		set
 		{
 			d_repository = value;
+			// initialize here
 			refresh();
 		}
 	}

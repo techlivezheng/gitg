@@ -465,6 +465,7 @@ public class Application : Gtk.Application
 
 	protected override void activate()
 	{
+		// entry point
 		present_window();
 		base.activate();
 	}

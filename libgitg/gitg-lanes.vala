@@ -172,6 +172,7 @@ public class Lanes : Object
 		LaneContainer? mylane = find_lane_by_oid(myoid, out nextpos);
 		if (mylane == null && d_roots != null && !d_roots.contains(myoid))
 		{
+			// there is no lane for this commit, and we are not the root oid
 			lanes = null;
 			if (save_miss) {
 				debug ("saving miss %s %s", next.get_id().to_string(), next.get_id().to_string());
@@ -191,6 +192,7 @@ public class Lanes : Object
 		}
 		else
 		{
+			// there is already a lane for this commit
 			// copy the color here because the commit is a new stop
 			mylane.lane.color = mylane.lane.color.copy();
 
@@ -238,13 +240,13 @@ public class Lanes : Object
 
 			if (container != null)
 			{
-				// there is already a lane for this parent. This means that
-				// we add pos as a merge for the lane.
+				// There is already a lane for this parent. 
+				// This means that we add pos as a merge for the lane.
 				if (i == 0 && pos < lnpos)
 				{
 					// we are at the mainline of a merge, and this parent has
 					// already been assigned to an existing lane, if our
-					// lane's pos is smaller, then the this parent should be in
+					// lane's pos is smaller, then this parent should be in
 					// our lane instead.
 					mylane.to = poid;
 					mylane.from = myoid;
