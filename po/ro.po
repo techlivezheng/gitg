@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gitg master\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gitg/issues\n"
-"POT-Creation-Date: 2019-05-31 03:31+0000\n"
-"PO-Revision-Date: 2019-06-30 11:14+0300\n"
+"POT-Creation-Date: 2019-08-13 09:17+0000\n"
+"PO-Revision-Date: 2019-08-18 14:25+0300\n"
 "Last-Translator: Florentina Mușat <florentina.musat.28 [at] gmail [dot] "
 "com>\n"
 "Language-Team: Romanian Gnome Team <gnomero-list@lists.sourceforge.net>\n"
@@ -26,16 +26,16 @@ msgstr ""
 msgid "Could not parse XML from stream"
 msgstr "Nu s-a putut parsa XML din flux"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:4 data/org.gnome.gitg.desktop.in.in:3
+#: data/org.gnome.gitg.appdata.xml.in.in:5 data/org.gnome.gitg.desktop.in.in:3
 #: gitg/gitg.vala:39 gitg/resources/ui/gitg-window.ui:8
 msgid "gitg"
 msgstr "gitg"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:8
+#: data/org.gnome.gitg.appdata.xml.in.in:9
 msgid "Graphical user interface for git"
 msgstr "Interfață grafică pentru utilizator pentru git"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:10
+#: data/org.gnome.gitg.appdata.xml.in.in:11
 msgid ""
 "gitg is a graphical user interface for git. It aims at being a small, fast "
 "and convenient tool to visualize the history of git repositories. Besides "
@@ -48,43 +48,43 @@ msgstr ""
 "asemenea mai multe utilitare pentru a vă administra depozitul și pentru a vă "
 "comite munca."
 
-#: data/org.gnome.gitg.appdata.xml.in.in:16
-msgid "Goals"
-msgstr "Obiective"
+#: data/org.gnome.gitg.appdata.xml.in.in:17
+msgid "Goals:"
+msgstr "Obiective:"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:18
+#: data/org.gnome.gitg.appdata.xml.in.in:19
 msgid "Browse local git repositories"
 msgstr "Navighează depozitele git locale"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:19
+#: data/org.gnome.gitg.appdata.xml.in.in:20
 msgid "Clone local and remote git repositories"
 msgstr "Clonează depozitele git locale și la distanță"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:20
+#: data/org.gnome.gitg.appdata.xml.in.in:21
 msgid "Commit files"
 msgstr "Fișierele comitului"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:21
+#: data/org.gnome.gitg.appdata.xml.in.in:22
 msgid "Retrieve patch from a commit"
 msgstr "Recuperează un patch de la un comit"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:31
+#: data/org.gnome.gitg.appdata.xml.in.in:32
 msgid "Browse repository history"
 msgstr "Navighează istoricul depozitului"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:35
+#: data/org.gnome.gitg.appdata.xml.in.in:36
 msgid "Staging area to compose your commit"
 msgstr "Zona de introducere pentru compunerea comitului"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:39
+#: data/org.gnome.gitg.appdata.xml.in.in:40
 msgid "Commit staged changes"
 msgstr "Comite modificările introduse"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:43
+#: data/org.gnome.gitg.appdata.xml.in.in:44
 msgid "Overview of recently used repositories"
 msgstr "Prezentarea generală a depozitelor utilizate recent"
 
-#: data/org.gnome.gitg.appdata.xml.in.in:68
+#: data/org.gnome.gitg.appdata.xml.in.in:105
 msgid "The GNOME Project"
 msgstr "Proiectul GNOME"
 
@@ -424,16 +424,11 @@ msgstr ""
 "Configurare care determină câte linii de context (înainte și după) ar trebui "
 "să fie afișate când se arată diff-ul de introdus/înlăturat în zona de comit."
 
-#: gitg/commit/gitg-commit-dialog.vala:299
-#, c-format
-msgid "Cannot set spell checking language: %s"
-msgstr "Nu se poate stabili limba de corectare ortografică: %s"
-
-#: gitg/commit/gitg-commit-dialog.vala:507 gitg/commit/gitg-commit.vala:1077
+#: gitg/commit/gitg-commit-dialog.vala:498 gitg/commit/gitg-commit.vala:1077
 msgid "There are no changes to be committed"
 msgstr "Nu există modificări de comis"
 
-#: gitg/commit/gitg-commit-dialog.vala:508 gitg/commit/gitg-commit.vala:1078
+#: gitg/commit/gitg-commit-dialog.vala:499 gitg/commit/gitg-commit.vala:1078
 msgid "Use amend to change the commit message of the previous commit"
 msgstr ""
 "Utilizați amend pentru a modifica mesajul de comit al comitului anterior"
@@ -1373,7 +1368,7 @@ msgstr "Examinează istoricul depozitului"
 msgid "Mainline"
 msgstr "Linie principală"
 
-#: gitg/preferences/gitg-preferences-commit.vala:119
+#: gitg/preferences/gitg-preferences-commit.vala:126
 msgctxt "Preferences"
 msgid "Commit"
 msgstr "Comit"
@@ -1552,11 +1547,15 @@ msgstr "Afișează marginea _subiectului la coloana:"
 msgid "Display right _margin at column:"
 msgstr "Afișează _marginea dreaptă la coloana:"
 
-#: gitg/resources/ui/gitg-preferences-commit.ui:189
+#: gitg/resources/ui/gitg-preferences-commit.ui:197
+msgid "Language:"
+msgstr "Limbaj:"
+
+#: gitg/resources/ui/gitg-preferences-commit.ui:223
 msgid "Enable spell checking"
 msgstr "Activează corectarea ortografică"
 
-#: gitg/resources/ui/gitg-preferences-commit.ui:220
+#: gitg/resources/ui/gitg-preferences-commit.ui:254
 msgid "Commit Message"
 msgstr "Mesaj de comitere"
 
@@ -1967,6 +1966,9 @@ msgstr "Fișiere"
 #: plugins/files/gitg-files.vala:69
 msgid "Show the files in the tree of the selected commit"
 msgstr "Arată fișierele din arborele comitului selectat"
+
+#~ msgid "Cannot set spell checking language: %s"
+#~ msgstr "Nu se poate stabili limba de corectare ortografică: %s"
 
 #~ msgid "@icon@"
 #~ msgstr "@icon@"
